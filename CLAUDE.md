@@ -33,8 +33,9 @@ The GDD is the single source of truth. Always consult the **latest version (v6.0
 | `GDD_轮回仙途_v3.0.md` | v3.0 | Deep optimization: pet/artifact/spirit systems merged |
 | `GDD_轮回仙途_v2.0.md` | v2.0 | Pets + artifact spirits + endless mode |
 | `GDD_轮回仙途_v1.0.md` | v1.0 | Initial complete framework |
+| `docs/UIUX_轮回仙途_v1.0.md` | UI v1.0 | UI/UX 美术规范：Design Token、界面清单、组件库、HUD/Modal 线框、动效与资产清单（对齐 GDD §24–25） |
 
-Older versions exist for revision history only; v6.0 supersedes them for all design decisions.
+Older versions exist for revision history only; v6.0 supersedes them for all design decisions. **UI 实现以 `docs/UIUX_轮回仙途_v1.0.md` 为准。**
 
 ## Core Systems Architecture
 

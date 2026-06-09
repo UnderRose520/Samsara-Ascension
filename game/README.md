@@ -90,3 +90,8 @@
 | `data/enemies/enemy_archetypes.csv` | 敌人 archetype → 技能组 |
 | `data/enemies/boss_phases.csv` | Boss 阶段与技能池 |
 | `data/affixes/affixes.csv` | 词条（含 `unlock_spell` / `bind_spell`） |
+
+## 设计文档
+
+- **GDD 玩法：** 仓库根目录 `GDD_轮回仙途_v6.0.md`
+- **UI/UX 美术：** [`docs/UIUX_轮回仙途_v1.0.md`](../docs/UIUX_轮回仙途_v1.0.md)（Token、组件、全界面规范）

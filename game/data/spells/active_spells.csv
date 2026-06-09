@@ -1,0 +1,6 @@
+id,name,slot,cooldown,windup,damage,speed,radius,pierce,extra,description
+lie_yan_bolt,烈焰弹,q,3.5,0.22,52,360,7,1,,朝鼠标发射一枚高伤火劲弹幕
+lei_chi_strike,雷击印,e,5.0,0.15,38,480,5,2,,快雷击直线穿透
+lei_chi_chain,连环雷,e,4.0,0.12,32,520,4,3,,快雷三连穿透
+xuan_bing_fan,玄冰扇,r,7.0,0.35,28,320,5,0,count:3,三向扇形冰劲
+xuan_bing_lance,玄冰枪,r,6.0,0.28,65,400,9,1,,单发高伤冰枪

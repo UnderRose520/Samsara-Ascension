@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcombatfeedback001"]
+
+[ext_resource type="Script" path="res://scenes/ui/combat_feedback_layer.gd" id="1"]
+
+[node name="CombatFeedbackLayer" type="CanvasLayer"]
+layer = 60
+process_mode = 3
+script = ExtResource("1")

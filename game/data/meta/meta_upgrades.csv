@@ -1,0 +1,4 @@
+id,name,cost_per_level,max_level,effect_key,effect_value,description
+vitality,真元根基,50,5,hp,10,每级开局+10真元
+fortune,灵石转运,40,5,start_gold,10,每级开局+10灵石
+insight,悟道残响,60,3,reroll_discount,10,重随费用-10灵石

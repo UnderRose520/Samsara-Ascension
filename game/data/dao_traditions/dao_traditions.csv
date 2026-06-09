@@ -1,0 +1,6 @@
+id,name,required_tags,passive_dsl,title,description
+furnace_dao,焚天道统,fire|burn|combust,dao_mult:1.12,焚天真人,火系词条齐聚，道火焚天
+thunder_dao,雷罚道统,thunder|paralyze|chain,dao_mult:1.12,天雷引渡者,雷系词条齐聚，引雷降罚
+combo_dao,连击之道,combo,dao_mult:1.08,连击真人,连击词条觉醒，势如破竹
+wood_dao,万毒道统,wood|poison|burn,dao_mult:1.1,万毒真人,木毒火并济，蚀骨焚心
+five_dao,五行归元,five,dao_mult:1.15,五行真人,五行合一，万法归元

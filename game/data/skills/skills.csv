@@ -1,0 +1,7 @@
+skill_id,layer,name,unlock_type,unlock_value,effect1,effect2,description
+lie_yan_zhang,1,烈焰掌,initial,0,flat_attack:2,,基础火劲附着
+lie_yan_zhang,2,烈焰掌,hit_count,30,on_hit_status:burn:3:0.35,,命中30次：灼烧强化
+lie_yan_zhang,3,烈焰掌, kill_count,20,dao_mult:1.12,,击杀20：道韵+12%
+han_bing_jue,1,冰霜弹,initial,0,on_hit_status:slow:2:0.15,,攻击附带减速
+han_bing_jue,2,寒冰诀,hit_count,40,on_hit_status:slow:3:0.25,,命中40次：减速强化
+han_bing_jue,3,玄冰真意,kill_status,10,flat_attack:4,,10次冻结击杀：攻击+4

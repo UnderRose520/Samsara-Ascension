@@ -1,0 +1,6 @@
+combo_id,name,required_tags,hint_missing
+fire_combo,火系 Combo,fire|burn|combust,引爆
+fire_ignite,引燃链,fire|burn|ignite,引燃
+thunder_combo,雷罚链,thunder|paralyze,麻痹
+combo_master,连击之道,combo,,连击增幅
+wood_poison,万毒归宗,wood|poison|burn,毒火

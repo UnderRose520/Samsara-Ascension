@@ -1,0 +1,8 @@
+archetype,move_speed_mult,skill_ids
+normal,1.0,melee
+ranged,1.0,melee|projectile
+sniper,0.92,melee|sniper_shot
+berserker,1.25,ground_slam|dash_fast
+shaman,0.95,projectile|fan_volley
+elite,1.15,melee_elite|dash
+boss,0.85,melee_boss|burst

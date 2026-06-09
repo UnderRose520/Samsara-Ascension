@@ -1,0 +1,10 @@
+id,name,realm_level,effect1,description
+T101,气海扩元,1,flat_max_hp:20,真元上限+20
+T102,灵台清明,1,mult_crit_rate:0.06,天机一击率+6%
+T103,剑意初萌,1,flat_attack:5,攻伐之力+5
+T201,金丹初成,2,dao_mult:1.1,道韵+10%
+T202,护体玄光,2,flat_defense:4,护体灵气+4
+T203,疾风连击,2,mult_attack_speed:1.12,攻速+12%
+T301,元婴出窍,3,dao_mult:1.15,道韵+15%
+T302,万法归心,3,mult_crit_mult:0.2,天机倍率+20%
+T303,破境之力,3,mult_attack:1.08,攻伐+8%

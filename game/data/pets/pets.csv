@@ -1,0 +1,2 @@
+pet_id,name,element,passive_attack,coord_damage,coord_cooldown,description
+huo_ying,火萤,fire,6,18,8,自动单发助战；V键朝鼠标方向5发协同爆发(8s冷却)

@@ -1,0 +1,17 @@
+id,name,category,weight,weather,title,body,choice1,choice2,choice3,effect1,effect2,effect3,max_per_run,karma_gate
+E01,神秘老者,regular,12,,神秘老者,白发老者递来一盏灵茶。,接茶(+30灵石),求教(恢复20%真元),谢绝,gold:30,heal_pct:0.2,none,2,
+E02,灵石矿脉,regular,10,,灵石矿脉,岩壁下露出灵石晶光。,全力开采(+50),浅挖(+20),放弃,gold:50,gold:20,none,1,
+E03,残卷机缘,regular,10,,残卷机缘,地上有一卷发光残页。,参悟(随机词条),收起(+25灵石),无视,affix:1,gold:25,none,1,
+E04,调息泉,regular,8,,调息泉,清泉氤氲，灵力充沛。,浸泡(恢复35%真元),略饮(15%),离开,heal_pct:0.35,heal_pct:0.15,none,2,
+E05,坊市传闻,regular,8,,坊市传闻,路人口述坊市行情。,记下(+40灵石),砍价(+25),无视,gold:40,gold:25,none,1,
+E06,灵雨润物,weather,6,clear,灵雨润物,细雨洗涤身心。,承接(恢复+攻速),避雨(+15灵石),离开,heal_pct:0.2;speed:1.1,gold:15,none,1,
+E07,雷云悟道,weather,6,thunder,雷云悟道,雷意若有若无。,引雷(雷系机缘),避退(+20灵石),离开,bias:thunder,gold:20,none,1,
+E08,幽泉回响,weather,6,rain,幽泉回响,水声叮咚，灵息流动。,聆听(恢复25%),汲水(+15灵石),离开,heal_pct:0.25,gold:15,none,1,
+E11,烈阳灼身,weather,6,fire,烈阳灼身,烈日炙烤，火意入体。,引火(火系机缘),避荫(+18灵石),离开,bias:fire,gold:18,none,1,
+E12,罡风试身,weather,6,wind,罡风试身,狂风扑面，身法受考。,迎风(攻速+15%),避风(+15灵石),离开,speed:1.15,gold:15,none,1,
+E13,雾影迷踪,weather,5,fog,雾影迷踪,浓雾中传来低语。,循声(+30灵石),调息(12%),离开,gold:30,heal_pct:0.12,none,1,
+E14,霜寒侵体,weather,5,snow,霜寒侵体,寒气刺骨。,以寒炼体(恢复20%),生火(+12灵石),离开,heal_pct:0.2,gold:12,none,1,
+E15,路遇争执,karma,8,,路遇争执,两名修士因灵石争执。,调解(+善),夺石(+恶+40),旁观,gold:10;karma:good,gold:40;karma:evil,none,2,
+E16,藏宝洞窟,karma,6,,藏宝洞窟,洞中有宝光闪烁。,尽取(+贪+60),留一线(+道心),离开,gold:60;karma:greed,heal_pct:0.15;karma:dao,none,1,
+E17,善名远播,karma,10,,善名远播,有人认出了你的善举。,接受馈赠(+25),婉拒(+道心),离开,gold:25,heal_pct:0.1;karma:dao,none,1,good:1
+M01,心魔试炼台,heart_demon,100,,心魔试炼台,镜中映出你的执念。,接受试炼,沉思调息,转身离开,trial_accept,trial_contemplate,trial_leave,1,

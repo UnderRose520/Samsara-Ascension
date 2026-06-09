@@ -1,0 +1,9 @@
+id,name,element_affinity,mult_b,description
+clear,晴,none,1.0,天象平和
+rain,雨,water,1.15,水系道韵+15%
+thunder,雷,thunder,1.12,雷系道韵+12%
+fire,烈阳,fire,1.12,火系道韵+12%
+wind,罡风,wood,1.1,木系道韵+10%
+fog,迷雾,none,1.0,视野受限，道韵均衡
+snow,霜雪,water,1.08,寒水系道韵+8%
+sand,沙暴,earth,1.1,土系道韵+10%

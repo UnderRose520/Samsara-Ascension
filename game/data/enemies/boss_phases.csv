@@ -1,0 +1,4 @@
+archetype,phase,hp_ratio,skill_ids,phase_name
+boss,0,1.0,melee_boss|burst,初境
+boss,1,0.6,melee_boss|dash|burst,劫火四起
+boss,2,0.3,boss_rain|melee_boss|dash,天罚降世

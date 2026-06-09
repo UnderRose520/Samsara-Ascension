@@ -1,0 +1,33 @@
+id,name,category,element,quality,dao_bucket,effect1,effect2,effect3,combo_tags,description
+F001,火焰弹,spell,fire,common,0,on_hit_status:burn:3:0.25,,,fire|burn,攻击有25%概率灼烧3秒
+F002,引燃,synergy,fire,rare,1,dao_mult:1.15,on_hit_status:burn:4:0.15,,fire|burn|ignite,火系伤害+15%且更易灼烧
+F003,铁壁,constitution,earth,common,0,flat_defense:3,,,,护体灵气+3
+F004,疾风步,constitution,none,common,0,mult_attack_speed:1.15,,,,攻击频率+15%
+F005,精准打击,spell,none,rare,0,mult_crit_rate:0.08,,,,天机一击率+8%
+F006,穿透,spell,none,common,0,projectile_pierce:1,,,,弹道穿透+1
+F007,攻击强化,constitution,none,common,0,flat_attack:3,,,,攻伐之力+3
+F008,生命强化,constitution,wood,common,0,flat_max_hp:20,,,,真元上限+20
+F009,雷刃,spell,thunder,rare,0,on_hit_status:paralyze:0.5:0.12,,,thunder|paralyze,攻击有12%概率麻痹
+F010,寒霜,spell,water,common,0,on_hit_status:slow:2:0.2,,,water|slow,攻击有20%概率减速
+F011,纯阳真火,synergy,fire,epic,1,dao_mult:1.3,flat_attack:5,,fire|yang,火系道韵+30% 攻击+5
+F012,连击增幅,synergy,none,rare,0,mult_crit_mult:0.25,mult_attack_speed:1.1,,combo,连击伤害更痛
+F013,爆燃,synergy,fire,epic,1,dao_mult:1.2,on_hit_status:burn:5:0.35,,fire|combust,满层灼烧可引爆
+F014,铁壁进阶,constitution,earth,rare,0,flat_defense:6,flat_max_hp:10,,,防御与生命双提升
+F015,焚天,synergy,fire,legendary,1,dao_mult:1.5,mult_attack:1.1,,fire|furnace,火系极致道韵
+F016,火借风势,synergy,fire,rare,1,dao_mult:1.1,projectile_pierce:1,,fire|spread,火劲更易扩散
+F017,连环闪电,spell,thunder,rare,1,dao_mult:1.12,on_hit_status:paralyze:0.8:0.18,,thunder|chain,雷系道韵+连锁麻痹
+F018,雷体,constitution,thunder,epic,1,dao_mult:1.18,flat_defense:2,,thunder|body,雷体护体
+F019,以毒养身,synergy,wood,rare,0,flat_max_hp:15,on_hit_status:burn:2:0.1,,wood|poison,毒火并济
+F020,万毒归一,synergy,wood,epic,1,dao_mult:1.2,flat_attack:4,,wood|poison,木系极致
+F021,冰火两重天,synergy,water,epic,1,dao_mult:1.15,on_hit_status:slow:3:0.25,,water|fire,冰火交织
+F022,五行归元,synergy,chaos,legendary,1,dao_mult:1.25,mult_attack:1.08,,five,五行归元
+F023,聚灵术,spell,none,common,0,flat_attack:2,mult_attack_speed:1.05,,,灵力凝聚
+F024,不屈意志,constitution,none,rare,0,flat_max_hp:30,flat_defense:2,,,真元更厚
+F025,涅槃,constitution,fire,epic,0,flat_max_hp:40,,,,濒死时额外真元
+F026,探宝罗盘,spell,none,rare,0,mult_crit_rate:0.05,flat_attack:2,,,机缘感知
+F027,蓄力大师,spell,none,rare,0,mult_crit_mult:0.15,mult_attack:1.05,,,蓄力更狠
+F028,残影攻击,spell,none,common,0,mult_attack_speed:1.08,projectile_pierce:1,,,残影连射
+F029,九霄雷引,spell,thunder,rare,0,unlock_spell:e,,,thunder|spell,提前习得 E 槽雷击印
+F030,玄冰残卷,spell,water,epic,0,unlock_spell:r,,,water|ice,提前习得 R 槽玄冰扇
+F031,连环雷诀,spell,thunder,epic,1,bind_spell:e:lei_chi_chain,mult_crit_rate:0.04,,thunder|chain,E 槽换绑为连环雷
+F032,玄冰枪谱,spell,water,epic,1,bind_spell:r:xuan_bing_lance,flat_attack:3,,water|lance,R 槽换绑为玄冰枪

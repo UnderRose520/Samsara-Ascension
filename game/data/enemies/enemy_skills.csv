@@ -1,0 +1,13 @@
+id,type,name,cooldown,windup,range,damage,speed,extra
+melee,melee,近身击,1.0,0.42,48,12,0,
+melee_elite,melee,近身击,0.9,0.32,48,14,0,
+melee_boss,melee,近身击,0.75,0.55,48,22,0,
+ground_slam,melee,震地,1.6,0.55,72,20,0,
+dash,dash,猛扑,3.5,0.35,150,18,320,
+dash_fast,dash,狂扑,2.8,0.28,140,16,360,
+projectile,projectile,灵弹,2.4,0.48,360,10,240,
+sniper_shot,sniper,穿云箭,3.2,0.62,420,16,320,
+fan_volley,projectile,符扇,3.6,0.55,300,8,220,count:5
+burst,projectile,劫火,4.0,0.65,320,14,200,count:3
+boss_rain,projectile,天罚雨,5.0,0.85,340,12,180,count:8
+boss_smash,melee,裂地,2.2,0.7,96,32,0,

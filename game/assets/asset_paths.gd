@@ -6,6 +6,7 @@ extends RefCounted
 const UI_ROOT := "res://assets/ui/"
 const SPRITE_ROOT := "res://assets/sprites/"
 
+const MENU_BACKDROP := UI_ROOT + "bg_jade_palace_hall.png"
 const PANEL_NINEPATCH := UI_ROOT + "panel_ninepatch_256.png"
 const SCROLL_TOAST := UI_ROOT + "scroll_toast_520x72.png"
 const HUD_PANEL_BG := UI_ROOT + "hud_panel_bg_320x448.png"

@@ -58,8 +58,43 @@ func _ready() -> void:
 	_spawn_heart_cards()
 	_refresh_meta()
 	_setup_seed_input()
+	_add_couplets()
 	_select(DaoHeartConfig.DaoHeart.ENLIGHTEN)
 	call_deferred("_play_open")
+
+
+func _add_couplets() -> void:
+	_make_couplet("大道无形", -480.0)
+	_make_couplet("仙途无尽", 480.0)
+
+
+func _make_couplet(text: String, x_offset: float) -> void:
+	var lbl := Label.new()
+	var vertical := ""
+	for i in text.length():
+		vertical += text[i]
+		if i < text.length() - 1:
+			vertical += "\n"
+	lbl.text = vertical
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.add_theme_font_size_override("font_size", 26)
+	lbl.add_theme_color_override("font_color", Color(0.93, 0.83, 0.55, 0.55))
+	lbl.add_theme_color_override("font_outline_color", Color(0.1, 0.16, 0.12, 0.7))
+	lbl.add_theme_constant_override("outline_size", 3)
+	lbl.add_theme_constant_override("line_spacing", 10)
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lbl.anchor_left = 0.5
+	lbl.anchor_top = 0.5
+	lbl.anchor_right = 0.5
+	lbl.anchor_bottom = 0.5
+	lbl.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	lbl.grow_vertical = Control.GROW_DIRECTION_BOTH
+	lbl.offset_left = x_offset - 24.0
+	lbl.offset_right = x_offset + 24.0
+	lbl.offset_top = -110.0
+	lbl.offset_bottom = 130.0
+	add_child(lbl)
+	move_child(lbl, 2)
 
 
 func _spawn_heart_cards() -> void:

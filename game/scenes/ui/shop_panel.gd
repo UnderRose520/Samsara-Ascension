@@ -70,8 +70,10 @@ func _make_offer_row(offer: Dictionary) -> PanelContainer:
 	var icon := TextureRect.new()
 	icon.custom_minimum_size = Vector2(32, 32)
 	var kind := str(offer.get("kind", ""))
-	var icon_path := AssetPaths.PROGRESS_HP if kind == "heal" else AssetPaths.ELEMENT_ICONS["fire"]
-	icon.texture = AssetPaths.load_texture(icon_path)
+	var icon_path := AssetPaths.ICON_HEAL if kind == "heal" else AssetPaths.ELEMENT_ICONS["fire"]
+	var icon_tex := AssetPaths.load_texture(icon_path)
+	if icon_tex:
+		icon.texture = icon_tex
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	hbox.add_child(icon)

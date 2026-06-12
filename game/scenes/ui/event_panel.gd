@@ -33,7 +33,10 @@ func _on_event_requested(event: Dictionary, choices: Array) -> void:
 		row.add_theme_constant_override("separation", 8)
 		var icon := TextureRect.new()
 		icon.custom_minimum_size = Vector2(24, 24)
-		icon.texture = AssetPaths.load_texture(AssetPaths.ELEMENT_ICONS["wood"])
+		var karma_key := str(choice.get("karma", "dao_heart"))
+		var karma_tex := AssetPaths.load_texture(AssetPaths.karma_icon(karma_key))
+		if karma_tex:
+			icon.texture = karma_tex
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		row.add_child(icon)

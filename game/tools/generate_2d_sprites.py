@@ -14,11 +14,11 @@ ROOT = Path(__file__).resolve().parents[1]
 UI_OUT = ROOT / "assets" / "ui"
 SPRITE_OUT = ROOT / "assets" / "sprites"
 
-# --- Color tokens (UIUX §3.1) ---
+# --- Color tokens (UIUX §3.1; 金碧仙宫 jade-palace palette) ---
 TOKENS = {
-    "bg.deep": "#0D0D0D",
-    "bg.panel": "#1A1A2E",
-    "bg.panel_alt": "#2D2D44",
+    "bg.deep": "#06140F",
+    "bg.panel": "#0F2A22",
+    "bg.panel_alt": "#1B4438",
     "text.primary": "#F0ECE4",
     "text.secondary": "#C4B69C",
     "text.muted": "#8A8278",
@@ -203,33 +203,42 @@ def pil_fill_rounded_rect(
 # ---------------------------------------------------------------------------
 # Generators
 # ---------------------------------------------------------------------------
+def _gold_frame_ramp() -> dict:
+    """Beveled metallic gold frame profile keyed by distance from the nearest edge.
+    Stays within the 32px ninepatch margin so 9-slice edges stretch uniformly."""
+    edge = hex_to_rgba("#5A4A1E")        # dark outer rim
+    gold = hex_to_rgba(TOKENS["accent.gold"])
+    bright = hex_to_rgba("#FFE680")      # bevel highlight
+    soft = hex_to_rgba(TOKENS["accent.gold_soft"])
+    groove = hex_to_rgba("#0C241D")      # dark jade groove between the two gold lines
+    inner = hex_to_rgba(TOKENS["accent.gold_soft"], 200)
+    inner2 = hex_to_rgba(TOKENS["accent.gold_soft"], 90)
+    return {0: edge, 1: gold, 2: bright, 3: gold, 4: soft, 5: groove, 6: groove, 7: inner, 8: inner2}
+
+
+def _draw_gold_frame(buf, w, h, ramp) -> None:
+    for y in range(h):
+        for x in range(w):
+            d = min(x, y, w - 1 - x, h - 1 - y)
+            c = ramp.get(d)
+            if c is not None:
+                set_px(buf, x, y, c)
+
+
 def gen_panel_ninepatch() -> None:
-    """256×256 scroll panel with gold corner accents."""
+    """256×256 jade panel with an ornate beveled gold frame + jade corner inlays."""
     w, h = 256, 256
     panel = hex_to_rgba(TOKENS["bg.panel"])
-    gold = hex_to_rgba(TOKENS["accent.gold"])
-    stroke = (255, 255, 255, 20)
     buf = new_canvas(w, h, (0, 0, 0, 0))
     fill_rect(buf, 0, 0, w, h, panel)
-    margin = 32
-    fill_rect(buf, margin, margin, w - margin, h - margin, hex_to_rgba(TOKENS["bg.panel_alt"], 80))
-    for x in range(1, w - 1):
-        set_px(buf, x, 1, stroke)
-        set_px(buf, x, h - 2, stroke)
-    for y in range(1, h - 1):
-        set_px(buf, 1, y, stroke)
-        set_px(buf, w - 2, y, stroke)
-
-    corner_len = 28
-    thick = 3
-    corners = [(8, 8, 1, 1), (w - 9, 8, -1, 1), (8, h - 9, 1, -1), (w - 9, h - 9, -1, -1)]
-    for ox, oy, sx, sy in corners:
-        draw_line(buf, ox, oy, ox + sx * corner_len, oy, gold, thick)
-        draw_line(buf, ox, oy, ox, oy + sy * corner_len, gold, thick)
-        for i in range(4):
-            set_px(buf, ox + sx * (corner_len - 6 + i), oy + sy * 2, gold)
-            set_px(buf, ox + sx * 2, oy + sy * (corner_len - 6 + i), gold)
-
+    _draw_gold_frame(buf, w, h, _gold_frame_ramp())
+    # jade corner inlay gems sitting on the inner gold line
+    jade = hex_to_rgba("#4FD6B8")
+    jade_hi = (224, 255, 246, 255)
+    for cxp, cyp in [(9, 9), (w - 10, 9), (9, h - 10), (w - 10, h - 10)]:
+        fill_circle(buf, cxp, cyp, 4, hex_to_rgba("#0C241D"))
+        fill_circle(buf, cxp, cyp, 3, jade)
+        set_px(buf, cxp, cyp, jade_hi)
     save_rgba(buf, UI_OUT / "panel_ninepatch_256.png")
 
 
@@ -265,42 +274,31 @@ def _paper_noise(buf: List[List[RGBA]], x0: int, y0: int, x1: int, y1: int, stre
 
 
 def gen_hud_panel_bg() -> None:
-    """320×448 left HUD side panel with gold accent spine."""
+    """320×448 left HUD panel texture — subtle jade paper only.
+    The frame/spine come from HudStyles.left_scroll_panel + the AccentStripe node,
+    so no hard gold spine or corner brackets are baked in here."""
     w, h = 320, 448
     panel = hex_to_rgba(TOKENS["bg.panel"])
-    alt = hex_to_rgba(TOKENS["bg.panel_alt"], 110)
-    gold = hex_to_rgba(TOKENS["accent.gold"])
+    alt = hex_to_rgba(TOKENS["bg.panel_alt"], 85)
     buf = new_canvas(w, h, (0, 0, 0, 0))
     fill_rect(buf, 0, 0, w, h, panel)
-    fill_rect(buf, 0, 0, 5, h, (gold[0], gold[1], gold[2], 180))
-    fill_rect(buf, 5, 0, 7, h, (gold[0], gold[1], gold[2], 60))
-    fill_rect(buf, 12, 8, w - 8, h - 8, alt)
-    _paper_noise(buf, 12, 8, w - 8, h - 8, 8)
+    fill_rect(buf, 10, 8, w - 8, h - 8, alt)
+    _paper_noise(buf, 10, 8, w - 8, h - 8, 7)
     for y in range(8, h - 8, 64):
-        draw_line(buf, 16, y, w - 12, y, (255, 255, 255, 12), 1)
-    corner_len = 20
-    for ox, oy, sx, sy in [(10, 10, 1, 1), (w - 11, 10, -1, 1), (10, h - 11, 1, -1), (w - 11, h - 11, -1, -1)]:
-        draw_line(buf, ox, oy, ox + sx * corner_len, oy, gold, 2)
-        draw_line(buf, ox, oy, ox, oy + sy * corner_len, gold, 2)
+        draw_line(buf, 14, y, w - 12, y, (255, 255, 255, 8), 1)
     save_rgba(buf, UI_OUT / "hud_panel_bg_320x448.png")
 
 
 def gen_modal_title_bar() -> None:
-    """720×52 modal title strip with center glow."""
+    """720×52 modal title strip — subtle centered soft-gold divider under the title."""
     w, h = 720, 52
-    gold = hex_to_rgba(TOKENS["accent.gold"])
     soft = hex_to_rgba(TOKENS["accent.gold_soft"])
     buf = new_canvas(w, h, (0, 0, 0, 0))
     for x in range(w):
-        t = abs(x - w * 0.5) / (w * 0.5)
-        a = int(40 + (1.0 - t) * 80)
-        set_px(buf, x, h // 2, (gold[0], gold[1], gold[2], a))
-        set_px(buf, x, h // 2 + 1, (soft[0], soft[1], soft[2], a // 2))
-    draw_line(buf, 24, 8, 120, 8, gold, 2)
-    draw_line(buf, w - 120, 8, w - 24, 8, gold, 2)
-    draw_line(buf, 24, h - 9, w - 24, h - 9, (gold[0], gold[1], gold[2], 100), 1)
-    for cx in (48, w - 48):
-        fill_circle(buf, cx, 10, 3, gold)
+        t = max(0.0, 1.0 - abs(x - w * 0.5) / (w * 0.5))
+        a = int(110 * t)
+        set_px(buf, x, h - 10, (soft[0], soft[1], soft[2], a))
+        set_px(buf, x, h - 9, (soft[0], soft[1], soft[2], a // 2))
     save_rgba(buf, UI_OUT / "modal_title_bar_720x52.png")
 
 
@@ -693,42 +691,76 @@ def _draw_weather_sand(buf: List[List[RGBA]]) -> None:
 
 
 def gen_dao_heart_icons() -> None:
-    hearts = [
-        ("ask", TOKENS["elem.water"], "问道"),
-        ("enlighten", TOKENS["accent.gold"], "悟道"),
-        ("prove", TOKENS["quality.dao"], "证道"),
-    ]
-    for name, accent_hex, _label in hearts:
-        buf = new_canvas(128, 128, (0, 0, 0, 0))
-        bg = hex_to_rgba(TOKENS["bg.panel"])
-        accent = hex_to_rgba(accent_hex)
-        gold = hex_to_rgba(TOKENS["accent.gold"])
-        fill_rect(buf, 8, 8, 120, 120, bg)
-        for b in range(3):
-            fill_rect(buf, 8 + b, 8 + b, 120 - b, 120 - b, (gold[0], gold[1], gold[2], 40 + b * 20))
-        fill_circle(buf, 64, 52, 28, (accent[0], accent[1], accent[2], 90))
-        fill_circle(buf, 64, 52, 18, accent)
-        if name == "ask":
-            draw_line(buf, 64, 40, 64, 58, hex_to_rgba(TOKENS["text.primary"]), 3)
-            fill_circle(buf, 64, 66, 3, hex_to_rgba(TOKENS["text.primary"]))
-        elif name == "enlighten":
-            for i in range(6):
-                import math
+    import math
 
-                a = i * math.pi / 3
+    hearts = [
+        ("ask", TOKENS["elem.water"]),
+        ("enlighten", TOKENS["accent.gold"]),
+        ("prove", TOKENS["quality.dao"]),
+    ]
+    gold = hex_to_rgba(TOKENS["accent.gold"])
+    gold_soft = hex_to_rgba(TOKENS["accent.gold_soft"])
+    light = hex_to_rgba(TOKENS["text.primary"])
+    for name, accent_hex in hearts:
+        buf = new_canvas(128, 128, (0, 0, 0, 0))
+        accent = hex_to_rgba(accent_hex)
+        cx, cy, r = 64, 62, 42
+        # circular medallion: soft accent halo -> dark jade disc -> gold double ring
+        fill_circle(buf, cx, cy, r, (accent[0], accent[1], accent[2], 40))
+        fill_circle(buf, cx, cy, r - 5, hex_to_rgba(TOKENS["bg.panel"]))
+        for a in range(0, 360, 2):
+            rad = math.radians(a)
+            for rr in (r - 5, r - 4, r - 3):
+                set_px(buf, cx + int(rr * math.cos(rad)), cy + int(rr * math.sin(rad)), gold)
+            set_px(buf, cx + int((r - 9) * math.cos(rad)), cy + int((r - 9) * math.sin(rad)), gold_soft)
+        if name == "ask":
+            _draw_taiji(buf, cx, cy, 24, accent, hex_to_rgba(TOKENS["bg.deep"]), light)
+        elif name == "enlighten":
+            fill_circle(buf, cx, cy, 11, gold)
+            fill_circle(buf, cx, cy, 7, gold_soft)
+            for i in range(12):
+                a = i * math.pi / 6
                 draw_line(
                     buf,
-                    64,
-                    52,
-                    64 + int(24 * math.cos(a)),
-                    52 + int(24 * math.sin(a)),
-                    gold,
-                    2,
+                    cx + int(16 * math.cos(a)), cy + int(16 * math.sin(a)),
+                    cx + int(26 * math.cos(a)), cy + int(26 * math.sin(a)),
+                    gold, 2,
                 )
         else:
-            draw_line(buf, 48, 68, 80, 36, gold, 3)
-            draw_line(buf, 48, 36, 80, 68, gold, 3)
+            _draw_crossed_swords(buf, cx, cy, gold, accent, light)
         save_rgba(buf, UI_OUT / f"dao_heart_{name}_128.png")
+
+
+def _draw_taiji(buf, cx, cy, r, light_c, dark_c, eye_c) -> None:
+    half = r // 2
+    for y in range(cy - r, cy + r + 1):
+        for x in range(cx - r, cx + r + 1):
+            if (x - cx) ** 2 + (y - cy) ** 2 > r * r:
+                continue
+            top_d = (x - cx) ** 2 + (y - (cy - half)) ** 2
+            bot_d = (x - cx) ** 2 + (y - (cy + half)) ** 2
+            if top_d <= half * half:
+                c = light_c
+            elif bot_d <= half * half:
+                c = dark_c
+            elif x < cx:
+                c = light_c
+            else:
+                c = dark_c
+            set_px(buf, x, y, (c[0], c[1], c[2], 255))
+    fill_circle(buf, cx, cy - half, 3, dark_c)
+    fill_circle(buf, cx, cy + half, 3, eye_c)
+
+
+def _draw_crossed_swords(buf, cx, cy, gold, accent, light) -> None:
+    for dx in (-1, 1):
+        # blade
+        draw_line(buf, cx - dx * 18, cy + 20, cx + dx * 18, cy - 20, light, 3)
+        draw_line(buf, cx - dx * 18, cy + 20, cx + dx * 18, cy - 20, gold, 1)
+        # cross-guard near the hilt (bottom)
+        draw_line(buf, cx - dx * 22, cy + 14, cx - dx * 12, cy + 24, gold, 2)
+        # pommel
+        fill_circle(buf, cx - dx * 20, cy + 22, 3, gold)
 
 
 def _draw_pixel_sprite(buf: List[List[RGBA]], pixels: str, palette: dict[str, RGBA], scale: int = 1) -> None:

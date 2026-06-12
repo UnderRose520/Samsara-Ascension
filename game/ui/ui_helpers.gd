@@ -64,7 +64,8 @@ static func attach_gold_corners(parent: Control) -> UiGoldCorners:
 	return corners
 
 
-static func apply_panel_polish(panel: PanelContainer, with_corners: bool = true) -> void:
+static func apply_panel_polish(panel: PanelContainer, with_corners: bool = false) -> void:
+	# 默认不再叠加亮黄 L 形角标；改用 ninepatch 自带的雕花软金边框（见 generate_2d_sprites）
 	if panel == null:
 		return
 	panel.add_theme_stylebox_override("panel", make_ninepatch_panel_style())
@@ -74,7 +75,7 @@ static func apply_panel_polish(panel: PanelContainer, with_corners: bool = true)
 			attach_gold_corners(host)
 
 
-static func apply_card_polish(card: PanelContainer, with_corners: bool = true) -> void:
+static func apply_card_polish(card: PanelContainer, with_corners: bool = false) -> void:
 	apply_panel_polish(card, with_corners)
 
 

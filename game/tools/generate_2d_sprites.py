@@ -274,23 +274,18 @@ def _paper_noise(buf: List[List[RGBA]], x0: int, y0: int, x1: int, y1: int, stre
 
 
 def gen_hud_panel_bg() -> None:
-    """320×448 left HUD side panel with gold accent spine."""
+    """320×448 left HUD panel texture — subtle jade paper only.
+    The frame/spine come from HudStyles.left_scroll_panel + the AccentStripe node,
+    so no hard gold spine or corner brackets are baked in here."""
     w, h = 320, 448
     panel = hex_to_rgba(TOKENS["bg.panel"])
-    alt = hex_to_rgba(TOKENS["bg.panel_alt"], 110)
-    gold = hex_to_rgba(TOKENS["accent.gold"])
+    alt = hex_to_rgba(TOKENS["bg.panel_alt"], 85)
     buf = new_canvas(w, h, (0, 0, 0, 0))
     fill_rect(buf, 0, 0, w, h, panel)
-    fill_rect(buf, 0, 0, 5, h, (gold[0], gold[1], gold[2], 180))
-    fill_rect(buf, 5, 0, 7, h, (gold[0], gold[1], gold[2], 60))
-    fill_rect(buf, 12, 8, w - 8, h - 8, alt)
-    _paper_noise(buf, 12, 8, w - 8, h - 8, 8)
+    fill_rect(buf, 10, 8, w - 8, h - 8, alt)
+    _paper_noise(buf, 10, 8, w - 8, h - 8, 7)
     for y in range(8, h - 8, 64):
-        draw_line(buf, 16, y, w - 12, y, (255, 255, 255, 12), 1)
-    corner_len = 20
-    for ox, oy, sx, sy in [(10, 10, 1, 1), (w - 11, 10, -1, 1), (10, h - 11, 1, -1), (w - 11, h - 11, -1, -1)]:
-        draw_line(buf, ox, oy, ox + sx * corner_len, oy, gold, 2)
-        draw_line(buf, ox, oy, ox, oy + sy * corner_len, gold, 2)
+        draw_line(buf, 14, y, w - 12, y, (255, 255, 255, 8), 1)
     save_rgba(buf, UI_OUT / "hud_panel_bg_320x448.png")
 
 

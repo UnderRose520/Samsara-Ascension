@@ -26,31 +26,39 @@ func set_dock(enabled: bool) -> void:
 	if not enabled:
 		return
 	_dock = true
-	custom_minimum_size = Vector2(52, 58)
+	custom_minimum_size = Vector2(56, 56)
 	info_box.visible = false
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	add_theme_stylebox_override("panel", HudStyles.spell_dock_slot(true, true))
 	if key_label.get_parent() == info_box:
 		info_box.remove_child(key_label)
 		icon_wrap.add_child(key_label)
-		key_label.set_anchors_preset(Control.PRESET_TOP_LEFT)
-		key_label.offset_left = -2
-		key_label.offset_top = -2
-		key_label.offset_right = 14
-		key_label.offset_bottom = 12
+		# small circular gold key badge pinned to the top of the round slot
+		key_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+		key_label.offset_left = -9
+		key_label.offset_top = -11
+		key_label.offset_right = 9
+		key_label.offset_bottom = 7
 		key_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		key_label.add_theme_font_size_override("font_size", 9)
+		key_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		key_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		key_label.add_theme_font_size_override("font_size", 10)
 		key_label.add_theme_color_override("font_color", UiTokens.BG_DEEP)
 		var key_bg := StyleBoxFlat.new()
 		key_bg.bg_color = UiTokens.ACCENT_GOLD
-		key_bg.corner_radius_top_left = 4
-		key_bg.corner_radius_top_right = 4
-		key_bg.corner_radius_bottom_left = 4
-		key_bg.corner_radius_bottom_right = 4
-		key_bg.content_margin_left = 3
-		key_bg.content_margin_top = 1
-		key_bg.content_margin_right = 3
-		key_bg.content_margin_bottom = 1
+		key_bg.corner_radius_top_left = 9
+		key_bg.corner_radius_top_right = 9
+		key_bg.corner_radius_bottom_left = 9
+		key_bg.corner_radius_bottom_right = 9
+		key_bg.border_width_left = 1
+		key_bg.border_width_top = 1
+		key_bg.border_width_right = 1
+		key_bg.border_width_bottom = 1
+		key_bg.border_color = Color(0.35, 0.28, 0.08, 0.8)
+		key_bg.content_margin_left = 2
+		key_bg.content_margin_top = 0
+		key_bg.content_margin_right = 2
+		key_bg.content_margin_bottom = 0
 		key_label.add_theme_stylebox_override("normal", key_bg)
 	icon_wrap.custom_minimum_size = Vector2(44, 44)
 

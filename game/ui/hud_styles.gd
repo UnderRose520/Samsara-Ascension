@@ -111,28 +111,31 @@ static func spell_dock() -> StyleBoxFlat:
 
 
 static func spell_dock_slot(ready: bool, unlocked: bool) -> StyleBoxFlat:
+	# Circular jade slot (corner_radius == half size) with a soft inner shadow.
 	var sb := StyleBoxFlat.new()
 	if not unlocked:
-		sb.bg_color = Color(0.047, 0.106, 0.09, 0.68)
-		sb.border_color = Color(0.45, 0.55, 0.5, 0.35)
+		sb.bg_color = Color(0.043, 0.098, 0.082, 0.85)
+		sb.border_color = Color(0.4, 0.5, 0.46, 0.3)
 	elif ready:
-		sb.bg_color = Color(1, 0.843, 0, 0.1)
-		sb.border_color = Color(1, 0.843, 0, 0.5)
+		sb.bg_color = Color(0.086, 0.224, 0.184, 0.95)
+		sb.border_color = Color(0.95, 0.84, 0.5, 0.55)
 	else:
-		sb.bg_color = Color(0.078, 0.18, 0.149, 0.8)
-		sb.border_color = Color(1, 0.843, 0, 0.18)
+		sb.bg_color = Color(0.063, 0.149, 0.122, 0.92)
+		sb.border_color = Color(0.85, 0.78, 0.55, 0.25)
 	sb.border_width_left = 1
 	sb.border_width_top = 1
 	sb.border_width_right = 1
 	sb.border_width_bottom = 1
-	sb.corner_radius_top_left = 12
-	sb.corner_radius_top_right = 12
-	sb.corner_radius_bottom_left = 12
-	sb.corner_radius_bottom_right = 12
-	sb.content_margin_left = 4
-	sb.content_margin_top = 4
-	sb.content_margin_right = 4
-	sb.content_margin_bottom = 4
+	sb.corner_radius_top_left = 28
+	sb.corner_radius_top_right = 28
+	sb.corner_radius_bottom_left = 28
+	sb.corner_radius_bottom_right = 28
+	sb.shadow_color = Color(0, 0, 0, 0.35)
+	sb.shadow_size = 4
+	sb.content_margin_left = 6
+	sb.content_margin_top = 6
+	sb.content_margin_right = 6
+	sb.content_margin_bottom = 6
 	return sb
 
 

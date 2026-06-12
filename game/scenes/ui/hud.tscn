@@ -1,12 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://bhud001"]
+[gd_scene load_steps=5 format=3 uid="uid://bhud001"]
 
 [ext_resource type="Script" path="res://scenes/ui/hud.gd" id="1"]
-[ext_resource type="PackedScene" uid="uid://bspellslot001" path="res://ui/components/spell_slot.tscn" id="2"]
-[ext_resource type="Texture2D" path="res://assets/ui/weather_clear_32.png" id="3"]
-[ext_resource type="Texture2D" path="res://assets/sprites/pet_huo_ying_32.png" id="4"]
-[ext_resource type="Script" path="res://ui/components/hud_hp_bar.gd" id="5"]
-[ext_resource type="Script" path="res://ui/components/hud_section_header.gd" id="6"]
-[ext_resource type="PackedScene" uid="uid://bhudpill001" path="res://ui/components/hud_stat_pill.tscn" id="7"]
+[ext_resource type="PackedScene" uid="uid://bhudcharpanel001" path="res://ui/components/hud_character_panel.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://bhudweather001" path="res://ui/components/hud_weather_panel.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://bhudskilldock001" path="res://ui/components/hud_skill_dock.tscn" id="4"]
 
 [node name="HUD" type="CanvasLayer"]
 layer = 10
@@ -22,230 +19,43 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="TopBar" type="PanelContainer" parent="Root"]
+[node name="CharacterAnchor" type="MarginContainer" parent="Root"]
 layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 52.0
-grow_horizontal = 2
-
-[node name="Margin" type="MarginContainer" parent="Root/TopBar"]
-layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 8
-
-[node name="HBox" type="HBoxContainer" parent="Root/TopBar/Margin"]
-layout_mode = 2
-theme_override_constants/separation = 14
-
-[node name="TitleBlock" type="VBoxContainer" parent="Root/TopBar/Margin/HBox"]
-layout_mode = 2
-theme_override_constants/separation = 0
-
-[node name="Title" type="Label" parent="Root/TopBar/Margin/HBox/TitleBlock"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
-theme_override_font_sizes/font_size = 19
-theme_override_constants/outline_size = 1
-theme_override_colors/font_outline_color = Color(0.2, 0.14, 0.04, 0.8)
-text = "轮回仙途"
-
-[node name="WaveLabel" type="Label" parent="Root/TopBar/Margin/HBox/TitleBlock"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.769, 0.714, 0.612, 1)
-theme_override_font_sizes/font_size = 11
-text = "初入仙途 · 战斗"
-
-[node name="SeedLabel" type="Label" parent="Root/TopBar/Margin/HBox/TitleBlock"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.612, 0.580, 0.502, 0.85)
-theme_override_font_sizes/font_size = 10
-text = "种子 —"
-
-[node name="Spacer" type="Control" parent="Root/TopBar/Margin/HBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="Pills" type="HBoxContainer" parent="Root/TopBar/Margin/HBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="WeatherPill" parent="Root/TopBar/Margin/HBox/Pills" instance=ExtResource("7")]
-layout_mode = 2
-
-[node name="GoldPill" parent="Root/TopBar/Margin/HBox/Pills" instance=ExtResource("7")]
-layout_mode = 2
-
-[node name="MetaPill" parent="Root/TopBar/Margin/HBox/Pills" instance=ExtResource("7")]
-layout_mode = 2
-
-[node name="PetPill" parent="Root/TopBar/Margin/HBox/Pills" instance=ExtResource("7")]
-layout_mode = 2
-
-[node name="LeftPanel" type="PanelContainer" parent="Root"]
-layout_mode = 0
+anchors_preset = 0
 offset_left = 14.0
-offset_top = 62.0
-offset_right = 278.0
-offset_bottom = 332.0
+offset_top = 14.0
+offset_right = 334.0
+offset_bottom = 390.0
+grow_vertical = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
-[node name="AccentStripe" type="ColorRect" parent="Root/LeftPanel"]
+[node name="CharacterPanel" parent="Root/CharacterAnchor" instance=ExtResource("2")]
 layout_mode = 2
-mouse_filter = 2
-color = Color(0.482, 0.776, 0.494, 0.85)
+size_flags_vertical = 0
 
-[node name="ScrollBg" type="TextureRect" parent="Root/LeftPanel"]
-layout_mode = 2
-expand_mode = 1
-stretch_mode = 6
-mouse_filter = 2
-
-[node name="Margin" type="MarginContainer" parent="Root/LeftPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
-
-[node name="VBox" type="VBoxContainer" parent="Root/LeftPanel/Margin"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="CombatHeader" type="Control" parent="Root/LeftPanel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 22)
-layout_mode = 2
-script = ExtResource("6")
-title = "修士"
-
-[node name="CombatRow" type="HBoxContainer" parent="Root/LeftPanel/Margin/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="HpBlock" type="VBoxContainer" parent="Root/LeftPanel/Margin/VBox/CombatRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 4
-
-[node name="HpLabel" type="Label" parent="Root/LeftPanel/Margin/VBox/CombatRow/HpBlock"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.941, 0.902, 0.878, 1)
-theme_override_font_sizes/font_size = 12
-text = "真元"
-
-[node name="HpBar" type="Control" parent="Root/LeftPanel/Margin/VBox/CombatRow/HpBlock"]
-custom_minimum_size = Vector2(0, 16)
-layout_mode = 2
-script = ExtResource("5")
-
-[node name="ComboBadge" type="PanelContainer" parent="Root/LeftPanel/Margin/VBox/CombatRow"]
-layout_mode = 2
-size_flags_vertical = 4
-
-[node name="Margin" type="MarginContainer" parent="Root/LeftPanel/Margin/VBox/CombatRow/ComboBadge"]
-layout_mode = 2
-
-[node name="ComboLabel" type="Label" parent="Root/LeftPanel/Margin/VBox/CombatRow/ComboBadge/Margin"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.769, 0.714, 0.612, 1)
-theme_override_font_sizes/font_size = 11
-text = "连击
-—"
-horizontal_alignment = 1
-
-[node name="BuildHeader" type="Control" parent="Root/LeftPanel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 22)
-layout_mode = 2
-script = ExtResource("6")
-title = "道路"
-
-[node name="RealmBadge" type="PanelContainer" parent="Root/LeftPanel/Margin/VBox"]
-layout_mode = 2
-
-[node name="Margin" type="MarginContainer" parent="Root/LeftPanel/Margin/VBox/RealmBadge"]
-layout_mode = 2
-
-[node name="RealmLabel" type="Label" parent="Root/LeftPanel/Margin/VBox/RealmBadge/Margin"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.88, 0.82, 1, 1)
-theme_override_font_sizes/font_size = 11
-text = "炼气 · 槽位 3"
-
-[node name="BuildLabel" type="Label" parent="Root/LeftPanel/Margin/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.659, 0.82, 0.75, 1)
-theme_override_font_sizes/font_size = 11
-text = "层 · 术0 体0 契0"
-
-[node name="DaoLabel" type="Label" parent="Root/LeftPanel/Margin/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.843, 0, 0.9)
-theme_override_font_sizes/font_size = 11
-text = "道统 · —"
-
-[node name="ComboTrackRow" type="VBoxContainer" parent="Root/LeftPanel/Margin/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 3
-
-[node name="ComboTrackBar" type="ProgressBar" parent="Root/LeftPanel/Margin/VBox/ComboTrackRow"]
-custom_minimum_size = Vector2(0, 5)
-layout_mode = 2
-max_value = 1.0
-show_percentage = false
-
-[node name="ComboTrackLabel" type="Label" parent="Root/LeftPanel/Margin/VBox/ComboTrackRow"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.647, 0.302, 0.88)
-theme_override_font_sizes/font_size = 10
-text = "Combo — 0/0"
-
-[node name="AffixLabel" type="Label" parent="Root/LeftPanel/Margin/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.66, 1, 0.95)
-theme_override_font_sizes/font_size = 10
-autowrap_mode = 3
-text = "词条 · —"
-
-[node name="SkillLabel" type="Label" parent="Root/LeftPanel/Margin/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.769, 0.902, 0.878, 0.9)
-theme_override_font_sizes/font_size = 10
-text = "功法 · 烈焰掌 Lv.1"
-
-[node name="SpellBar" type="PanelContainer" parent="Root"]
+[node name="WeatherAnchor" type="MarginContainer" parent="Root"]
 layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -168.0
-offset_top = -96.0
-offset_right = 168.0
-offset_bottom = -22.0
-grow_horizontal = 2
-grow_vertical = 0
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -294.0
+offset_top = 14.0
+offset_right = -14.0
+offset_bottom = 150.0
+grow_horizontal = 0
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
-[node name="Margin" type="MarginContainer" parent="Root/SpellBar"]
+[node name="WeatherPanel" parent="Root/WeatherAnchor" instance=ExtResource("3")]
 layout_mode = 2
 
-[node name="HBox" type="HBoxContainer" parent="Root/SpellBar/Margin"]
-layout_mode = 2
-theme_override_constants/separation = 10
-alignment = 1
-
-[node name="SpellQ" parent="Root/SpellBar/Margin/HBox" instance=ExtResource("2")]
-layout_mode = 2
-
-[node name="SpellE" parent="Root/SpellBar/Margin/HBox" instance=ExtResource("2")]
-layout_mode = 2
-
-[node name="SpellR" parent="Root/SpellBar/Margin/HBox" instance=ExtResource("2")]
-layout_mode = 2
+[node name="SkillDock" parent="Root" instance=ExtResource("4")]
+layout_mode = 1
 
 [node name="HintLabel" type="Label" parent="Root"]
 layout_mode = 1
@@ -274,9 +84,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -260.0
-offset_top = -36.0
+offset_top = -80.0
 offset_right = 260.0
-offset_bottom = 36.0
+offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -312,21 +122,3 @@ text = ""
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
-
-[node name="DamagePopup" type="Label" parent="Root"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -120.0
-offset_top = 56.0
-offset_right = 120.0
-offset_bottom = 88.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
-theme_override_font_sizes/font_size = 18
-text = ""
-horizontal_alignment = 1

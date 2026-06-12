@@ -14,10 +14,22 @@ const MODAL_TITLE_BAR := UI_ROOT + "modal_title_bar_720x52.png"
 const DIVIDER_GOLD := UI_ROOT + "divider_gold_256x2.png"
 const EVENT_BANNER := UI_ROOT + "event_banner_640x160.png"
 const TALENT_SCROLL := UI_ROOT + "talent_scroll_210x200.png"
+
+## 境界天赋分类图标（占位：elem_*；美术可覆盖 talent_icon_realm_1~5.png）
+const TALENT_REALM_ICON_FALLBACK := {
+	1: UI_ROOT + "elem_wood_32.png",
+	2: UI_ROOT + "elem_earth_32.png",
+	3: UI_ROOT + "elem_fire_32.png",
+	4: UI_ROOT + "elem_thunder_32.png",
+	5: UI_ROOT + "elem_chaos_32.png",
+}
 const PET_AVATAR_RING := UI_ROOT + "pet_avatar_ring_40.png"
 const COMBO_TRACK := UI_ROOT + "combo_track_256x8.png"
 const PROGRESS_HP := UI_ROOT + "progress_hp_9slice.png"
 const PROGRESS_MANA := UI_ROOT + "progress_mana_9slice.png"
+const HUD_WEATHER_PANEL := UI_ROOT + "panel_ninepatch_256.png"
+const HUD_SKILL_DOCK_FRAME := UI_ROOT + "panel_ninepatch_256.png"
+const ICON_SPIRIT_STONE := UI_ROOT + "elem_wood_32.png"
 
 const PLAYER := SPRITE_ROOT + "player_cultivator_64.png"
 const PET_HUO_YING := SPRITE_ROOT + "pet_huo_ying_32.png"
@@ -135,6 +147,13 @@ static func projectile_for_color(color: Color) -> String:
 
 static func path_icon(path_id: String) -> String:
 	return PATH_ICONS.get(path_id, PATH_ICONS["continue"])
+
+
+static func talent_realm_icon(realm_level: int) -> String:
+	var dedicated := UI_ROOT + "talent_icon_realm_%d.png" % realm_level
+	if ResourceLoader.exists(dedicated):
+		return dedicated
+	return TALENT_REALM_ICON_FALLBACK.get(realm_level, ELEMENT_ICONS["wood"])
 
 
 static func load_texture(path: String) -> Texture2D:

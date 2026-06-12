@@ -14,8 +14,7 @@ const AssetPaths = preload("res://assets/asset_paths.gd")
 @onready var health: Node = $HealthComponent
 @onready var status: Node = $StatusComponent
 @onready var name_label: Label = $NameLabel
-@onready var hp_bar: ProgressBar = $HpBar
-@onready var hp_label: Label = $HpLabel
+@onready var world_hp: WorldEnemyHealthBar = $WorldEnemyHealthBar
 @onready var action_label: Label = $ActionLabel
 @onready var body_visual: Sprite2D = $BodyVisual
 
@@ -144,8 +143,8 @@ func init_combat_slot(spawn_pos: Vector2, player_pos: Vector2, index: int, total
 
 func _apply_display_settings() -> void:
 	var show_hp := SaveManager.get_display_setting("show_enemy_hp")
-	hp_bar.visible = show_hp
-	hp_label.visible = show_hp
+	if world_hp:
+		world_hp.visible = show_hp
 	action_label.visible = show_hp
 
 
@@ -160,15 +159,12 @@ func _refresh_name_label() -> void:
 
 
 func _on_health_changed(current: float, maximum: float) -> void:
-	hp_bar.max_value = maximum
-	hp_bar.value = maxf(current, 0.0)
+	if world_hp:
+		world_hp.set_values(current, maximum)
 	if current <= HealthComponentScript.HP_EPSILON:
-		hp_label.text = "0/%.0f" % maximum
 		if not _death_handled:
 			_on_died()
 		return
-	var display_hp := int(ceili(current))
-	hp_label.text = "%d/%.0f" % [display_hp, maximum]
 
 
 func _emit_damage(result: Dictionary) -> void:

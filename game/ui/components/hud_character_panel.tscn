@@ -1,0 +1,191 @@
+[gd_scene format=3 uid="uid://dcyp2kn67a1wu"]
+
+[ext_resource type="Script" path="res://ui/components/hud_character_panel.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://bhudresbar001" path="res://ui/components/hud_resource_bar.tscn" id="2"]
+[ext_resource type="Script" path="res://ui/components/hud_section_header.gd" id="3"]
+
+[node name="HudCharacterPanel" type="PanelContainer"]
+custom_minimum_size = Vector2(320, 0)
+offset_right = 320.0
+offset_bottom = 360.0
+mouse_filter = 2
+script = ExtResource("1")
+
+[node name="PanelFrame" type="TextureRect" parent="."]
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="AccentStripe" type="ColorRect" parent="."]
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.482, 0.776, 0.494, 0.85)
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.843, 0, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0.2, 0.14, 0.04, 0.8)
+text = "轮回仙途"
+
+[node name="WaveLabel" type="Label" parent="Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.769, 0.714, 0.612, 1)
+theme_override_font_sizes/font_size = 11
+text = "初入仙途 · 战斗"
+
+[node name="SeedLabel" type="Label" parent="Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.612, 0.58, 0.502, 0.85)
+theme_override_font_sizes/font_size = 10
+text = "种子 —"
+
+[node name="CombatHeader" type="Control" parent="Margin/VBox"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+script = ExtResource("3")
+title = "修士"
+
+[node name="CombatRow" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ResourceCol" type="VBoxContainer" parent="Margin/VBox/CombatRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="HpBar" parent="Margin/VBox/CombatRow/ResourceCol" instance=ExtResource("2")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ManaBar" parent="Margin/VBox/CombatRow/ResourceCol" instance=ExtResource("2")]
+unique_name_in_owner = true
+layout_mode = 2
+bar_kind = 1
+
+[node name="ComboBadge" type="PanelContainer" parent="Margin/VBox/CombatRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Margin" type="MarginContainer" parent="Margin/VBox/CombatRow/ComboBadge"]
+layout_mode = 2
+
+[node name="ComboLabel" type="Label" parent="Margin/VBox/CombatRow/ComboBadge/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.769, 0.714, 0.612, 1)
+theme_override_font_sizes/font_size = 11
+text = "连击
+—"
+horizontal_alignment = 1
+
+[node name="BuildHeader" type="Control" parent="Margin/VBox"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+script = ExtResource("3")
+title = "道路"
+
+[node name="BuildScroll" type="ScrollContainer" parent="Margin/VBox"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="BuildVBox" type="VBoxContainer" parent="Margin/VBox/BuildScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="RealmBadge" type="PanelContainer" parent="Margin/VBox/BuildScroll/BuildVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Margin/VBox/BuildScroll/BuildVBox/RealmBadge"]
+layout_mode = 2
+
+[node name="RealmLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox/RealmBadge/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.82, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "炼气 · 槽位 3"
+
+[node name="BuildLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "层 · 术0 体0 契0"
+
+[node name="DaoLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.843, 0, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "道统 · —"
+
+[node name="ComboTrackRow" type="VBoxContainer" parent="Margin/VBox/BuildScroll/BuildVBox"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="ComboTrackBar" type="ProgressBar" parent="Margin/VBox/BuildScroll/BuildVBox/ComboTrackRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+max_value = 1.0
+show_percentage = false
+
+[node name="ComboTrackLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox/ComboTrackRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.647, 0.302, 0.88)
+theme_override_font_sizes/font_size = 10
+text = "Combo — 0/0"
+
+[node name="AffixLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+autowrap_mode = 3
+text = "词条 · —"
+
+[node name="SkillLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "功法 · 烈焰掌 Lv.1"
+
+[node name="GoldRow" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="GoldIcon" type="TextureRect" parent="Margin/VBox/GoldRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="GoldLabel" type="Label" parent="Margin/VBox/GoldRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.843, 0, 0.95)
+theme_override_font_sizes/font_size = 12
+text = "灵石 0"

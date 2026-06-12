@@ -17,13 +17,22 @@ stretch_mode = 5
 [node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 2
 theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 12
+theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 12
 
 [node name="VBox" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
+
+[node name="IconRow" type="CenterContainer" parent="Margin/VBox"]
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Margin/VBox/IconRow"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
 
 [node name="NameLabel" type="Label" parent="Margin/VBox"]
 layout_mode = 2

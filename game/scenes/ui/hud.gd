@@ -3,46 +3,17 @@ extends CanvasLayer
 const BuildAnalyzer = preload("res://systems/affix/build_analyzer.gd")
 const VariantUtils = preload("res://core/utils/variant_utils.gd")
 const AssetPaths = preload("res://assets/asset_paths.gd")
-const HudStyles = preload("res://ui/hud_styles.gd")
 const UiTokens = preload("res://ui/theme/ui_tokens.gd")
 const UiAnimations = preload("res://ui/ui_animations.gd")
 const UiHelpers = preload("res://ui/ui_helpers.gd")
 
-@onready var hp_bar: HudHpBar = $Root/LeftPanel/Margin/VBox/CombatRow/HpBlock/HpBar
-@onready var hp_label: Label = $Root/LeftPanel/Margin/VBox/CombatRow/HpBlock/HpLabel
-@onready var hp_row: Control = $Root/LeftPanel/Margin/VBox/CombatRow/HpBlock
-@onready var combo_label: Label = $Root/LeftPanel/Margin/VBox/CombatRow/ComboBadge/Margin/ComboLabel
-@onready var combo_badge: PanelContainer = $Root/LeftPanel/Margin/VBox/CombatRow/ComboBadge
-@onready var weather_pill: HudStatPill = $Root/TopBar/Margin/HBox/Pills/WeatherPill
-@onready var gold_pill: HudStatPill = $Root/TopBar/Margin/HBox/Pills/GoldPill
-@onready var meta_pill: HudStatPill = $Root/TopBar/Margin/HBox/Pills/MetaPill
-@onready var pet_pill: HudStatPill = $Root/TopBar/Margin/HBox/Pills/PetPill
-@onready var skill_label: Label = $Root/LeftPanel/Margin/VBox/SkillLabel
-@onready var combo_track_label: Label = $Root/LeftPanel/Margin/VBox/ComboTrackRow/ComboTrackLabel
-@onready var combo_track_bar: ProgressBar = $Root/LeftPanel/Margin/VBox/ComboTrackRow/ComboTrackBar
-@onready var affix_label: Label = $Root/LeftPanel/Margin/VBox/AffixLabel
-@onready var wave_label: Label = $Root/TopBar/Margin/HBox/TitleBlock/WaveLabel
-@onready var seed_label: Label = $Root/TopBar/Margin/HBox/TitleBlock/SeedLabel
-@onready var title_label: Label = $Root/TopBar/Margin/HBox/TitleBlock/Title
-@onready var realm_badge: PanelContainer = $Root/LeftPanel/Margin/VBox/RealmBadge
-@onready var realm_label: Label = $Root/LeftPanel/Margin/VBox/RealmBadge/Margin/RealmLabel
-@onready var build_label: Label = $Root/LeftPanel/Margin/VBox/BuildLabel
-@onready var dao_label: Label = $Root/LeftPanel/Margin/VBox/DaoLabel
+@onready var character_panel: HudCharacterPanel = $Root/CharacterAnchor/CharacterPanel
+@onready var weather_panel: HudWeatherPanel = $Root/WeatherAnchor/WeatherPanel
+@onready var skill_dock: HudSkillDock = $Root/SkillDock
 @onready var hint_label: Label = $Root/HintLabel
-@onready var damage_label: Label = $Root/DamagePopup
 @onready var learn_toast: Label = $Root/LearnToastPanel/Margin/Body/LearnToast
 @onready var learn_toast_panel: PanelContainer = $Root/LearnToastPanel
 @onready var learn_toast_bg: TextureRect = $Root/LearnToastPanel/Margin/Body/ScrollBg
-@onready var top_bar: PanelContainer = $Root/TopBar
-@onready var left_panel: PanelContainer = $Root/LeftPanel
-@onready var accent_stripe: ColorRect = $Root/LeftPanel/AccentStripe
-@onready var scroll_bg: TextureRect = $Root/LeftPanel/ScrollBg
-@onready var spell_bar: PanelContainer = $Root/SpellBar
-@onready var spell_slots: Dictionary = {
-	"q": $Root/SpellBar/Margin/HBox/SpellQ,
-	"e": $Root/SpellBar/Margin/HBox/SpellE,
-	"r": $Root/SpellBar/Margin/HBox/SpellR,
-}
 
 const LEARN_TOAST_COLORS := {
 	"spell": Color(1.0, 0.843, 0.0),
@@ -52,9 +23,7 @@ const LEARN_TOAST_COLORS := {
 
 var _learn_toast_timer := 0.0
 var _last_hp := -1.0
-var _spell_pulse_tween: Tween
 var _low_hp_tween: Tween
-var _stage_accent := UiTokens.ACCENT_GOLD
 var _combo_count := 0
 
 var _room_title := ""
@@ -95,16 +64,28 @@ func _ready() -> void:
 	_refresh_active_spell_slots()
 	_refresh_seed_label()
 	learn_toast_panel.visible = false
-	damage_label.visible = false
-	_apply_hud_polish()
+	_apply_toast_polish()
 	_on_realm_changed(RunContext.realm_level, RunContext.affix_slot_max())
 	_refresh_meta_labels()
 	_refresh_dao_progress()
 	_on_gold_changed(RunContext.gold)
+	_on_weather_changed(WeatherSystem.current_weather_id, WeatherSystem.current_weather_name)
+
+
+func _apply_toast_polish() -> void:
+	UiHelpers.apply_panel_polish(learn_toast_panel, false)
+	var toast_tex := AssetPaths.load_texture(AssetPaths.SCROLL_TOAST)
+	if toast_tex and learn_toast_bg:
+		learn_toast_bg.texture = toast_tex
+		learn_toast_bg.visible = true
 
 
 func _get_player() -> Node:
 	return EntityCache.get_player()
+
+
+func get_build_fly_target_global() -> Vector2:
+	return character_panel.get_build_fly_target_global()
 
 
 func _on_run_started(_seed: int) -> void:
@@ -113,6 +94,7 @@ func _on_run_started(_seed: int) -> void:
 
 
 func _refresh_seed_label() -> void:
+	var seed_label := character_panel.seed_label
 	if seed_label == null:
 		return
 	if RunContext.run_active:
@@ -145,121 +127,35 @@ func _bind_player_systems() -> void:
 	_refresh_combo_track()
 
 
-func get_build_fly_target_global() -> Vector2:
-	return affix_label.global_position + Vector2(minf(affix_label.size.x, 160.0) * 0.5, 6.0)
-
-
-func _apply_hud_polish() -> void:
-	top_bar.add_theme_stylebox_override("panel", HudStyles.top_bar())
-	left_panel.add_theme_stylebox_override("panel", HudStyles.left_scroll_panel(_stage_accent))
-	accent_stripe.color = Color(_stage_accent.r, _stage_accent.g, _stage_accent.b, 0.88)
-	call_deferred("_layout_accent_stripe")
-	realm_badge.add_theme_stylebox_override("panel", HudStyles.realm_badge())
-	combo_badge.add_theme_stylebox_override("panel", HudStyles.combo_badge(false))
-	spell_bar.add_theme_stylebox_override("panel", HudStyles.spell_dock())
-	UiHelpers.apply_panel_polish(learn_toast_panel, false)
-	_apply_combo_track_style()
-	_style_info_labels()
-	var scroll_tex := AssetPaths.load_texture(AssetPaths.HUD_PANEL_BG)
-	if scroll_tex and scroll_bg:
-		scroll_bg.texture = scroll_tex
-		scroll_bg.modulate = Color(1, 1, 1, 0.42)
-	weather_pill.setup(UiTokens.ELEM_WATER)
-	gold_pill.setup(UiTokens.ACCENT_GOLD)
-	meta_pill.setup(UiTokens.ELEM_CHAOS)
-	pet_pill.setup(UiTokens.ELEM_FIRE)
-	for slot in spell_slots.values():
-		if slot.has_method("set_dock"):
-			slot.set_dock(true)
-	var toast_tex := AssetPaths.load_texture(AssetPaths.SCROLL_TOAST)
-	if toast_tex and learn_toast_bg:
-		learn_toast_bg.texture = toast_tex
-		learn_toast_bg.visible = true
-
-
-func _layout_accent_stripe() -> void:
-	scroll_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	scroll_bg.offset_left = 6
-	scroll_bg.offset_top = 4
-	scroll_bg.offset_right = -6
-	scroll_bg.offset_bottom = -4
-	accent_stripe.set_anchors_preset(Control.PRESET_LEFT_WIDE)
-	accent_stripe.offset_left = 0
-	accent_stripe.offset_top = 10
-	accent_stripe.offset_right = 3
-	accent_stripe.offset_bottom = -10
-	left_panel.move_child(scroll_bg, 0)
-	left_panel.move_child(accent_stripe, 1)
-	left_panel.move_child(left_panel.get_node("Margin"), left_panel.get_child_count() - 1)
-
-
-func _style_info_labels() -> void:
-	for label in [build_label, dao_label, affix_label, skill_label, combo_track_label]:
-		label.add_theme_color_override("font_color", UiTokens.TEXT_SECONDARY)
-
-
-func _apply_combo_track_style() -> void:
-	var fill := StyleBoxTexture.new()
-	fill.texture = AssetPaths.load_texture(AssetPaths.COMBO_TRACK)
-	if fill.texture:
-		fill.texture_margin_left = 2
-		fill.texture_margin_right = 2
-		combo_track_bar.add_theme_stylebox_override("fill", fill)
-	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color(0, 0, 0, 0.4)
-	bg.corner_radius_top_left = 3
-	bg.corner_radius_top_right = 3
-	bg.corner_radius_bottom_left = 3
-	bg.corner_radius_bottom_right = 3
-	combo_track_bar.add_theme_stylebox_override("background", bg)
-
-
-func _apply_stage_accent(stage_index: int) -> void:
-	_stage_accent = UiTokens.stage_accent(stage_index)
-	title_label.add_theme_color_override("font_color", _stage_accent)
-	wave_label.add_theme_color_override("font_color", Color(_stage_accent.r, _stage_accent.g, _stage_accent.b, 0.72))
-	left_panel.add_theme_stylebox_override("panel", HudStyles.left_scroll_panel(_stage_accent))
-	accent_stripe.color = Color(_stage_accent.r, _stage_accent.g, _stage_accent.b, 0.88)
-
-
-func _update_combo_badge() -> void:
-	var active := _combo_count > 0
-	combo_badge.add_theme_stylebox_override("panel", HudStyles.combo_badge(active))
-	if active:
-		combo_label.add_theme_color_override("font_color", UiTokens.ELEM_FIRE)
-	else:
-		combo_label.add_theme_color_override("font_color", UiTokens.TEXT_MUTED)
-
-
 func _on_hp_changed(current: float, maximum: float) -> void:
-	hp_bar.set_values(current, maximum)
-	hp_label.text = "真元 %.0f / %.0f" % [current, maximum]
+	character_panel.hp_bar.set_values(current, maximum)
 	if _last_hp >= 0.0 and current < _last_hp - 0.01:
-		VfxManager.flash_control(hp_bar, Color(1.35, 0.55, 0.55), 0.14)
-		VfxManager.flash_control(hp_row, Color(1.2, 0.65, 0.65), 0.12)
+		for target in character_panel.get_hp_flash_targets():
+			VfxManager.flash_control(target, Color(1.35, 0.55, 0.55), 0.14)
 	_last_hp = current
 	var ratio := current / maxf(maximum, 1.0)
+	var draw_bar := character_panel.hp_bar.get_draw_bar()
 	if ratio < 0.25:
 		if _low_hp_tween == null or not _low_hp_tween.is_running():
 			_low_hp_tween = create_tween().set_loops()
-			_low_hp_tween.tween_property(hp_bar, "modulate", Color(1.25, 0.75, 0.75), 0.45)
-			_low_hp_tween.tween_property(hp_bar, "modulate", Color.WHITE, 0.45)
+			_low_hp_tween.tween_property(draw_bar, "modulate", Color(1.25, 0.75, 0.75), 0.45)
+			_low_hp_tween.tween_property(draw_bar, "modulate", Color.WHITE, 0.45)
 	elif _low_hp_tween and _low_hp_tween.is_running():
 		_low_hp_tween.kill()
-		hp_bar.modulate = Color.WHITE
+		draw_bar.modulate = Color.WHITE
 
 
 func _on_combo_updated(count: int) -> void:
 	_combo_count = count
 	if count > 0:
-		combo_label.text = "连击\n%d" % count
+		character_panel.combo_label.text = "连击\n%d" % count
 	else:
-		combo_label.text = "连击\n—"
-	_update_combo_badge()
+		character_panel.combo_label.text = "连击\n—"
+	character_panel.update_combo_badge(count)
 
 
 func _on_gold_changed(amount: int) -> void:
-	gold_pill.set_text("灵石 %d" % amount)
+	character_panel.gold_label.text = "灵石 %d" % amount
 
 
 func _on_wave_changed(wave: int) -> void:
@@ -281,7 +177,7 @@ func _on_horde_ended(kills: int, quota: int, reason: String) -> void:
 	_horde_result_shown = true
 	var suffix := "魔劫已尽" if reason == "quota" else "时限已至"
 	var title := _room_title if not _room_title.is_empty() else "魔劫"
-	wave_label.text = "%s · %s %d/%d" % [title, suffix, kills, quota]
+	character_panel.wave_label.text = "%s · %s %d/%d" % [title, suffix, kills, quota]
 
 
 func _format_horde_time(seconds: float) -> String:
@@ -290,6 +186,7 @@ func _format_horde_time(seconds: float) -> String:
 
 
 func _refresh_wave_label() -> void:
+	var wave_label := character_panel.wave_label
 	if _horde_active and _horde_quota > 0:
 		var title := _room_title if not _room_title.is_empty() else "魔劫"
 		wave_label.text = "%s · 斩魔 %d/%d · %s · 第%d波" % [
@@ -310,21 +207,22 @@ func _refresh_wave_label() -> void:
 
 
 func _on_weather_changed(weather_id: String, weather_name: String) -> void:
-	weather_pill.set_icon(AssetPaths.load_texture(AssetPaths.weather_icon(weather_id)))
-	_refresh_weather_pill_text(weather_name)
+	weather_panel.set_weather(
+		AssetPaths.load_texture(AssetPaths.weather_icon(weather_id)),
+		_format_weather_text(weather_name)
+	)
 
 
-func _refresh_weather_pill_text(weather_name: String = WeatherSystem.current_weather_name) -> void:
+func _format_weather_text(weather_name: String) -> String:
 	var terrain := TerrainSystem.get_active_terrain_label()
 	if terrain.is_empty():
-		weather_pill.set_text(weather_name)
-	else:
-		weather_pill.set_text("%s·%s" % [weather_name, terrain])
+		return weather_name
+	return "%s · %s" % [weather_name, terrain]
 
 
 func _on_room_entered(room: Dictionary, stage: Dictionary) -> void:
-	title_label.text = str(stage.get("name", "轮回仙途"))
-	_apply_stage_accent(int(stage.get("stage_index", 0)))
+	character_panel.title_label.text = str(stage.get("name", "轮回仙途"))
+	character_panel.apply_stage_accent(int(stage.get("stage_index", 0)))
 	var label := "%s · %s" % [stage.get("name", ""), room.get("label", "")]
 	if str(room.get("type", "")) == "boss":
 		var boss_name := str(room.get("boss_name", room.get("label", "关底")))
@@ -341,12 +239,16 @@ func _on_room_entered(room: Dictionary, stage: Dictionary) -> void:
 	_horde_quota = 0
 	_horde_time_left = 0.0
 	_horde_result_shown = false
-	wave_label.text = label
-	call_deferred("_refresh_weather_pill_text")
+	character_panel.wave_label.text = label
+	call_deferred("_refresh_weather_text")
+
+
+func _refresh_weather_text() -> void:
+	_on_weather_changed(WeatherSystem.current_weather_id, WeatherSystem.current_weather_name)
 
 
 func _on_realm_changed(_realm_level: int, affix_slots: int) -> void:
-	realm_label.text = "%s · 槽位 %d" % [RunContext.realm_name(), affix_slots]
+	character_panel.realm_label.text = "%s · 槽位 %d" % [RunContext.realm_name(), affix_slots]
 	_refresh_build()
 	_refresh_affixes()
 
@@ -354,10 +256,10 @@ func _on_realm_changed(_realm_level: int, affix_slots: int) -> void:
 func _refresh_build() -> void:
 	var player := _get_player()
 	if player == null or not player.has_node("AffixHolder"):
-		build_label.text = "层 · 术0 体0 契0"
+		character_panel.build_label.text = "层 · 术0 体0 契0"
 		return
 	var holder: Node = player.get_node("AffixHolder")
-	build_label.text = "层 · " + BuildAnalyzer.format_layers(holder.equipped).replace("·", " ")
+	character_panel.build_label.text = "层 · " + BuildAnalyzer.format_layers(holder.equipped).replace("·", " ")
 	_refresh_dao_progress()
 
 
@@ -367,6 +269,7 @@ func _on_pet_acquired(_pet_id: String) -> void:
 
 func _refresh_dao_progress() -> void:
 	const DaoTraditionRegistry = preload("res://systems/dao/dao_tradition_registry.gd")
+	var dao_label := character_panel.dao_label
 	var player := _get_player()
 	if player == null or not player.has_node("AffixHolder"):
 		dao_label.text = "道统 · —"
@@ -387,8 +290,8 @@ func _on_dao_progress(_progress: Dictionary) -> void:
 
 
 func _on_dao_awakened(tradition: Dictionary) -> void:
-	dao_label.text = "道统 · %s ✓" % tradition.get("name", "")
-	dao_label.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD)
+	character_panel.dao_label.text = "道统 · %s ✓" % tradition.get("name", "")
+	character_panel.dao_label.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD)
 
 
 func _on_karma_changed(_karma: Dictionary) -> void:
@@ -413,7 +316,7 @@ func _refresh_meta_labels() -> void:
 		parts.append("逆%d" % rebellion)
 	if dao_heart > 0:
 		parts.append("道%d" % dao_heart)
-	meta_pill.set_text(" · ".join(parts))
+	weather_panel.set_meta_summary(" · ".join(parts))
 
 
 func _process(delta: float) -> void:
@@ -426,32 +329,42 @@ func _process(delta: float) -> void:
 	var cd: float = pet.get_coord_cd_remaining()
 	var base := RunContext.pet_display_name
 	if cd <= 0.05:
-		pet_pill.set_text("%s · V" % base)
+		weather_panel.set_pet(
+			AssetPaths.load_texture(AssetPaths.PET_HUO_YING),
+			"%s · V" % base,
+			UiTokens.ELEM_FIRE
+		)
 	else:
-		pet_pill.set_text("%s · %.0fs" % [base, ceilf(cd)])
+		weather_panel.set_pet(
+			AssetPaths.load_texture(AssetPaths.PET_HUO_YING),
+			"%s · %.0fs" % [base, ceilf(cd)],
+			UiTokens.ELEM_FIRE
+		)
 
 
 func _refresh_pet_label() -> void:
-	pet_pill.set_icon(AssetPaths.load_texture(AssetPaths.PET_HUO_YING))
 	if RunContext.pet_acquired:
-		pet_pill.set_text(RunContext.pet_display_name)
-		pet_pill.set_accent(UiTokens.ELEM_FIRE)
+		weather_panel.set_pet(
+			AssetPaths.load_texture(AssetPaths.PET_HUO_YING),
+			RunContext.pet_display_name,
+			UiTokens.ELEM_FIRE
+		)
 	else:
-		pet_pill.set_text("待结缘")
-		pet_pill.set_accent(UiTokens.TEXT_MUTED)
+		weather_panel.set_pet(null, "待结缘", UiTokens.TEXT_MUTED)
 
 
 func _on_wave_cleared(wave: int) -> void:
 	if _horde_active or _horde_result_shown:
 		return
-	wave_label.text = "第 %d 波清场" % wave
+	character_panel.wave_label.text = "第 %d 波清场" % wave
 
 
 func _on_combo_discovered(combo_id: String) -> void:
-	combo_track_label.text = "觉醒 · %s" % combo_id
-	combo_track_label.add_theme_color_override("font_color", UiTokens.ELEM_FIRE)
+	character_panel.combo_track_label.text = "觉醒 · %s" % combo_id
+	character_panel.combo_track_label.add_theme_color_override("font_color", UiTokens.ELEM_FIRE)
 	if not VfxManager.should_reduce_motion():
-		var pos := combo_track_bar.global_position + combo_track_bar.size * 0.5
+		var bar := character_panel.combo_track_bar
+		var pos := bar.global_position + bar.size * 0.5
 		VfxManager.spawn_screen(self, pos, "combo", UiTokens.ELEM_FIRE)
 
 
@@ -461,7 +374,7 @@ func _on_skill_unlocked(_skill_id: String, _layer: int) -> void:
 
 func _on_spell_unlock_changed(_slots: Array) -> void:
 	_refresh_active_spell_slots()
-	_pulse_spell_bar()
+	skill_dock.pulse()
 
 
 func _on_learn_feedback(text: String, accent: String = "spell") -> void:
@@ -477,22 +390,22 @@ func _on_learn_feedback(text: String, accent: String = "spell") -> void:
 	_learn_toast_timer = 2.5 if accent == "skill" else 3.2
 	if accent in ["spell", "rebind"]:
 		_refresh_active_spell_slots()
-		_pulse_spell_bar()
+		skill_dock.pulse()
 
 
 func _position_learn_toast(accent: String) -> void:
 	if accent == "skill":
 		learn_toast_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
 		learn_toast_panel.offset_left = 16.0
-		learn_toast_panel.offset_top = 344.0
+		learn_toast_panel.offset_top = 400.0
 		learn_toast_panel.offset_right = 280.0
-		learn_toast_panel.offset_bottom = 404.0
+		learn_toast_panel.offset_bottom = 460.0
 	else:
 		learn_toast_panel.set_anchors_preset(Control.PRESET_CENTER)
 		learn_toast_panel.offset_left = -260.0
-		learn_toast_panel.offset_top = -36.0
+		learn_toast_panel.offset_top = -80.0
 		learn_toast_panel.offset_right = 260.0
-		learn_toast_panel.offset_bottom = 36.0
+		learn_toast_panel.offset_bottom = -8.0
 
 
 func _tick_learn_toast(delta: float) -> void:
@@ -505,36 +418,28 @@ func _tick_learn_toast(delta: float) -> void:
 		learn_toast_panel.modulate.a = clampf(_learn_toast_timer / 0.9, 0.0, 1.0)
 
 
-func _pulse_spell_bar() -> void:
-	if _spell_pulse_tween and _spell_pulse_tween.is_running():
-		_spell_pulse_tween.kill()
-	_spell_pulse_tween = create_tween()
-	spell_bar.modulate = Color(1.2, 1.15, 0.9)
-	_spell_pulse_tween.tween_property(spell_bar, "modulate", Color.WHITE, 1.0)
-
-
 func _refresh_affixes() -> void:
 	var player := _get_player()
 	if player == null or not player.has_node("AffixHolder"):
-		affix_label.text = "词条 · —"
+		character_panel.affix_label.text = "词条 · —"
 		return
 	var holder: Node = player.get_node("AffixHolder")
 	var lines: PackedStringArray = holder.get_summary_lines()
 	var slot_text := "%d/%d" % [holder.equipped.size(), holder.get_max_affixes()]
 	if lines.is_empty():
-		affix_label.text = "词条 %s · —" % slot_text
+		character_panel.affix_label.text = "词条 %s · —" % slot_text
 	else:
-		affix_label.text = "词条 %s · %s" % [slot_text, " · ".join(lines)]
+		character_panel.affix_label.text = "词条 %s · %s" % [slot_text, " · ".join(lines)]
 	_refresh_build()
 
 
 func _refresh_skill() -> void:
 	var player := _get_player()
 	if player == null or not player.has_node("SkillProgression"):
-		skill_label.text = "功法 · 烈焰掌 Lv.1"
+		character_panel.skill_label.text = "功法 · 烈焰掌 Lv.1"
 		return
 	var lines: PackedStringArray = player.get_node("SkillProgression").get_display_lines()
-	skill_label.text = "功法 · " + " · ".join(lines)
+	character_panel.skill_label.text = "功法 · " + " · ".join(lines)
 
 
 func _refresh_active_spell_slots() -> void:
@@ -545,8 +450,8 @@ func _refresh_active_spell_slots() -> void:
 	if not caster.has_method("get_spell_slots_state"):
 		return
 	var states: Dictionary = caster.get_spell_slots_state()
-	for slot in spell_slots.keys():
-		var node = spell_slots[slot]
+	for slot in skill_dock.spell_slots.keys():
+		var node = skill_dock.spell_slots[slot]
 		if not states.has(slot) or not node.has_method("apply_state"):
 			continue
 		var info: Dictionary = states[slot]
@@ -576,8 +481,8 @@ func _refresh_combo_track() -> void:
 	var pct: float = float(info.get("progress", 0.0))
 	var matched: Array = info.get("matched", [])
 	var total: int = maxi(int(info.get("total", 1)), 1)
-	combo_track_bar.value = pct
-	combo_track_label.text = "%s %d/%d" % [
+	character_panel.combo_track_bar.value = pct
+	character_panel.combo_track_label.text = "%s %d/%d" % [
 		info.get("name", "—"),
 		matched.size(),
 		total,

@@ -156,3 +156,24 @@ static func realm_badge() -> StyleBoxFlat:
 	sb.content_margin_right = 8
 	sb.content_margin_bottom = 3
 	return sb
+
+
+static func weather_panel() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.059, 0.165, 0.133, 0.88)
+	sb.border_width_left = 1
+	sb.border_width_top = 1
+	sb.border_width_right = 1
+	sb.border_width_bottom = 1
+	sb.border_color = Color(1, 0.843, 0, 0.35)
+	sb.corner_radius_top_left = 12
+	sb.corner_radius_top_right = 4
+	sb.corner_radius_bottom_left = 12
+	sb.corner_radius_bottom_right = 4
+	sb.shadow_color = Color(0, 0, 0, 0.4)
+	sb.shadow_size = 8
+	sb.content_margin_left = 10
+	sb.content_margin_top = 8
+	sb.content_margin_right = 10
+	sb.content_margin_bottom = 8
+	return sb

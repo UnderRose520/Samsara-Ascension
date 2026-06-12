@@ -708,42 +708,76 @@ def _draw_weather_sand(buf: List[List[RGBA]]) -> None:
 
 
 def gen_dao_heart_icons() -> None:
-    hearts = [
-        ("ask", TOKENS["elem.water"], "问道"),
-        ("enlighten", TOKENS["accent.gold"], "悟道"),
-        ("prove", TOKENS["quality.dao"], "证道"),
-    ]
-    for name, accent_hex, _label in hearts:
-        buf = new_canvas(128, 128, (0, 0, 0, 0))
-        bg = hex_to_rgba(TOKENS["bg.panel"])
-        accent = hex_to_rgba(accent_hex)
-        gold = hex_to_rgba(TOKENS["accent.gold"])
-        fill_rect(buf, 8, 8, 120, 120, bg)
-        for b in range(3):
-            fill_rect(buf, 8 + b, 8 + b, 120 - b, 120 - b, (gold[0], gold[1], gold[2], 40 + b * 20))
-        fill_circle(buf, 64, 52, 28, (accent[0], accent[1], accent[2], 90))
-        fill_circle(buf, 64, 52, 18, accent)
-        if name == "ask":
-            draw_line(buf, 64, 40, 64, 58, hex_to_rgba(TOKENS["text.primary"]), 3)
-            fill_circle(buf, 64, 66, 3, hex_to_rgba(TOKENS["text.primary"]))
-        elif name == "enlighten":
-            for i in range(6):
-                import math
+    import math
 
-                a = i * math.pi / 3
+    hearts = [
+        ("ask", TOKENS["elem.water"]),
+        ("enlighten", TOKENS["accent.gold"]),
+        ("prove", TOKENS["quality.dao"]),
+    ]
+    gold = hex_to_rgba(TOKENS["accent.gold"])
+    gold_soft = hex_to_rgba(TOKENS["accent.gold_soft"])
+    light = hex_to_rgba(TOKENS["text.primary"])
+    for name, accent_hex in hearts:
+        buf = new_canvas(128, 128, (0, 0, 0, 0))
+        accent = hex_to_rgba(accent_hex)
+        cx, cy, r = 64, 62, 42
+        # circular medallion: soft accent halo -> dark jade disc -> gold double ring
+        fill_circle(buf, cx, cy, r, (accent[0], accent[1], accent[2], 40))
+        fill_circle(buf, cx, cy, r - 5, hex_to_rgba(TOKENS["bg.panel"]))
+        for a in range(0, 360, 2):
+            rad = math.radians(a)
+            for rr in (r - 5, r - 4, r - 3):
+                set_px(buf, cx + int(rr * math.cos(rad)), cy + int(rr * math.sin(rad)), gold)
+            set_px(buf, cx + int((r - 9) * math.cos(rad)), cy + int((r - 9) * math.sin(rad)), gold_soft)
+        if name == "ask":
+            _draw_taiji(buf, cx, cy, 24, accent, hex_to_rgba(TOKENS["bg.deep"]), light)
+        elif name == "enlighten":
+            fill_circle(buf, cx, cy, 11, gold)
+            fill_circle(buf, cx, cy, 7, gold_soft)
+            for i in range(12):
+                a = i * math.pi / 6
                 draw_line(
                     buf,
-                    64,
-                    52,
-                    64 + int(24 * math.cos(a)),
-                    52 + int(24 * math.sin(a)),
-                    gold,
-                    2,
+                    cx + int(16 * math.cos(a)), cy + int(16 * math.sin(a)),
+                    cx + int(26 * math.cos(a)), cy + int(26 * math.sin(a)),
+                    gold, 2,
                 )
         else:
-            draw_line(buf, 48, 68, 80, 36, gold, 3)
-            draw_line(buf, 48, 36, 80, 68, gold, 3)
+            _draw_crossed_swords(buf, cx, cy, gold, accent, light)
         save_rgba(buf, UI_OUT / f"dao_heart_{name}_128.png")
+
+
+def _draw_taiji(buf, cx, cy, r, light_c, dark_c, eye_c) -> None:
+    half = r // 2
+    for y in range(cy - r, cy + r + 1):
+        for x in range(cx - r, cx + r + 1):
+            if (x - cx) ** 2 + (y - cy) ** 2 > r * r:
+                continue
+            top_d = (x - cx) ** 2 + (y - (cy - half)) ** 2
+            bot_d = (x - cx) ** 2 + (y - (cy + half)) ** 2
+            if top_d <= half * half:
+                c = light_c
+            elif bot_d <= half * half:
+                c = dark_c
+            elif x < cx:
+                c = light_c
+            else:
+                c = dark_c
+            set_px(buf, x, y, (c[0], c[1], c[2], 255))
+    fill_circle(buf, cx, cy - half, 3, dark_c)
+    fill_circle(buf, cx, cy + half, 3, eye_c)
+
+
+def _draw_crossed_swords(buf, cx, cy, gold, accent, light) -> None:
+    for dx in (-1, 1):
+        # blade
+        draw_line(buf, cx - dx * 18, cy + 20, cx + dx * 18, cy - 20, light, 3)
+        draw_line(buf, cx - dx * 18, cy + 20, cx + dx * 18, cy - 20, gold, 1)
+        # cross-guard near the hilt (bottom)
+        draw_line(buf, cx - dx * 22, cy + 14, cx - dx * 12, cy + 24, gold, 2)
+        # pommel
+        fill_circle(buf, cx - dx * 20, cy + 22, 3, gold)
 
 
 def _draw_pixel_sprite(buf: List[List[RGBA]], pixels: str, palette: dict[str, RGBA], scale: int = 1) -> None:

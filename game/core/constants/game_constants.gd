@@ -1,13 +1,29 @@
 class_name GameConstants
 
-const DODGE_DISTANCE := 150.0
-const DODGE_IFRAME := 0.25
+const DODGE_DISTANCE := 200.0
+const DODGE_DURATION := 0.10
+const DODGE_IFRAME := 0.16
+const HIT_INVULN := 0.45
 const DODGE_COOLDOWN := 1.0
+
+## 与 combat_floor 背景一致（1280×720，左上 -640,-360）
+const ARENA_HALF_WIDTH := 640.0
+const ARENA_HALF_HEIGHT := 360.0
+
+## 碰撞层：1=障碍/地形池，16=场地围墙
+const COLLISION_LAYER_OBSTACLE := 1
+const COLLISION_LAYER_WALL := 16
+const COLLISION_MASK_ARENA := COLLISION_LAYER_WALL | COLLISION_LAYER_OBSTACLE
+
+## 积水地形：可通行，移速倍率与出水后恢复时间
+const TERRAIN_WET_SLOW_MULT := 0.62
+const TERRAIN_WET_RECOVERY_SEC := 1.4
 const PROJECTILE_SPEED := 300.0
-const ATTACK_INTERVAL := 0.35
-const PLAYER_ATTACK := 32.0
-const ENEMY_HP := 70.0
-const ENEMY_BOSS_HP := 160.0
+const ATTACK_INTERVAL := 0.38
+const PLAYER_ATTACK := 18.0
+const ENEMY_HP := 95.0
+const ENEMY_BOSS_HP := 220.0
+const MAX_ROOM_ENEMIES := 14
 const ENEMY_MOVE_SPEED := 130.0
 const ENEMY_BOSS_MOVE_SPEED := 105.0
 const ENEMY_AGGRO_RANGE := 560.0
@@ -22,10 +38,13 @@ const ENEMY_ORBIT_SPREAD := 10.0
 const ENEMY_ARRIVAL_THRESHOLD := 18.0
 const ENEMY_SEPARATION_RADIUS := 32.0
 const ENEMY_SPAWN_CENTER := Vector2(0, -100)
-const ENEMY_SPAWN_RING := 150.0
+const ENEMY_SPAWN_RING := 165.0
+const ENEMY_SPAWN_RING_EXTRA := 22.0
 const ENEMY_BOSS_SPAWN := Vector2(0, -55)
 const COMBO_BREAK_SEC := 2.0
 const BUCKET_DECAY := [1.0, 0.8, 0.6]
+
+## 索敌评分参数见 data/combat/targeting_config.csv（TargetingConfig）
 
 const AFFIX_REROLL_COST := 50
 const AFFIX_SKIP_REWARD := 30
@@ -51,3 +70,10 @@ const QUALITY_COLORS := {
 }
 
 const COMBO_MILESTONES := [10, 30, 50, 100]
+
+
+static func clamp_to_arena(pos: Vector2, body_radius: float = 12.0) -> Vector2:
+	var margin := body_radius + 2.0
+	var max_x := ARENA_HALF_WIDTH - margin
+	var max_y := ARENA_HALF_HEIGHT - margin
+	return Vector2(clampf(pos.x, -max_x, max_x), clampf(pos.y, -max_y, max_y))

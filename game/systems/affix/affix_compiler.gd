@@ -1,5 +1,7 @@
 class_name AffixCompiler
 
+const MAX_QUALITY := 4
+
 const QUALITY_MAP := {
 	"common": 0,
 	"rare": 1,

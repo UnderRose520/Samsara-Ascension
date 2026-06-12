@@ -42,15 +42,15 @@ func get_pet(id: String) -> Dictionary:
 	return pets_by_id.get(id, {})
 
 
-func compile_affix(id: String, quality_delta: int = 0):
-	for row in CsvLoader.load_rows("res://data/affixes/affixes.csv"):
-		if str(row.get("id", "")) != id:
-			continue
-		var tag = AffixCompiler.compile_row(row)
-		if quality_delta > 0:
-			tag.quality = maxi(int(tag.quality) - quality_delta, 0)
-		return tag
-	return null
+## Positive shift upgrades tier (心魔试炼/证道); negative shift downgrades (前世遗泽).
+func compile_affix(id: String, quality_shift: int = 0):
+	var base = affix_by_id.get(id)
+	if base == null:
+		return null
+	var tag = base.duplicate_tag()
+	if quality_shift != 0:
+		tag.quality = clampi(int(tag.quality) + quality_shift, 0, AffixCompiler.MAX_QUALITY)
+	return tag
 
 
 func get_pet_display_name(id: String) -> String:

@@ -1,0 +1,11 @@
+room_type,stage_index,kill_quota,time_limit_sec,wave_interval_sec,spawn_per_wave,max_alive
+combat,1,20,120,4.0,4,10
+combat,2,30,150,3.5,5,12
+combat,3,50,180,3.0,6,14
+combat,4,70,200,3.0,6,14
+combat,5,90,220,2.5,7,14
+combat_hard,1,25,130,3.5,5,12
+combat_hard,2,35,160,3.0,5,12
+combat_hard,3,55,190,2.8,6,14
+combat_hard,4,75,210,2.5,6,14
+combat_hard,5,95,230,2.5,7,14

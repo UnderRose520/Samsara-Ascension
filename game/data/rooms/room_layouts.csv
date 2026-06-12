@@ -1,0 +1,4 @@
+layout_id,pattern,obstacle_count,min_spacing,room_types
+open_scatter,scatter,3,88,combat|combat_hard
+pillar_loose,pillars,4,80,combat|combat_hard
+cross_blocks,cross,5,72,combat_hard|boss

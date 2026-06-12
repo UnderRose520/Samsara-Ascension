@@ -1,0 +1,14 @@
+key,value,description
+auto_target_range,520,索敌评分最大距离
+auto_attack_range,480,自动普攻与攻击圈加权距离
+auto_target_stick_range,650,粘性锁定最大距离
+threat_range,140,威胁圈半径
+score_threat_base,50000,威胁圈内基础分
+score_threat_close_bonus,80,威胁圈近距离加分系数
+score_attack_range_base,5000,攻击圈内基础分
+score_boss_in_attack,3000,攻击圈内 Boss 加分
+score_elite_in_attack,800,攻击圈内精英加分
+score_low_hp_max,2500,残血加权上限
+score_distance_max,1500,距离加权上限
+stick_switch_ratio,1.15,切换目标需超当前锁定倍数
+stick_boss_switch_ratio,1.05,Boss 切换锁定倍数

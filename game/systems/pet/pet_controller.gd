@@ -8,6 +8,7 @@ var _passive_cd := 0.0
 var _coord_cd := 0.0
 var _pulse := 0.0
 var owner_player: CharacterBody2D
+var _use_sprite := false
 
 
 func _ready() -> void:
@@ -17,6 +18,7 @@ func _ready() -> void:
 			break
 	add_to_group("pet")
 	visible = false
+	_use_sprite = has_node("BodyVisual") and get_node("BodyVisual").texture != null
 	EventBus.pet_acquired.connect(_on_pet_acquired)
 
 
@@ -77,12 +79,16 @@ func _fire_coord_burst(direction: Vector2) -> void:
 		_spawn_projectile(direction.rotated(spread), damage, 7.0)
 
 
-func _spawn_projectile(direction: Vector2, damage: float, _radius: float) -> void:
-	var PROJECTILE_SCENE = preload("res://scenes/combat/projectile.tscn")
-	var projectile: Area2D = PROJECTILE_SCENE.instantiate()
-	projectile.global_position = global_position + direction * 10.0
-	projectile.setup(direction, damage, owner_player)
-	get_tree().current_scene.add_child(projectile)
+func _spawn_projectile(direction: Vector2, damage: float, radius: float) -> void:
+	EventBus.spawn_player_projectile_requested.emit({
+		"scene_root": get_tree().current_scene,
+		"position": global_position + direction * 10.0,
+		"direction": direction,
+		"damage": damage,
+		"owner": owner_player,
+		"speed": -1.0,
+		"radius": radius,
+	})
 
 
 func _find_nearest_enemy() -> Node2D:
@@ -104,6 +110,8 @@ func get_mult_c() -> float:
 
 func _draw() -> void:
 	if not RunContext.pet_acquired:
+		return
+	if _use_sprite:
 		return
 	var radius := 6.0 + _pulse * 10.0
 	var color := Color(1.0, 0.55, 0.2)

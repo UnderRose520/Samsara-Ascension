@@ -1,7 +1,6 @@
 extends Node
 
 const CsvLoader = preload("res://systems/affix/csv_loader.gd")
-const DamagePipeline = preload("res://systems/combat/damage_pipeline.gd")
 
 var current_weather_id := "clear"
 var current_weather_name := "晴"
@@ -23,6 +22,11 @@ func set_weather(weather_id: String) -> void:
 	EventBus.weather_changed.emit(current_weather_id, current_weather_name)
 
 
+func get_weather_row(weather_id: String = "") -> Dictionary:
+	var id := weather_id if not weather_id.is_empty() else current_weather_id
+	return (_weather_by_id.get(id, _weather_by_id.get("clear", {})) as Dictionary).duplicate()
+
+
 func get_mult_b_for_element(element_key: String) -> float:
 	var row: Dictionary = _weather_by_id.get(current_weather_id, {})
 	var affinity := str(row.get("element_affinity", "none"))
@@ -35,7 +39,9 @@ func get_mult_b_for_element(element_key: String) -> float:
 
 
 func apply_to_context(ctx: Dictionary, element_key: String = "fire") -> Dictionary:
+	var sources: Array = ctx.get("bucket_b", []).duplicate()
 	var mult_b := get_mult_b_for_element(element_key)
-	var sources: Array = [mult_b] if mult_b != 1.0 else []
-	ctx["mult_b"] = DamagePipeline.apply_bucket_multipliers(sources) if not sources.is_empty() else 1.0
+	if mult_b != 1.0:
+		sources.append(mult_b)
+	ctx["bucket_b"] = sources
 	return ctx

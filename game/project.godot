@@ -1,4 +1,10 @@
-; 《轮回仙途》Samsara Ascension — Godot 4.6 client
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
 
@@ -16,13 +22,28 @@ EventBus="*res://autoload/event_bus.gd"
 ConfigRegistry="*res://autoload/config_registry.gd"
 SaveManager="*res://autoload/save_manager.gd"
 RunContext="*res://autoload/run_context.gd"
+CombatRngService="*res://autoload/combat_rng_service.gd"
+EntityCache="*res://autoload/entity_cache.gd"
+SpellProgress="*res://autoload/spell_progress.gd"
+KarmaTracker="*res://autoload/karma_tracker.gd"
+CombatSpawner="*res://autoload/combat_spawner.gd"
 WeatherSystem="*res://systems/world/weather_system.gd"
+TerrainSystem="*res://systems/world/terrain_system.gd"
+VfxManager="*res://autoload/vfx_manager.gd"
 
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
+
+[gui]
+
+theme/custom="res://ui/theme/samsara_theme.tres"
 
 [input]
 
@@ -94,7 +115,3 @@ spell_r={
 2d_physics/layer_3="projectile_player"
 2d_physics/layer_4="projectile_enemy"
 2d_physics/layer_5="terrain"
-
-[rendering]
-
-renderer/rendering_method="forward_plus"

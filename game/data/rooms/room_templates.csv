@@ -1,6 +1,6 @@
 room_type,enemy_count,hp_mult,label
-combat,3,1.0,战斗
-combat_hard,4,1.25,精英战
+combat,6,1.0,战斗
+combat_hard,8,1.25,精英战
 rest,0,0.0,调息
 event,0,0.0,机缘
 boss,1,1.0,关底

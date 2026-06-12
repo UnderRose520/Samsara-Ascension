@@ -1,6 +1,7 @@
 class_name EnemySkillRegistry
 
 const CsvLoader = preload("res://systems/affix/csv_loader.gd")
+const EnemySpawnRegistry = preload("res://systems/combat/enemy_spawn_registry.gd")
 
 static var _skills: Dictionary = {}
 static var _archetypes: Dictionary = {}
@@ -32,19 +33,7 @@ static func get_skills_for_archetype(archetype: String) -> Array:
 
 
 static func resolve_archetype(display_name: String, is_boss: bool, room_type: String) -> String:
-	if is_boss:
-		return "boss"
-	if display_name == "精英木人" or room_type == "combat_hard":
-		return "elite"
-	if display_name == "投弹木人":
-		return "ranged"
-	if display_name == "弩手木人":
-		return "sniper"
-	if display_name == "狂战木人":
-		return "berserker"
-	if display_name == "符师木人":
-		return "shaman"
-	return "normal"
+	return EnemySpawnRegistry.resolve_archetype(display_name, is_boss, room_type)
 
 
 static func _ensure_loaded() -> void:

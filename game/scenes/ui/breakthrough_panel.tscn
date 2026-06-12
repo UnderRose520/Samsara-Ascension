@@ -21,10 +21,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -360.0
-offset_top = -110.0
-offset_right = 360.0
-offset_bottom = 110.0
+offset_left = -380.0
+offset_top = -150.0
+offset_right = 380.0
+offset_bottom = 150.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -41,7 +41,7 @@ theme_override_constants/separation = 16
 
 [node name="Title" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.65, 1, 1)
+theme_override_colors/font_color = Color(1, 0.843, 0, 1)
 theme_override_font_sizes/font_size = 22
 text = "突破天赋"
 horizontal_alignment = 1
@@ -50,18 +50,3 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 1
-
-[node name="Card1" type="Button" parent="Panel/Margin/VBox/Cards"]
-custom_minimum_size = Vector2(210, 100)
-layout_mode = 2
-text = "天赋1"
-
-[node name="Card2" type="Button" parent="Panel/Margin/VBox/Cards"]
-custom_minimum_size = Vector2(210, 100)
-layout_mode = 2
-text = "天赋2"
-
-[node name="Card3" type="Button" parent="Panel/Margin/VBox/Cards"]
-custom_minimum_size = Vector2(210, 100)
-layout_mode = 2
-text = "天赋3"

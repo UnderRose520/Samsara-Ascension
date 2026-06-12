@@ -1,6 +1,9 @@
 extends CanvasLayer
 
-const GameConstants = preload("res://core/constants/game_constants.gd")
+const AssetPaths = preload("res://assets/asset_paths.gd")
+const UiTokens = preload("res://ui/theme/ui_tokens.gd")
+const UiAnimations = preload("res://ui/ui_animations.gd")
+const UiHelpers = preload("res://ui/ui_helpers.gd")
 
 @onready var panel: PanelContainer = $Panel
 @onready var dimmer: ColorRect = $Dimmer
@@ -15,6 +18,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	panel.visible = false
 	dimmer.visible = false
+	UiHelpers.apply_panel_polish(panel)
+	UiHelpers.decorate_modal_header($Panel/Margin/VBox, title_label)
 	EventBus.shop_requested.connect(_on_shop_requested)
 	EventBus.gold_changed.connect(_on_gold_changed)
 
@@ -35,20 +40,62 @@ func _refresh() -> void:
 	for child in buttons_box.get_children():
 		child.queue_free()
 	for offer in _offers:
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(420, 52)
-		var cost: int = int(offer.get("cost", 0))
-		btn.text = "%s\n%s" % [offer.get("label", ""), offer.get("desc", "")]
-		btn.disabled = RunContext.gold < cost
-		btn.pressed.connect(_on_buy_pressed.bind(offer))
-		buttons_box.add_child(btn)
+		buttons_box.add_child(_make_offer_row(offer))
 	var leave := Button.new()
 	leave.custom_minimum_size = Vector2(420, 44)
+	leave.theme_type_variation = &"Secondary"
 	leave.text = "离开坊市"
 	leave.pressed.connect(_on_leave_pressed)
 	buttons_box.add_child(leave)
+	var opening := not panel.visible
 	panel.visible = true
 	dimmer.visible = true
+	if opening:
+		UiAnimations.modal_open(panel, dimmer)
+
+
+func _make_offer_row(offer: Dictionary) -> PanelContainer:
+	var row := PanelContainer.new()
+	row.custom_minimum_size = Vector2(420, 64)
+	UiHelpers.apply_card_polish(row, false)
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_bottom", 8)
+	row.add_child(margin)
+	var hbox := HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 10)
+	margin.add_child(hbox)
+	var icon := TextureRect.new()
+	icon.custom_minimum_size = Vector2(32, 32)
+	var kind := str(offer.get("kind", ""))
+	var icon_path := AssetPaths.PROGRESS_HP if kind == "heal" else AssetPaths.ELEMENT_ICONS["fire"]
+	icon.texture = AssetPaths.load_texture(icon_path)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	hbox.add_child(icon)
+	var vbox := VBoxContainer.new()
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(vbox)
+	var title := Label.new()
+	title.text = str(offer.get("label", ""))
+	title.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD_SOFT)
+	vbox.add_child(title)
+	var desc := Label.new()
+	desc.text = str(offer.get("desc", ""))
+	desc.add_theme_font_size_override("font_size", 12)
+	desc.add_theme_color_override("font_color", UiTokens.TEXT_SECONDARY)
+	vbox.add_child(desc)
+	var cost: int = int(offer.get("cost", 0))
+	var buy := Button.new()
+	buy.text = "购入 %d" % cost
+	buy.theme_type_variation = &"Primary"
+	buy.custom_minimum_size = Vector2(88, 40)
+	buy.disabled = RunContext.gold < cost
+	buy.pressed.connect(_on_buy_pressed.bind(offer))
+	hbox.add_child(buy)
+	return row
 
 
 func _on_buy_pressed(offer: Dictionary) -> void:
@@ -86,7 +133,9 @@ func _on_leave_pressed() -> void:
 
 
 func _close(purchased: bool) -> void:
-	panel.visible = false
-	dimmer.visible = false
-	_offers.clear()
-	EventBus.shop_closed.emit(purchased)
+	UiAnimations.modal_close(panel, dimmer, func() -> void:
+		panel.visible = false
+		dimmer.visible = false
+		_offers.clear()
+		EventBus.shop_closed.emit(purchased)
+	)

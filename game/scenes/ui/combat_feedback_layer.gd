@@ -1,6 +1,9 @@
 extends CanvasLayer
 
-const GameConstants = preload("res://core/constants/game_constants.gd")
+const UiTokens = preload("res://ui/theme/ui_tokens.gd")
+const VariantUtils = preload("res://core/utils/variant_utils.gd")
+
+var _active_tweens: Array = []
 
 
 func _ready() -> void:
@@ -9,48 +12,77 @@ func _ready() -> void:
 	EventBus.damage_dealt.connect(_on_damage_dealt)
 
 
+func _exit_tree() -> void:
+	for tween in _active_tweens:
+		if tween and tween.is_valid() and tween.is_running():
+			tween.kill()
+	_active_tweens.clear()
+
+
 func _on_damage_dealt(result: Dictionary) -> void:
-	if not SaveManager.get_display_setting("show_damage_numbers"):
-		return
 	var world_pos: Vector2 = result.get("world_position", Vector2.ZERO)
 	if world_pos == Vector2.ZERO:
 		return
-	_spawn_floater(world_pos, result)
+	if SaveManager.get_display_setting("show_damage_numbers"):
+		_spawn_floater(world_pos, result)
+		VfxManager.spawn_damage(result)
 
 
 func _spawn_floater(world_pos: Vector2, result: Dictionary) -> void:
+	if not SaveManager.get_display_setting("show_damage_numbers"):
+		return
 	var amount: float = float(result.get("final_damage", 0.0))
 	if amount <= 0.0:
 		return
-	var is_crit: bool = bool(result.get("is_crit", false))
-	var is_combo: bool = bool(result.get("is_combo", false))
-	var to_player: bool = bool(result.get("target_is_player", false))
+	var is_crit: bool = VariantUtils.as_bool(result.get("is_crit", false))
+	var is_combo: bool = VariantUtils.as_bool(result.get("is_combo", false))
+	var to_player: bool = VariantUtils.as_bool(result.get("target_is_player", false))
 
+	var root := Control.new()
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var label := Label.new()
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	root.add_child(label)
+
+	var font_size := 15
+	var text_color := UiTokens.TEXT_PRIMARY
+	var outline := Color(0, 0, 0, 0.55)
 	if is_combo:
-		label.text = "爆燃 %.0f" % amount
-		label.add_theme_color_override("font_color", Color(1.0, 0.45, 0.15))
-		label.add_theme_font_size_override("font_size", 20)
+		label.text = "爆燃 %.0f!" % amount
+		text_color = UiTokens.ELEM_FIRE
+		font_size = 22
+		outline = Color(0.35, 0.08, 0.0, 0.7)
 	elif is_crit:
-		label.text = "天机 %.0f" % amount
-		label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.35))
-		label.add_theme_font_size_override("font_size", 18)
+		label.text = "天机 %.0f!" % amount
+		text_color = UiTokens.ACCENT_GOLD
+		font_size = 20
+		outline = Color(0.25, 0.18, 0.0, 0.75)
 	elif to_player:
 		label.text = "-%.0f" % amount
-		label.add_theme_color_override("font_color", Color(1.0, 0.35, 0.35))
-		label.add_theme_font_size_override("font_size", 16)
+		text_color = UiTokens.STATE_DEBUFF
+		font_size = 17
 	else:
 		label.text = "%.0f" % amount
-		label.add_theme_color_override("font_color", GameConstants.COLOR_UI)
-		label.add_theme_font_size_override("font_size", 15)
 
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	add_child(label)
+	label.add_theme_color_override("font_color", text_color)
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_constant_override("outline_size", 3)
+	label.add_theme_color_override("font_outline_color", outline)
+
+	add_child(root)
 	var screen_pos: Vector2 = get_viewport().get_canvas_transform() * world_pos
-	label.position = screen_pos + Vector2(-24.0, -52.0)
+	root.position = screen_pos + Vector2(-32.0, -56.0)
+	var pop_scale := 1.25 if is_crit else (1.15 if is_combo else 0.85)
+	root.scale = Vector2(pop_scale, pop_scale) * 0.65
+	root.modulate.a = 0.0
+	root.pivot_offset = Vector2(32, 16)
 
 	var tween := create_tween()
+	_active_tweens.append(tween)
+	tween.finished.connect(_active_tweens.erase.bind(tween))
 	tween.set_parallel(true)
-	tween.tween_property(label, "position:y", label.position.y - 42.0, 0.65).set_ease(Tween.EASE_OUT)
-	tween.tween_property(label, "modulate:a", 0.0, 0.65).set_delay(0.15)
-	tween.finished.connect(label.queue_free)
+	tween.tween_property(root, "modulate:a", 1.0, 0.08)
+	tween.tween_property(root, "scale", Vector2(pop_scale, pop_scale), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(root, "position:y", root.position.y - 48.0, 0.72).set_ease(Tween.EASE_OUT)
+	tween.tween_property(root, "modulate:a", 0.0, 0.72).set_delay(0.18)
+	tween.finished.connect(root.queue_free)

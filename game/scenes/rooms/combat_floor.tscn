@@ -1,0 +1,34 @@
+[gd_scene format=3 uid="uid://cmbtflr001"]
+
+[ext_resource type="Script" path="res://scenes/rooms/combat_floor.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/maps/qi_refining_verdant/room_background.png" id="2_bg"]
+[ext_resource type="Texture2D" path="res://assets/maps/qi_refining_verdant/tileset.png" id="3_tileset"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_floor"]
+texture = ExtResource("3_tileset")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_combat"]
+tile_size = Vector2i(32, 32)
+sources/0 = SubResource("TileSetAtlasSource_floor")
+
+[node name="CombatFloor" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Background" type="Sprite2D" parent="."]
+z_index = -10
+texture = ExtResource("2_bg")
+centered = false
+position = Vector2(-640, -360)
+
+[node name="TileMap" type="TileMap" parent="."]
+z_index = -5
+tile_set = SubResource("TileSet_combat")
+format = 2
+
+[node name="FloorLayer" type="TileMapLayer" parent="TileMap"]
+tile_map_data = PackedByteArray()

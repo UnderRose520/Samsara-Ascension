@@ -11,8 +11,22 @@
 ### Phase 2 ✅
 词条、Combo、功法、清场三选一、爆燃、连击慢动作
 
-### Phase 3 ✅
+### Phase 3 ✅（含 2026-06-10 深化）
 道心开局、境界突破、Build 可视化、前世遗泽、完整流程、灵宠、天象、战斗反馈
+
+- **结构化关卡**：`StageGenerator` + `RoomLayoutGenerator`（障碍/地形槽）+ `WaveComposer`（多波/精英词缀）
+- **敌人池 CSV**：`enemies.csv` / `stage_enemy_pools.csv` / `elite_affixes.csv`，多 archetype 与关底 Boss
+- **天气 × 地形**：`TerrainSystem` 可走入地形池 + 乱石碰撞；积水减速；伤害桶 B 联动
+- **架构（2026-06-10）**
+  - **涌潮 / 布局 / 索敌 / VFX**：`HordeController`、`TargetingConfig`（CSV）、`VfxManager` 粒子池
+  - **RunContext 拆分**：`CombatRngService` · `EntityCache` · `SpellProgress` · `KarmaTracker`
+  - **弹幕工厂**：系统层发 `EventBus` 信号，`CombatSpawner` 实例化场景（无 system→scene preload）
+  - **战斗房基类**：`ArenaBase` ← `run_controller` / `training_arena` 共用刷怪与涌潮逻辑
+- **确定性随机**：`RunRng` + `CombatRngService` + 按房间派生子种子；详见 [`docs/features/seed-reproducibility.md`](../docs/features/seed-reproducibility.md)
+- **索敌 v2**：`auto_aim` / `auto_attack` 双开关 + 评分优先级；详见 [`docs/features/combat-targeting-priority.md`](../docs/features/combat-targeting-priority.md)
+- **种子复现 UI**：开局输入种子 · HUD/Esc 显示与复制
+
+> 完整变更记录：[`docs/implementation-log.md`](../docs/implementation-log.md)
 
 ### Phase 4 ✅
 - **随机事件房**：8 常规/天象 + 心魔试炼台 + **因果事件**（善/恶/贪/道心，善名远播需善念）
@@ -33,13 +47,25 @@
 
 ## 一局结构（每关）
 
-战斗 ×2 → **机缘房** → 关底 Boss → 突破 → 词条 → 择路（可坊市/调息）
+战斗 ×2（**魔劫涌潮**：持续刷怪 · 斩够配额或倒计时结束）→ **机缘房** → 关底 Boss → 突破 → 词条 → 择路（可坊市/调息）
+
+### 魔劫涌潮（战斗房）
+
+| 重天 | 斩魔配额 | 时限 | 每波刷怪 |
+|------|----------|------|----------|
+| 1 | 20 | 2:00 | 4 只/波 |
+| 2 | 30 | 2:30 | 5 只/波 |
+| 3 | 50 | 3:00 | 6 只/波 |
+| 4+ | 70–90 | 3:20+ | 6–7 只/波 |
+
+详情见 [`docs/features/combat-horde-mode.md`](../docs/features/combat-horde-mode.md)
 
 ## 操作
 
-- 开局选道心 → **轮回成长**（花轮回点）→ **踏入轮回**
+- 开局选道心 → 可选 **局种子**（留空随机）→ **轮回成长** → **踏入轮回**
 - **WASD** 移动 · **空格** 闪避 · **左键** 攻击 · **Q/E/R** 法术 · **V** 灵宠协同
-- **Esc** 暂停（可开关血条/飘字）
+- **Esc** 暂停（血条/飘字、自动瞄准/自动普攻、**复制本局种子**）
+- HUD 顶栏显示 **种子** 编号；复现规则见 `docs/features/seed-reproducibility.md`
 - 战斗后择路可进 **坊市** · 机缘房三选一 · Boss 后突破 · 凑词条觉醒道统
 
 ## 战斗技能（Phase 1 补全）
@@ -89,9 +115,31 @@
 | `data/enemies/enemy_skills.csv` | 敌人技能 |
 | `data/enemies/enemy_archetypes.csv` | 敌人 archetype → 技能组 |
 | `data/enemies/boss_phases.csv` | Boss 阶段与技能池 |
+| `data/combat/combat_hordes.csv` | 魔劫涌潮配额/时限 |
+| `data/combat/targeting_config.csv` | 索敌评分参数 |
+| `data/rooms/obstacle_templates.csv` | 战斗房障碍 |
+| `data/rooms/room_layouts.csv` | 战斗房布局 |
 | `data/affixes/affixes.csv` | 词条（含 `unlock_spell` / `bind_spell`） |
+
+## Autoload 索引
+
+| 名称 | 路径 | 职责 |
+|------|------|------|
+| `EventBus` | `autoload/event_bus.gd` | 全局信号（含弹幕 `spawn_*_projectile_requested`） |
+| `RunContext` | `autoload/run_context.gd` | 局状态、种子派生、跑图进度 |
+| `CombatRngService` | `autoload/combat_rng_service.gd` | 战斗暴击/状态 RNG |
+| `EntityCache` | `autoload/entity_cache.gd` | 玩家/灵宠节点缓存 |
+| `SpellProgress` | `autoload/spell_progress.gd` | 法术槽解锁与默认绑定 |
+| `KarmaTracker` | `autoload/karma_tracker.gd` | 业力、事件出现次数 |
+| `CombatSpawner` | `autoload/combat_spawner.gd` | 弹幕场景工厂 |
+| `VfxManager` | `autoload/vfx_manager.gd` | 粒子对象池 |
+| `WeatherSystem` / `TerrainSystem` | `systems/world/` | 天象与地形 |
 
 ## 设计文档
 
 - **GDD 玩法：** 仓库根目录 `GDD_轮回仙途_v6.0.md`
 - **UI/UX 美术：** [`docs/UIUX_轮回仙途_v1.0.md`](../docs/UIUX_轮回仙途_v1.0.md)（Token、组件、全界面规范）
+- **实现日志：** [`docs/implementation-log.md`](../docs/implementation-log.md)（近期功能与架构变更）
+- **索敌 / 自动攻击：** [`docs/features/combat-targeting-priority.md`](../docs/features/combat-targeting-priority.md)
+- **种子复现：** [`docs/features/seed-reproducibility.md`](../docs/features/seed-reproducibility.md)
+- **魔劫涌潮：** [`docs/features/combat-horde-mode.md`](../docs/features/combat-horde-mode.md)

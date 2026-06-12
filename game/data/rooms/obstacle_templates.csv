@@ -1,0 +1,4 @@
+id,width,height,color,label
+pillar,36,36,#6B5344,石柱
+rock,32,32,#5A5A6E,乱石
+crate,28,28,#4A4035,木箱

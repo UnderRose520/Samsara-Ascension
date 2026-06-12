@@ -1,7 +1,8 @@
 extends Node
 
 const ActiveSpellRegistry = preload("res://systems/combat/active_spell_registry.gd")
-const PROJECTILE_SCENE = preload("res://scenes/combat/projectile.tscn")
+const CombatAim = preload("res://systems/combat/combat_aim.gd")
+const VariantUtils = preload("res://core/utils/variant_utils.gd")
 
 const SLOT_ORDER: PackedStringArray = ["q", "e", "r"]
 const SLOT_ACTIONS := {
@@ -46,8 +47,8 @@ func _ready() -> void:
 
 
 func sync_spell_state() -> void:
-	_unlocked_slots = RunContext.get_spell_unlocks()
-	spell_by_slot = RunContext.get_default_spell_bindings()
+	_unlocked_slots = SpellProgress.get_unlocks()
+	spell_by_slot = SpellProgress.get_default_bindings()
 	if _owner and _owner.has_node("AffixHolder"):
 		for effect in _owner.get_node("AffixHolder").get_spell_effects():
 			var kind := str(effect.get("kind", ""))
@@ -62,7 +63,7 @@ func sync_spell_state() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if get_tree().paused:
+	if get_tree().paused or RunContext.ui_blocking:
 		return
 	for slot in SLOT_ORDER:
 		if not is_slot_unlocked(slot):
@@ -89,7 +90,7 @@ func _physics_process(delta: float) -> void:
 
 
 func is_slot_unlocked(slot: String) -> bool:
-	return bool(_unlocked_slots.get(slot, false))
+	return VariantUtils.as_bool(_unlocked_slots.get(slot, false))
 
 
 func try_cast_slot(slot: String) -> bool:
@@ -101,9 +102,12 @@ func try_cast_slot(slot: String) -> bool:
 		return false
 	if not spell_by_slot.has(slot) or str(spell_by_slot.get(slot, "")).is_empty():
 		return false
-	var dir := (_owner.get_global_mouse_position() - _owner.global_position).normalized()
-	if dir == Vector2.ZERO:
-		dir = Vector2.RIGHT
+	var move_hint := Vector2.RIGHT
+	if _owner.has_method("get_aim_move_hint"):
+		move_hint = _owner.get_aim_move_hint()
+	elif _owner:
+		move_hint = _owner.velocity
+	var dir := CombatAim.resolve_direction(_owner, move_hint)
 	_pending_dir = dir
 	_casting_slot = slot
 	var spell := _spell_for_slot(slot)
@@ -135,7 +139,7 @@ func get_spell_display_lines() -> PackedStringArray:
 	var lines: PackedStringArray = []
 	for slot in SLOT_ORDER:
 		var label := str(SLOT_LABELS.get(slot, slot.to_upper()))
-		var preview_id := str(RunContext.get_default_spell_bindings().get(slot, ""))
+		var preview_id := str(SpellProgress.get_default_bindings().get(slot, ""))
 		var preview := ActiveSpellRegistry.get_spell(preview_id)
 		var name_text := str(preview.get("name", slot))
 		if not is_slot_unlocked(slot):
@@ -154,7 +158,29 @@ func get_spell_display_lines() -> PackedStringArray:
 	return lines
 
 
+func get_spell_slots_state() -> Dictionary:
+	var out := {}
+	for slot in SLOT_ORDER:
+		var default_id := str(SpellProgress.get_default_bindings().get(slot, "lie_yan_bolt"))
+		var preview := ActiveSpellRegistry.get_spell(default_id)
+		var unlocked := is_slot_unlocked(slot)
+		var spell := _spell_for_slot(slot) if unlocked else preview
+		var cd := float(_cooldowns.get(slot, 0.0))
+		var total := float(spell.get("cooldown", 3.5)) if unlocked else 0.0
+		out[slot] = {
+			"name": str(spell.get("name", slot)),
+			"unlocked": unlocked,
+			"cd_remaining": cd,
+			"cd_total": total,
+			"casting": _casting_slot == slot and _windup > 0.0,
+		}
+	return out
+
+
 func _fire_spell(slot: String, direction: Vector2) -> void:
+	if direction.length_squared() < 0.01:
+		direction = Vector2.RIGHT
+	direction = direction.normalized()
 	var spell := _spell_for_slot(slot)
 	var spell_id := str(spell_by_slot.get(slot, ""))
 	var color: Color = SPELL_COLORS.get(spell_id, Color(1.0, 0.45, 0.15))
@@ -172,10 +198,18 @@ func _fire_spell(slot: String, direction: Vector2) -> void:
 		var dir := direction
 		if count > 1:
 			dir = direction.rotated(spread * (float(i) - float(count - 1) * 0.5))
-		var projectile: Area2D = PROJECTILE_SCENE.instantiate()
-		projectile.global_position = _owner.global_position + dir * 18.0
-		projectile.setup(dir, damage, _owner, speed, radius, color, pierce)
-		_owner.get_tree().current_scene.add_child(projectile)
+		EventBus.spawn_player_projectile_requested.emit({
+			"scene_root": _owner.get_tree().current_scene,
+			"position": _owner.global_position + dir * 18.0,
+			"direction": dir,
+			"damage": damage,
+			"owner": _owner,
+			"speed": speed,
+			"radius": radius,
+			"color": color,
+			"pierce": pierce,
+		})
+	VfxManager.spawn_world(_owner.global_position, "cast", color)
 	_cooldowns[slot] = float(spell.get("cooldown", 3.5))
 	cooldown_changed.emit(slot, float(_cooldowns[slot]), float(_cooldowns[slot]))
 	spell_cast.emit(slot, spell)
@@ -183,5 +217,5 @@ func _fire_spell(slot: String, direction: Vector2) -> void:
 
 
 func _spell_for_slot(slot: String) -> Dictionary:
-	var spell_id := str(spell_by_slot.get(slot, RunContext.get_default_spell_bindings().get(slot, "lie_yan_bolt")))
+	var spell_id := str(spell_by_slot.get(slot, SpellProgress.get_default_bindings().get(slot, "lie_yan_bolt")))
 	return ActiveSpellRegistry.get_spell(spell_id)

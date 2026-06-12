@@ -1,6 +1,7 @@
 extends Node
 
 const DamagePipeline = preload("res://systems/combat/damage_pipeline.gd")
+const CombatContextBuilder = preload("res://systems/combat/combat_context_builder.gd")
 const ComboGraph = preload("res://systems/affix/combo_graph.gd")
 const AffixCompiler = preload("res://systems/affix/affix_compiler.gd")
 const ActiveSpellRegistry = preload("res://systems/combat/active_spell_registry.gd")
@@ -23,16 +24,18 @@ var bonus_crit_mult := 0.0
 var attack_speed_mult := 1.0
 var projectile_pierce := 0
 var bucket_a: Array = []
+var bucket_b: Array = []
+var bucket_c: Array = []
 var bucket_d: Array = []
 var dao_tradition_passives: Array = []
 
 var _discovered_combos: Dictionary = {}
 
-
 func _ready() -> void:
 	if player_body == null:
 		player_body = get_parent() as CharacterBody2D
 	EventBus.realm_changed.connect(func(_lvl, _slots): changed.emit())
+	EventBus.pet_acquired.connect(func(_id): EntityCache.invalidate_pet())
 
 
 func get_max_affixes() -> int:
@@ -166,30 +169,21 @@ func get_combo_display() -> Dictionary:
 	return best if best else {"name": "—", "progress": 0.0, "matched": [], "total": 1, "missing": [], "hint": ""}
 
 
-func build_damage_context(base_damage: float, target_defense: float, crit_rate: float, crit_mult: float) -> Dictionary:
-	var is_crit := randf() < crit_rate
-	var mult_a: float = DamagePipeline.apply_bucket_multipliers(bucket_a)
-	var element_key := get_element_bias()
-	if element_key.is_empty():
-		element_key = "fire"
-	var mult_d: float = DamagePipeline.apply_bucket_multipliers(bucket_d)
-	var ctx := {
-		"base_damage": base_damage + flat_attack,
-		"additive_bonus": 0.0,
-		"mult_a": mult_a,
-		"mult_b": 1.0,
-		"mult_c": 1.0,
-		"mult_d": mult_d,
-		"is_crit": is_crit,
-		"crit_mult": crit_mult + bonus_crit_mult,
-		"target_defense": maxf(target_defense, 0.0),
-	}
-	WeatherSystem.apply_to_context(ctx, element_key)
-	var pet := get_tree().get_first_node_in_group("pet") if get_tree() else null
-	if pet and pet.has_method("get_mult_c"):
-		ctx["mult_c"] = float(pet.get_mult_c())
-	return ctx
-
+func build_damage_context(
+	base_damage: float,
+	target_defense: float,
+	crit_rate: float,
+	crit_mult: float,
+	hit_label: String = "hit",
+) -> Dictionary:
+	return CombatContextBuilder.build(
+		self,
+		base_damage,
+		target_defense,
+		crit_rate,
+		crit_mult,
+		hit_label,
+	)
 
 func proc_on_hit(target: Node) -> float:
 	if target == null:
@@ -210,10 +204,12 @@ func proc_on_hit(target: Node) -> float:
 func _try_status_effect(target: Node, effect: Dictionary) -> void:
 	if effect.get("kind") != "on_hit_status":
 		return
-	if randf() > float(effect.get("chance", 0.0)):
+	var chance := float(effect.get("chance", 0.0))
+	var status_name := str(effect.get("status", ""))
+	if not CombatRngService.roll_chance("status_%s" % status_name, chance):
 		return
 	if target.has_method("apply_status"):
-		target.apply_status(str(effect.get("status", "")), float(effect.get("duration", 1.0)))
+		target.apply_status(status_name, float(effect.get("duration", 1.0)))
 
 
 func _recompute() -> void:
@@ -225,47 +221,60 @@ func _recompute() -> void:
 	attack_speed_mult = 1.0
 	projectile_pierce = 0
 	bucket_a.clear()
+	bucket_b.clear()
+	bucket_c.clear()
 	bucket_d.clear()
 
-	var all_passives: Array = []
 	for tag in equipped:
-		all_passives.append_array(tag.passives)
-	all_passives.append_array(skill_passives)
+		for effect in tag.passives:
+			_apply_passive_effect(effect, tag)
+
+	for effect in skill_passives:
+		_apply_passive_effect(effect, null, 1)
 
 	for effect in talent_passives:
-		match str(effect.get("kind", "")):
-			"dao_mult", "mult_attack":
-				bucket_d.append(float(effect.get("value", 1.0)))
-			_:
-				all_passives.append(effect)
+		_apply_passive_effect(effect, null, 4)
 
 	for effect in dao_tradition_passives:
-		match str(effect.get("kind", "")):
-			"dao_mult", "mult_attack":
-				bucket_d.append(float(effect.get("value", 1.0)))
-			_:
-				all_passives.append(effect)
+		_apply_passive_effect(effect, null, 4)
 
-	for effect in all_passives:
-		match str(effect.get("kind", "")):
-			"flat_attack":
-				flat_attack += float(effect.get("value", 0.0))
-			"flat_defense":
-				flat_defense += float(effect.get("value", 0.0))
-			"flat_max_hp":
-				flat_max_hp += float(effect.get("value", 0.0))
-			"mult_crit_rate":
-				bonus_crit_rate += float(effect.get("value", 0.0))
-			"mult_crit_mult":
-				bonus_crit_mult += float(effect.get("value", 0.0))
-			"mult_attack_speed":
-				attack_speed_mult *= float(effect.get("value", 1.0))
-			"projectile_pierce":
-				projectile_pierce += int(effect.get("value", 0))
-			"mult_attack", "dao_mult":
-				bucket_a.append(float(effect.get("value", 1.0)))
 	_apply_to_player()
 	_notify_spell_caster()
+
+
+func _apply_passive_effect(effect: Dictionary, tag = null, default_dao_bucket: int = 0) -> void:
+	match str(effect.get("kind", "")):
+		"flat_attack":
+			flat_attack += float(effect.get("value", 0.0))
+		"flat_defense":
+			flat_defense += float(effect.get("value", 0.0))
+		"flat_max_hp":
+			flat_max_hp += float(effect.get("value", 0.0))
+		"mult_crit_rate":
+			bonus_crit_rate += float(effect.get("value", 0.0))
+		"mult_crit_mult":
+			bonus_crit_mult += float(effect.get("value", 0.0))
+		"mult_attack_speed":
+			attack_speed_mult *= float(effect.get("value", 1.0))
+		"projectile_pierce":
+			projectile_pierce += int(effect.get("value", 0))
+		"mult_attack", "dao_mult":
+			var dao_bucket := int(tag.dao_bucket) if tag != null else default_dao_bucket
+			_append_mult_by_dao_bucket_value(float(effect.get("value", 1.0)), dao_bucket)
+
+
+func _append_mult_by_dao_bucket_value(value: float, dao_bucket: int) -> void:
+	match dao_bucket:
+		1:
+			bucket_a.append(value)
+		2:
+			bucket_b.append(value)
+		3:
+			bucket_c.append(value)
+		4:
+			bucket_d.append(value)
+		_:
+			bucket_a.append(value)
 
 
 func _is_spell_effect(effect: Dictionary) -> bool:
@@ -284,7 +293,7 @@ func _notify_affix_spell_unlock(tag) -> void:
 		var kind := str(effect.get("kind", ""))
 		if kind == "unlock_spell":
 			var slot := str(effect.get("slot", "")).to_lower()
-			var spell_id := str(RunContext.get_default_spell_bindings().get(slot, ""))
+			var spell_id := str(SpellProgress.get_default_bindings().get(slot, ""))
 			var spell := ActiveSpellRegistry.get_spell(spell_id)
 			var spell_name := str(spell.get("name", slot.to_upper()))
 			EventBus.learn_feedback.emit("词条解锁 · %s %s" % [slot.to_upper(), spell_name], "spell")
@@ -318,7 +327,8 @@ func _apply_to_player() -> void:
 	if player_body == null:
 		return
 	var stats := ConfigRegistry.get_default_player_stats()
-	player_body.attack_power = stats.attack + flat_attack
+	# flat_attack 仅在伤害流水线中加算，避免与 build_damage_context 重复叠加
+	player_body.attack_power = stats.attack
 	player_body.crit_rate = clampf(stats.crit_rate + bonus_crit_rate, 0.0, 0.95)
 	player_body.crit_mult = stats.crit_mult + bonus_crit_mult
 	if player_body.has_node("HealthComponent"):

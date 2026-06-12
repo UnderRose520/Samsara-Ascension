@@ -84,7 +84,7 @@ static func _passes_karma_gate(row: Dictionary) -> bool:
 		return true
 	var kind := str(parts[0])
 	var need := int(parts[1])
-	return int(RunContext.karma.get(kind, 0)) >= need
+	return KarmaTracker.get_karma(kind) >= need
 
 
 static func _ensure_loaded() -> void:

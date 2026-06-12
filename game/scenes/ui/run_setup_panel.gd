@@ -1,34 +1,91 @@
 extends CanvasLayer
 
 const DaoHeartConfig = preload("res://systems/realm/dao_heart_config.gd")
+const AssetPaths = preload("res://assets/asset_paths.gd")
+const UiAnimations = preload("res://ui/ui_animations.gd")
+const UiHelpers = preload("res://ui/ui_helpers.gd")
+const DAO_HEART_CARD := preload("res://ui/components/dao_heart_card.tscn")
 
 @onready var panel: PanelContainer = $Panel
+@onready var dimmer: ColorRect = $Dimmer
 @onready var start_button: Button = $Panel/Margin/VBox/StartButton
+@onready var title_label: Label = $Panel/Margin/VBox/Title
 @onready var detail_label: Label = $Panel/Margin/VBox/Detail
 @onready var shard_label: Label = $Panel/Margin/VBox/ShardLabel
 @onready var heart_demon_check: CheckButton = $Panel/Margin/VBox/HeartDemonCheck
 @onready var points_label: Label = $Panel/Margin/VBox/PointsLabel
+@onready var seed_input: LineEdit = $Panel/Margin/VBox/SeedRow/SeedInput
+@onready var random_seed_button: Button = $Panel/Margin/VBox/SeedRow/RandomSeedButton
 @onready var meta_button: Button = $Panel/Margin/VBox/MetaButton
-@onready var buttons: Array[Button] = [
-	$Panel/Margin/VBox/Hearts/AskDao,
-	$Panel/Margin/VBox/Hearts/Enlighten,
-	$Panel/Margin/VBox/Hearts/ProveDao,
-]
+@onready var hearts_box: HBoxContainer = $Panel/Margin/VBox/Hearts
 
 var _selected: int = DaoHeartConfig.DaoHeart.ENLIGHTEN
 var _meta_panel: CanvasLayer
+var _heart_cards: Array[DaoHeartCard] = []
+
+const HEART_DEFS := [
+	{
+		"heart": DaoHeartConfig.DaoHeart.ASK_DAO,
+		"key": "ask",
+		"title": "问道",
+		"subtitle": "平易入道",
+		"detail": "问道：敌人 -20% 真元，数量 -1，无心魔试炼台",
+	},
+	{
+		"heart": DaoHeartConfig.DaoHeart.ENLIGHTEN,
+		"key": "enlighten",
+		"title": "悟道",
+		"subtitle": "标准体验",
+		"detail": "悟道：标准体验，机缘房 20% 出现心魔试炼台",
+	},
+	{
+		"heart": DaoHeartConfig.DaoHeart.PROVE_DAO,
+		"key": "prove",
+		"title": "证道",
+		"subtitle": "极限试炼",
+		"detail": "证道：敌人 +20% 真元，数量 +1，必遇心魔试炼台",
+	},
+]
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	UiHelpers.apply_panel_polish(panel)
+	UiHelpers.decorate_modal_header($Panel/Margin/VBox, title_label)
 	start_button.pressed.connect(_on_start_pressed)
-	heart_demon_check.toggled.connect(_on_heart_demon_toggled)
 	meta_button.pressed.connect(_on_meta_pressed)
-	buttons[0].pressed.connect(func(): _select(DaoHeartConfig.DaoHeart.ASK_DAO))
-	buttons[1].pressed.connect(func(): _select(DaoHeartConfig.DaoHeart.ENLIGHTEN))
-	buttons[2].pressed.connect(func(): _select(DaoHeartConfig.DaoHeart.PROVE_DAO))
+	random_seed_button.pressed.connect(_on_random_seed_pressed)
+	_spawn_heart_cards()
 	_refresh_meta()
+	_setup_seed_input()
 	_select(DaoHeartConfig.DaoHeart.ENLIGHTEN)
+	call_deferred("_play_open")
+
+
+func _spawn_heart_cards() -> void:
+	for child in hearts_box.get_children():
+		child.queue_free()
+	_heart_cards.clear()
+	for def in HEART_DEFS:
+		var card: DaoHeartCard = DAO_HEART_CARD.instantiate()
+		hearts_box.add_child(card)
+		var icon_path: String = AssetPaths.DAO_HEART_ICONS.get(def["key"], "")
+		card.setup(str(def["key"]), str(def["title"]), str(def["subtitle"]), icon_path)
+		var heart_val: int = int(def["heart"])
+		card.selected.connect(func(_id: String) -> void: _select(heart_val))
+		_heart_cards.append(card)
+		card.modulate.a = 0.0
+
+
+func _play_open() -> void:
+	if not is_inside_tree():
+		return
+	UiAnimations.modal_open(panel, dimmer)
+	for i in _heart_cards.size():
+		var card := _heart_cards[i]
+		var tw := card.create_tween()
+		tw.tween_interval(float(i) * UiAnimations.CARD_STAGGER)
+		tw.tween_property(card, "modulate:a", 1.0, 0.25)
 
 
 func _refresh_meta() -> void:
@@ -48,27 +105,13 @@ func _refresh_meta() -> void:
 
 func _select(heart: int) -> void:
 	_selected = heart
-	for i in buttons.size():
-		buttons[i].modulate = Color(1, 1, 1, 1.0 if _heart_for_index(i) == heart else 0.55)
-	match heart:
-		DaoHeartConfig.DaoHeart.ASK_DAO:
-			detail_label.text = "问道：敌人 -20% 真元，数量 -1，无心魔试炼台"
-		DaoHeartConfig.DaoHeart.ENLIGHTEN:
-			detail_label.text = "悟道：标准体验，机缘房 20% 出现心魔试炼台"
-		DaoHeartConfig.DaoHeart.PROVE_DAO:
-			detail_label.text = "证道：敌人 +20% 真元，数量 +1，必遇心魔试炼台"
-
-
-func _heart_for_index(index: int) -> int:
-	match index:
-		0: return DaoHeartConfig.DaoHeart.ASK_DAO
-		1: return DaoHeartConfig.DaoHeart.ENLIGHTEN
-		2: return DaoHeartConfig.DaoHeart.PROVE_DAO
-	return DaoHeartConfig.DaoHeart.ENLIGHTEN
-
-
-func _on_heart_demon_toggled(_pressed: bool) -> void:
-	pass
+	for i in _heart_cards.size():
+		if i >= HEART_DEFS.size():
+			continue
+		var on := int(HEART_DEFS[i]["heart"]) == heart
+		_heart_cards[i].set_selected(on)
+		if on:
+			detail_label.text = str(HEART_DEFS[i]["detail"])
 
 
 func _on_meta_pressed() -> void:
@@ -79,9 +122,34 @@ func _on_meta_pressed() -> void:
 		_refresh_meta()
 
 
+func _setup_seed_input() -> void:
+	var last := SaveManager.get_last_run_seed()
+	if last > 0:
+		seed_input.placeholder_text = "留空随机 · 上局 %d" % last
+	else:
+		seed_input.placeholder_text = "留空则随机生成"
+
+
+func _parse_seed_override() -> int:
+	var text := seed_input.text.strip_edges()
+	if text.is_empty():
+		return -1
+	if not text.is_valid_int():
+		return -1
+	return clampi(int(text), 0, 0x7FFFFFFF)
+
+
+func _on_random_seed_pressed() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	seed_input.text = str(rng.randi() & 0x7FFFFFFF)
+
+
 func _on_start_pressed() -> void:
-	panel.visible = false
-	visible = false
-	var use_boost := heart_demon_check.visible and heart_demon_check.button_pressed
-	RunContext.begin_run(_selected, -1, use_boost)
-	EventBus.run_setup_confirmed.emit()
+	UiAnimations.modal_close(panel, dimmer, func() -> void:
+		panel.visible = false
+		visible = false
+		var use_boost := heart_demon_check.visible and heart_demon_check.button_pressed
+		RunContext.begin_run(_selected, _parse_seed_override(), use_boost)
+		EventBus.run_setup_confirmed.emit()
+	)

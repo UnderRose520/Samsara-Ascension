@@ -2,6 +2,7 @@ extends Node
 
 const SAVE_PATH := "user://profile.json"
 const SAVE_VERSION := 1
+const VariantUtils = preload("res://core/utils/variant_utils.gd")
 
 var profile: Dictionary = {}
 
@@ -13,14 +14,15 @@ func _ready() -> void:
 func load_profile() -> Dictionary:
 	if not FileAccess.file_exists(SAVE_PATH):
 		profile = _default_profile()
-		return profile
-	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	if file == null:
-		profile = _default_profile()
-		return profile
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
-	file.close()
-	profile = parsed if typeof(parsed) == TYPE_DICTIONARY else _default_profile()
+	else:
+		var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
+		if file == null:
+			profile = _default_profile()
+		else:
+			var parsed: Variant = JSON.parse_string(file.get_as_text())
+			file.close()
+			profile = parsed if typeof(parsed) == TYPE_DICTIONARY else _default_profile()
+	_migrate_legacy_auto_target_once()
 	return profile
 
 
@@ -51,13 +53,50 @@ func has_legacy_pending() -> bool:
 
 func get_display_setting(key: String) -> bool:
 	var defaults := _default_profile()
-	return bool(profile.get(key, defaults.get(key, true)))
+	return VariantUtils.as_bool(profile.get(key, defaults.get(key, false)))
+
+
+func _migrate_legacy_auto_target_once() -> void:
+	var changed := false
+	if not profile.has("auto_target"):
+		# Old profiles without auto_target may also lack auto_aim/auto_attack.
+		# Old get_display_setting defaulted to true; preserve that for migrating players.
+		if not profile.has("auto_aim"):
+			profile["auto_aim"] = true
+			changed = true
+		if not profile.has("auto_attack"):
+			profile["auto_attack"] = true
+			changed = true
+		if changed:
+			save_profile()
+		return
+	var legacy := VariantUtils.as_bool(profile.get("auto_target", false))
+	if not profile.has("auto_aim"):
+		profile["auto_aim"] = legacy
+		changed = true
+	if not profile.has("auto_attack"):
+		profile["auto_attack"] = legacy
+		changed = true
+	if changed:
+		save_profile()
 
 
 func set_display_setting(key: String, value: bool) -> void:
 	profile[key] = value
 	save_profile()
 	EventBus.display_settings_changed.emit()
+
+
+func has_seen_terrain_demo(demo_key: String) -> bool:
+	var seen: Dictionary = profile.get("terrain_demos_seen", {})
+	return VariantUtils.as_bool(seen.get(demo_key, false))
+
+
+func mark_terrain_demo(demo_key: String) -> void:
+	var seen: Dictionary = profile.get("terrain_demos_seen", {})
+	seen[demo_key] = true
+	profile["terrain_demos_seen"] = seen
+	save_profile()
 
 
 func get_heart_demon_shards() -> int:
@@ -139,6 +178,20 @@ func _default_profile() -> Dictionary:
 		"legacy_affix_id": "",
 		"show_enemy_hp": true,
 		"show_damage_numbers": true,
+		"reduce_motion": false,
+		"auto_aim": false,
+		"auto_attack": false,
 		"heart_demon_shards": 0,
 		"awakened_dao_traditions": [],
+		"terrain_demos_seen": {},
+		"last_run_seed": 0,
 	}
+
+
+func set_last_run_seed(seed: int) -> void:
+	profile["last_run_seed"] = seed
+	save_profile()
+
+
+func get_last_run_seed() -> int:
+	return int(profile.get("last_run_seed", 0))

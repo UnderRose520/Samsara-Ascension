@@ -1,6 +1,7 @@
 class_name DamagePipeline
 
 const GameConstants = preload("res://core/constants/game_constants.gd")
+const VariantUtils = preload("res://core/utils/variant_utils.gd")
 
 
 static func calc_mitigation(defense: float) -> float:
@@ -24,14 +25,27 @@ static func apply_bucket_multipliers(sources: Array) -> float:
 	return product
 
 
+static func resolve_bucket_mult(ctx: Dictionary, bucket_key: String) -> float:
+	var sources: Array = ctx.get("bucket_%s" % bucket_key, [])
+	if not sources.is_empty():
+		return apply_bucket_multipliers(sources)
+	return float(ctx.get("mult_%s" % bucket_key, 1.0))
+
+
 static func compute_pve(ctx: Dictionary) -> Dictionary:
 	var damage: float = float(ctx.get("base_damage", 0.0))
 	damage *= 1.0 + float(ctx.get("additive_bonus", 0.0))
-	damage *= float(ctx.get("mult_a", 1.0))
-	damage *= float(ctx.get("mult_b", 1.0))
-	damage *= float(ctx.get("mult_c", 1.0))
-	damage *= float(ctx.get("mult_d", 1.0))
-	if bool(ctx.get("is_crit", false)):
+	damage *= resolve_bucket_mult(ctx, "a")
+	damage *= resolve_bucket_mult(ctx, "b")
+	damage *= resolve_bucket_mult(ctx, "c")
+	damage *= resolve_bucket_mult(ctx, "d")
+	var is_crit := VariantUtils.as_bool(ctx.get("is_crit", false))
+	if is_crit:
 		damage *= float(ctx.get("crit_mult", 1.5))
 	damage *= 1.0 - calc_mitigation(float(ctx.get("target_defense", 0.0)))
-	return {"final_damage": maxf(damage, 1.0), "is_crit": ctx.get("is_crit", false)}
+	return {
+		"final_damage": maxf(damage, 1.0),
+		"is_crit": is_crit,
+		"element_key": str(ctx.get("element_key", "")),
+		"trigger_on_hit": VariantUtils.as_bool(ctx.get("trigger_on_hit", true)),
+	}

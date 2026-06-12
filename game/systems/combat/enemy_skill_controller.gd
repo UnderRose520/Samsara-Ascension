@@ -2,7 +2,7 @@ class_name EnemySkillController
 
 const EnemySkillRegistry = preload("res://systems/combat/enemy_skill_registry.gd")
 const BossPhaseRegistry = preload("res://systems/combat/boss_phase_registry.gd")
-const ENEMY_PROJECTILE_SCENE = preload("res://scenes/combat/enemy_projectile.tscn")
+const RunRng = preload("res://core/utils/run_rng.gd")
 
 var owner_body: CharacterBody2D
 var skills: Array = []
@@ -12,16 +12,32 @@ var _windup_skill: Dictionary = {}
 var _dash_time := 0.0
 var _dash_dir := Vector2.ZERO
 var _dash_damage := 0.0
+var _dash_hit_done := false
 var _boss_phases: Array = []
 var _phase_index := 0
 var _phase_name := ""
 var _using_phases := false
+var _attack_delay := 0.0
+var _windup_scale := 1.0
+var _timing_rng: RandomNumberGenerator
 
 
 func setup(body: CharacterBody2D, archetype: String) -> void:
 	owner_body = body
 	skills = EnemySkillRegistry.get_skills_for_archetype(archetype)
 	_reset_cooldowns()
+
+
+func apply_spawn_stagger(spawn_index: int) -> void:
+	_timing_rng = RunRng.enemy_jitter(spawn_index)
+	_attack_delay = _timing_rng.randf_range(0.3, 1.25)
+	_windup_scale = _timing_rng.randf_range(0.82, 1.18)
+	for skill in skills:
+		var skill_id := str(skill.get("id", ""))
+		if skill_id.is_empty():
+			continue
+		var cd := float(skill.get("cooldown", 1.0))
+		_cooldowns[skill_id] = _timing_rng.randf_range(0.0, cd * 0.55)
 
 
 func setup_boss_phases(phases: Array) -> void:
@@ -68,7 +84,7 @@ func get_action_label() -> String:
 func get_windup_progress() -> float:
 	if _windup <= 0.0 or _windup_skill.is_empty():
 		return 0.0
-	var total := float(_windup_skill.get("windup", 0.4))
+	var total := float(_windup_skill.get("windup", 0.4)) * _windup_scale
 	if total <= 0.0:
 		return 1.0
 	return 1.0 - (_windup / total)
@@ -82,8 +98,9 @@ func tick(delta: float, player: Node2D) -> void:
 		_dash_time = maxf(_dash_time - delta, 0.0)
 		if owner_body:
 			owner_body.velocity = _dash_dir * float(_windup_skill.get("speed", 300.0))
-		if player and owner_body.global_position.distance_to(player.global_position) < 34.0:
+		if not _dash_hit_done and player and owner_body.global_position.distance_to(player.global_position) < 34.0:
 			_hit_player(player, _dash_damage)
+			_dash_hit_done = true
 		return
 
 	if _windup > 0.0:
@@ -95,6 +112,9 @@ func tick(delta: float, player: Node2D) -> void:
 		return
 
 	if player == null:
+		return
+	if _attack_delay > 0.0:
+		_attack_delay = maxf(_attack_delay - delta, 0.0)
 		return
 	var dist := owner_body.global_position.distance_to(player.global_position)
 	var pick := _pick_skill(dist)
@@ -115,6 +135,7 @@ func _apply_boss_phase(index: int) -> void:
 	_windup = 0.0
 	_windup_skill = {}
 	_dash_time = 0.0
+	_dash_hit_done = false
 	if entering and index > 0 and owner_body:
 		var boss_name := "关底守将"
 		if owner_body.has_method("get_display_name"):
@@ -163,12 +184,16 @@ func _pick_skill(dist: float) -> Dictionary:
 
 func _start_windup(skill: Dictionary) -> void:
 	_windup_skill = skill
-	_windup = float(skill.get("windup", 0.4))
+	_windup = float(skill.get("windup", 0.4)) * _windup_scale
 
 
 func _execute_skill(skill: Dictionary, player: Node2D) -> void:
 	var skill_id := str(skill.get("id", ""))
-	_cooldowns[skill_id] = float(skill.get("cooldown", 1.0))
+	var base_cd := float(skill.get("cooldown", 1.0))
+	if _timing_rng:
+		_cooldowns[skill_id] = base_cd * _timing_rng.randf_range(0.88, 1.15)
+	else:
+		_cooldowns[skill_id] = base_cd
 	match str(skill.get("type", "")):
 		"melee":
 			if player and owner_body.global_position.distance_to(player.global_position) < float(skill.get("range", 48.0)):
@@ -178,6 +203,7 @@ func _execute_skill(skill: Dictionary, player: Node2D) -> void:
 				_dash_dir = (player.global_position - owner_body.global_position).normalized()
 				_dash_damage = float(skill.get("damage", 18.0))
 				_dash_time = 0.28
+				_dash_hit_done = false
 		"projectile", "sniper":
 			_fire_projectiles(skill, player)
 	_windup_skill = {}
@@ -198,16 +224,15 @@ func _fire_projectiles(skill: Dictionary, player: Node2D) -> void:
 		spread = float(extra.get_slice("spread:", 1).split(",")[0])
 	for i in count:
 		var dir := base_dir.rotated(spread * (float(i) - float(count - 1) * 0.5))
-		var projectile: Area2D = ENEMY_PROJECTILE_SCENE.instantiate()
-		projectile.global_position = owner_body.global_position + dir * 18.0
-		projectile.setup(
-			dir,
-			float(skill.get("damage", 10.0)),
-			float(skill.get("speed", 240.0)),
-			5.5 if count == 1 else 4.5,
-			Color(1.0, 0.35, 0.35) if count == 1 else Color(1.0, 0.55, 0.2)
-		)
-		owner_body.get_tree().current_scene.add_child(projectile)
+		EventBus.spawn_enemy_projectile_requested.emit({
+			"scene_root": owner_body.get_tree().current_scene,
+			"position": owner_body.global_position + dir * 18.0,
+			"direction": dir,
+			"damage": float(skill.get("damage", 10.0)),
+			"speed": float(skill.get("speed", 240.0)),
+			"radius": 5.5 if count == 1 else 4.5,
+			"color": Color(1.0, 0.35, 0.35) if count == 1 else Color(1.0, 0.55, 0.2),
+		})
 
 
 func _hit_player(player: Node2D, amount: float) -> void:

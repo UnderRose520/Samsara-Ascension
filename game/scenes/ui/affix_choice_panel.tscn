@@ -21,10 +21,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -380.0
-offset_top = -150.0
-offset_right = 380.0
-offset_bottom = 170.0
+offset_left = -400.0
+offset_top = -220.0
+offset_right = 400.0
+offset_bottom = 220.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -57,32 +57,19 @@ layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="Card1" type="Button" parent="Panel/Margin/VBox/Cards"]
-custom_minimum_size = Vector2(210, 120)
-layout_mode = 2
-text = "词条 1"
-
-[node name="Card2" type="Button" parent="Panel/Margin/VBox/Cards"]
-custom_minimum_size = Vector2(210, 120)
-layout_mode = 2
-text = "词条 2"
-
-[node name="Card3" type="Button" parent="Panel/Margin/VBox/Cards"]
-custom_minimum_size = Vector2(210, 120)
-layout_mode = 2
-text = "词条 3"
-
 [node name="Actions" type="HBoxContainer" parent="Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 16
 alignment = 1
 
 [node name="RerollButton" type="Button" parent="Panel/Margin/VBox/Actions"]
-custom_minimum_size = Vector2(160, 36)
+custom_minimum_size = Vector2(160, 44)
 layout_mode = 2
+theme_type_variation = &"Secondary"
 text = "重随 (50 灵石)"
 
 [node name="SkipButton" type="Button" parent="Panel/Margin/VBox/Actions"]
-custom_minimum_size = Vector2(160, 36)
+custom_minimum_size = Vector2(160, 44)
 layout_mode = 2
+theme_type_variation = &"Secondary"
 text = "跳过 (+30 灵石)"

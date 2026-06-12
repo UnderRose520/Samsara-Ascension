@@ -22,10 +22,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -120.0
-offset_right = 220.0
-offset_bottom = 120.0
+	offset_left = -220.0
+	offset_top = -220.0
+	offset_right = 220.0
+	offset_bottom = 220.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -47,6 +47,17 @@ theme_override_font_sizes/font_size = 24
 text = "已暂停 · 按 Esc 继续"
 horizontal_alignment = 1
 
+[node name="SeedLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.769, 0.714, 0.612, 1)
+theme_override_font_sizes/font_size = 13
+text = "本局种子：—"
+horizontal_alignment = 1
+
+[node name="CopySeedButton" type="Button" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "复制种子"
+
 [node name="EnemyHpCheck" type="CheckButton" parent="Panel/Margin/VBox"]
 layout_mode = 2
 button_pressed = true
@@ -56,3 +67,15 @@ text = "显示敌人血条"
 layout_mode = 2
 button_pressed = true
 text = "显示伤害飘字"
+
+[node name="ReduceMotionCheck" type="CheckButton" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "减少动效（无障碍）"
+
+[node name="AutoAimCheck" type="CheckButton" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "自动瞄准（法术/灵宠/普攻朝向）"
+
+[node name="AutoAttackCheck" type="CheckButton" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "自动普攻（范围内自动连射，无需左键）"

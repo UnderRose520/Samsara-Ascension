@@ -16,7 +16,7 @@ static func apply(event: Dictionary, choice_index: int, player: Node) -> Diction
 			continue
 		_apply_token(part, player, result)
 	var event_id := str(event.get("id", ""))
-	RunContext.record_event(event_id)
+	KarmaTracker.record_event(event_id)
 	var chunks: Array = result.get("_parts", [])
 	if not chunks.is_empty():
 		result.message = " · ".join(chunks)
@@ -50,7 +50,7 @@ static func _apply_token(token: String, player: Node, result: Dictionary) -> voi
 		var kind := token.get_slice(":", 1)
 		if kind == "dao":
 			kind = "dao_heart"
-		RunContext.add_karma(kind, 1)
+		KarmaTracker.add_karma(kind, 1)
 		_append_message(result, _karma_message(kind))
 		return
 	if token.begins_with("speed:"):
@@ -61,7 +61,7 @@ static func _apply_token(token: String, player: Node, result: Dictionary) -> voi
 		return
 	if token == "trial_accept":
 		RunContext.heart_demon_trial_active = true
-		RunContext.add_karma("rebellion", 1)
+		KarmaTracker.add_karma("rebellion", 1)
 		_append_message(result, "心魔试炼已启 · 敌人更强，奖励更丰")
 		return
 	if token == "trial_contemplate":

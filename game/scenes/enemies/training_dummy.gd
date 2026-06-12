@@ -2,10 +2,14 @@ extends CharacterBody2D
 
 const GameConstants = preload("res://core/constants/game_constants.gd")
 const DamagePipeline = preload("res://systems/combat/damage_pipeline.gd")
+const CombatContextBuilder = preload("res://systems/combat/combat_context_builder.gd")
+const RunRng = preload("res://core/utils/run_rng.gd")
 const HealthComponentScript = preload("res://systems/combat/health_component.gd")
 const EnemySkillRegistry = preload("res://systems/combat/enemy_skill_registry.gd")
+const EnemySpawnRegistry = preload("res://systems/combat/enemy_spawn_registry.gd")
 const EnemySkillController = preload("res://systems/combat/enemy_skill_controller.gd")
 const BossPhaseRegistry = preload("res://systems/combat/boss_phase_registry.gd")
+const AssetPaths = preload("res://assets/asset_paths.gd")
 
 @onready var health: Node = $HealthComponent
 @onready var status: Node = $StatusComponent
@@ -13,6 +17,7 @@ const BossPhaseRegistry = preload("res://systems/combat/boss_phase_registry.gd")
 @onready var hp_bar: ProgressBar = $HpBar
 @onready var hp_label: Label = $HpLabel
 @onready var action_label: Label = $ActionLabel
+@onready var body_visual: Sprite2D = $BodyVisual
 
 var _flash := 0.0
 var _is_boss := false
@@ -28,7 +33,6 @@ var _speed_jitter := 1.0
 var _archetype := "normal"
 var _room_type := "combat"
 var _skills: EnemySkillController
-
 
 func _ready() -> void:
 	health.max_hp = GameConstants.ENEMY_HP
@@ -47,7 +51,7 @@ func _ready() -> void:
 func configure_enemy(display_name: String, is_boss: bool = false, room_type: String = "combat") -> void:
 	_display_name = display_name
 	_is_boss = is_boss
-	_is_elite = display_name == "精英木人"
+	_is_elite = EnemySpawnRegistry.is_elite_display_name(display_name) or room_type == "combat_hard"
 	_room_type = room_type
 	_contact_damage = 22.0 if is_boss else 12.0
 	_move_speed = GameConstants.ENEMY_BOSS_MOVE_SPEED if is_boss else GameConstants.ENEMY_MOVE_SPEED
@@ -56,21 +60,69 @@ func configure_enemy(display_name: String, is_boss: bool = false, room_type: Str
 	)
 	_archetype = EnemySkillRegistry.resolve_archetype(display_name, is_boss, room_type)
 	_move_speed *= float(arch_row.get("move_speed_mult", 1.0))
-	_speed_jitter = randf_range(0.92, 1.08)
 	scale = Vector2(1.6, 1.6) if is_boss else Vector2.ONE
 	_skills = EnemySkillController.new()
 	_skills.setup(self, _archetype)
 	if is_boss:
 		_skills.setup_boss_phases(BossPhaseRegistry.get_phases("boss"))
 	_refresh_name_label()
+	_apply_body_sprite()
+
+
+func _apply_body_sprite() -> void:
+	if body_visual == null:
+		return
+	var path := AssetPaths.enemy_sprite(_archetype, _is_boss)
+	if body_visual.has_method("set_texture_path"):
+		body_visual.set_texture_path(path)
+	elif ResourceLoader.exists(path):
+		body_visual.texture = load(path)
+	else:
+		body_visual.texture = null  # Clear default so _draw() uses fallback circle
 
 
 func configure_as_boss() -> void:
 	configure_enemy("关底守将", true, "boss")
 
 
+func scale_contact_damage(mult: float) -> void:
+	if mult <= 0.0:
+		return
+	_contact_damage *= mult
+
+
+func apply_elite_affixes(affix_ids: Array) -> void:
+	const EliteAffixRegistry = preload("res://systems/combat/elite_affix_registry.gd")
+	if affix_ids.is_empty():
+		return
+	_is_elite = true
+	var suffix: PackedStringArray = []
+	for affix_id in affix_ids:
+		var row: Dictionary = EliteAffixRegistry.get_affix(str(affix_id))
+		if row.is_empty():
+			continue
+		_move_speed *= float(row.get("move_speed_mult", 1.0))
+		_contact_damage *= float(row.get("contact_damage_mult", 1.0))
+		var hp_scale := float(row.get("hp_mult", 1.0))
+		if hp_scale != 1.0:
+			health.max_hp *= hp_scale
+			health.current_hp = health.max_hp
+		suffix.append(EliteAffixRegistry.get_label(str(affix_id)))
+	if not suffix.is_empty():
+		_display_name = "%s·%s" % [_display_name, "·".join(suffix)]
+		_refresh_name_label()
+
+
 func get_display_name() -> String:
 	return _display_name
+
+
+func is_boss_unit() -> bool:
+	return _is_boss
+
+
+func is_elite_unit() -> bool:
+	return _is_elite
 
 
 func init_combat_slot(spawn_pos: Vector2, player_pos: Vector2, index: int, total: int, is_boss: bool) -> void:
@@ -84,7 +136,10 @@ func init_combat_slot(spawn_pos: Vector2, player_pos: Vector2, index: int, total
 	if is_boss:
 		_orbit_radius = GameConstants.ENEMY_ORBIT_RADIUS_BOSS
 	else:
-		_orbit_radius = GameConstants.ENEMY_ORBIT_RADIUS + float(index % 3) * GameConstants.ENEMY_ORBIT_SPREAD
+		_orbit_radius = GameConstants.ENEMY_ORBIT_RADIUS + float(index % 7) * GameConstants.ENEMY_ORBIT_SPREAD
+	_speed_jitter = RunRng.enemy_jitter(index).randf_range(0.82, 1.18)
+	if _skills:
+		_skills.apply_spawn_stagger(index)
 
 
 func _apply_display_settings() -> void:
@@ -122,6 +177,18 @@ func _emit_damage(result: Dictionary) -> void:
 	EventBus.damage_dealt.emit(result)
 
 
+func _get_player() -> Node2D:
+	return EntityCache.get_player() as Node2D
+
+
+func _apply_movement() -> void:
+	move_and_slide()
+	var radius := 20.0 if _is_boss else 16.0
+	global_position = GameConstants.clamp_to_arena(global_position, radius)
+	_refresh_action_label()
+	queue_redraw()
+
+
 func _physics_process(delta: float) -> void:
 	if get_tree().paused or _death_handled:
 		return
@@ -129,10 +196,10 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector2.ZERO
 		return
 
-	var player: Node2D = get_tree().get_first_node_in_group("player") as Node2D
+	var player: Node2D = _get_player()
 	if player == null:
 		velocity = Vector2.ZERO
-		move_and_slide()
+		_apply_movement()
 		return
 
 	var to_player: Vector2 = player.global_position - global_position
@@ -143,9 +210,7 @@ func _physics_process(delta: float) -> void:
 			_skills.update_phase(health.current_hp / health.max_hp)
 		_skills.tick(delta, player)
 		if _skills.is_busy():
-			move_and_slide()
-			_refresh_action_label()
-			queue_redraw()
+			_apply_movement()
 			return
 
 	var speed: float = _move_speed * _speed_jitter * status.get_move_speed_mult()
@@ -158,9 +223,7 @@ func _physics_process(delta: float) -> void:
 		_steer_velocity = Vector2.ZERO
 	velocity = _steer_velocity
 
-	move_and_slide()
-	_refresh_action_label()
-	queue_redraw()
+	_apply_movement()
 
 
 func _refresh_action_label() -> void:
@@ -250,7 +313,13 @@ func _process(delta: float) -> void:
 	if dot > 0.0:
 		health.take_damage(dot)
 	_flash = maxf(_flash - delta, 0.0)
-	queue_redraw()
+	var needs_redraw := _flash > 0.0 or _steer_velocity.length() > 10.0
+	if _skills and (_skills.get_windup_progress() > 0.0 or _skills.is_dashing()):
+		needs_redraw = true
+	if status.is_burning() or status.is_poisoned() or status.is_frozen() or status.is_paralyzed() or status.is_slowed():
+		needs_redraw = true
+	if needs_redraw:
+		queue_redraw()
 
 
 func get_burn_stacks() -> int:
@@ -267,24 +336,27 @@ func detonate_burn(base_damage: float) -> float:
 		return 0.0
 	var ctx: Dictionary
 	var holder: Node = null
-	var player := get_tree().get_first_node_in_group("player")
+	var player := _get_player()
 	if player and player.has_node("AffixHolder"):
 		holder = player.get_node("AffixHolder")
 		ctx = holder.build_damage_context(
 			raw,
 			maxf(health.defense - holder.flat_defense * 0.5, 0.0),
 			player.crit_rate,
-			player.crit_mult
+			player.crit_mult,
+			"combust",
 		)
-		ctx["is_crit"] = true
 	else:
-		ctx = {
-			"base_damage": raw,
-			"mult_a": 1.0, "mult_b": 1.0, "mult_c": 1.0, "mult_d": 1.0,
-			"is_crit": true, "crit_mult": 1.5,
-			"target_defense": health.defense,
-		}
-		WeatherSystem.apply_to_context(ctx, "fire")
+		ctx = CombatContextBuilder.build_fallback(
+			raw,
+			health.defense,
+			player.crit_rate if player else 0.0,
+			1.5,
+			"fire",
+			player,
+			"combust",
+			false,
+		)
 
 	var result: Dictionary = DamagePipeline.compute_pve(ctx)
 	health.take_damage(result.final_damage)
@@ -303,15 +375,21 @@ func receive_projectile_hit(projectile: Area2D) -> void:
 			projectile.damage,
 			maxf(health.defense - holder.flat_defense * 0.5, 0.0),
 			projectile.owner_player.crit_rate,
-			projectile.owner_player.crit_mult
+			projectile.owner_player.crit_mult,
+			"proj",
 		)
 	else:
-		ctx = {
-			"base_damage": projectile.damage,
-			"mult_a": 1.0, "mult_b": 1.0, "mult_c": 1.0, "mult_d": 1.0,
-			"is_crit": false, "crit_mult": 1.5,
-			"target_defense": health.defense,
-		}
+		var owner := projectile.owner_player as Node2D
+		ctx = CombatContextBuilder.build_fallback(
+			projectile.damage,
+			health.defense,
+			owner.crit_rate if owner else 0.0,
+			1.5,
+			"fire",
+			owner,
+			"proj",
+			false,
+		)
 
 	var result: Dictionary = DamagePipeline.compute_pve(ctx)
 	health.take_damage(result.final_damage)
@@ -336,11 +414,14 @@ func _on_died() -> void:
 	collision_layer = 0
 	collision_mask = 0
 	if status.is_burning():
-		var player := get_tree().get_first_node_in_group("player")
+		var player := _get_player()
 		if player and player.has_node("SkillProgression"):
 			player.get_node("SkillProgression").register_status_kill()
 	remove_from_group("enemy")
 	EventBus.enemy_killed.emit(self)
+	var burst_preset := "gold" if _is_boss else ("combo" if _is_elite else "hit")
+	var burst_color := Color(1.0, 0.84, 0.2) if _is_boss else GameConstants.COLOR_ENEMY
+	VfxManager.spawn_world(global_position, burst_preset, burst_color)
 	queue_free()
 
 
@@ -371,7 +452,6 @@ func _draw() -> void:
 		draw_line(Vector2.ZERO, -dir * streak, streak_color, 2.0 + streak * 0.08)
 
 	if _skills and _skills.get_windup_progress() > 0.0:
-		var total := 20.0 if _is_boss else 16.0
 		var progress := _skills.get_windup_progress()
 		var phase_color := Color(1.0, 0.35, 0.2, 0.9)
 		if _is_boss:
@@ -381,4 +461,9 @@ func _draw() -> void:
 	elif _skills and _skills.is_dashing():
 		draw_circle(Vector2.ZERO, radius + 8.0, Color(1.0, 0.2, 0.15, 0.25))
 
-	draw_circle(Vector2.ZERO, radius, color)
+	if body_visual:
+		body_visual.modulate = color
+		return
+
+	if body_visual == null:
+		draw_circle(Vector2.ZERO, radius, color)

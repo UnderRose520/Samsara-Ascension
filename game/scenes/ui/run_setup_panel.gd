@@ -50,7 +50,7 @@ const HEART_DEFS := [
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	UiHelpers.apply_panel_polish(panel)
+	UiHelpers.apply_panel_polish(panel, false)
 	UiHelpers.decorate_modal_header($Panel/Margin/VBox, title_label)
 	start_button.pressed.connect(_on_start_pressed)
 	meta_button.pressed.connect(_on_meta_pressed)

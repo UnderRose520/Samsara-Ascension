@@ -220,30 +220,26 @@ def gen_panel_ninepatch() -> None:
         set_px(buf, 1, y, stroke)
         set_px(buf, w - 2, y, stroke)
 
-    # Continuous carved gold frame (9-slice edge regions stretch cleanly)
-    gold_soft = hex_to_rgba(TOKENS["accent.gold_soft"], 160)
-    fi = 6
+    # Refined continuous thin soft-gold frame — no harsh bright corner brackets.
+    # All lines stay within the 32px ninepatch margin so 9-slice edges stretch cleanly
+    # (avoids the stretched mid-edge "tick" artifacts the old corner brackets produced).
+    frame = hex_to_rgba(TOKENS["accent.gold_soft"])
+    frame_dim = hex_to_rgba(TOKENS["accent.gold_soft"], 70)
+    fi = 8
     for x in range(fi, w - fi):
-        set_px(buf, x, fi, gold)
-        set_px(buf, x, h - fi - 1, gold)
-        set_px(buf, x, fi + 1, gold_soft)
-        set_px(buf, x, h - fi - 2, gold_soft)
+        set_px(buf, x, fi, frame)
+        set_px(buf, x, h - fi - 1, frame)
+        set_px(buf, x, fi + 2, frame_dim)
+        set_px(buf, x, h - fi - 3, frame_dim)
     for y in range(fi, h - fi):
-        set_px(buf, fi, y, gold)
-        set_px(buf, w - fi - 1, y, gold)
-        set_px(buf, fi + 1, y, gold_soft)
-        set_px(buf, w - fi - 2, y, gold_soft)
-
-    corner_len = 28
-    thick = 3
+        set_px(buf, fi, y, frame)
+        set_px(buf, w - fi - 1, y, frame)
+        set_px(buf, fi + 2, y, frame_dim)
+        set_px(buf, w - fi - 3, y, frame_dim)
+    # subtle jade corner inlays (small, inside the margin)
     jade = hex_to_rgba("#4FD6B8")
-    corners = [(8, 8, 1, 1), (w - 9, 8, -1, 1), (8, h - 9, 1, -1), (w - 9, h - 9, -1, -1)]
-    for ox, oy, sx, sy in corners:
-        draw_line(buf, ox, oy, ox + sx * corner_len, oy, gold, thick)
-        draw_line(buf, ox, oy, ox, oy + sy * corner_len, gold, thick)
-        # jade inlay gem at each corner
-        fill_circle(buf, ox + sx * 3, oy + sy * 3, 3, jade)
-        set_px(buf, ox + sx * 3, oy + sy * 3, (220, 255, 245, 255))
+    for cxp, cyp in [(fi, fi), (w - fi - 1, fi), (fi, h - fi - 1), (w - fi - 1, h - fi - 1)]:
+        fill_circle(buf, cxp, cyp, 2, jade)
 
     save_rgba(buf, UI_OUT / "panel_ninepatch_256.png")
 
@@ -301,21 +297,15 @@ def gen_hud_panel_bg() -> None:
 
 
 def gen_modal_title_bar() -> None:
-    """720×52 modal title strip with center glow."""
+    """720×52 modal title strip — subtle centered soft-gold divider under the title."""
     w, h = 720, 52
-    gold = hex_to_rgba(TOKENS["accent.gold"])
     soft = hex_to_rgba(TOKENS["accent.gold_soft"])
     buf = new_canvas(w, h, (0, 0, 0, 0))
     for x in range(w):
-        t = abs(x - w * 0.5) / (w * 0.5)
-        a = int(40 + (1.0 - t) * 80)
-        set_px(buf, x, h // 2, (gold[0], gold[1], gold[2], a))
-        set_px(buf, x, h // 2 + 1, (soft[0], soft[1], soft[2], a // 2))
-    draw_line(buf, 24, 8, 120, 8, gold, 2)
-    draw_line(buf, w - 120, 8, w - 24, 8, gold, 2)
-    draw_line(buf, 24, h - 9, w - 24, h - 9, (gold[0], gold[1], gold[2], 100), 1)
-    for cx in (48, w - 48):
-        fill_circle(buf, cx, 10, 3, gold)
+        t = max(0.0, 1.0 - abs(x - w * 0.5) / (w * 0.5))
+        a = int(110 * t)
+        set_px(buf, x, h - 10, (soft[0], soft[1], soft[2], a))
+        set_px(buf, x, h - 9, (soft[0], soft[1], soft[2], a // 2))
     save_rgba(buf, UI_OUT / "modal_title_bar_720x52.png")
 
 

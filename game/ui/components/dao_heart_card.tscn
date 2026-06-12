@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://d070u02kheb0s"]
 
 [ext_resource type="Script" path="res://ui/components/dao_heart_card.gd" id="1"]
-[ext_resource type="Script" path="res://ui/components/ui_gold_corners.gd" id="2"]
 
 [node name="DaoHeartCard" type="PanelContainer"]
 custom_minimum_size = Vector2(168, 200)
@@ -64,13 +63,3 @@ theme_override_font_sizes/font_size = 11
 text = "标准体验"
 horizontal_alignment = 1
 autowrap_mode = 2
-
-[node name="Corners" type="Control" parent="Margin/Body"]
-unique_name_in_owner = true
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("2")

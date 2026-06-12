@@ -40,23 +40,26 @@ func set_selected(on: bool) -> void:
 
 func _set_selected(on: bool) -> void:
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = UiTokens.BG_PANEL if not on else Color(0.12, 0.1, 0.08, 0.95)
-	sb.border_width_left = 2
-	sb.border_width_top = 2
-	sb.border_width_right = 2
-	sb.border_width_bottom = 2
-	sb.border_color = UiTokens.ACCENT_GOLD if on else Color(1, 0.843, 0, 0.25)
-	sb.corner_radius_top_left = 8
-	sb.corner_radius_top_right = 8
-	sb.corner_radius_bottom_left = 8
-	sb.corner_radius_bottom_right = 8
-	sb.shadow_color = Color(1, 0.843, 0, 0.35) if on else Color(0, 0, 0, 0.25)
-	sb.shadow_size = 8 if on else 4
+	sb.bg_color = Color(0.094, 0.243, 0.196, 0.96) if on else Color(0.051, 0.137, 0.114, 0.82)
+	sb.border_width_left = 1
+	sb.border_width_top = 1
+	sb.border_width_right = 1
+	sb.border_width_bottom = 1
+	# 选中：柔和暖金细边 + 金色辉光；未选中：极淡金边，无硬描边
+	sb.border_color = Color(0.93, 0.81, 0.46, 0.8) if on else Color(0.85, 0.78, 0.55, 0.16)
+	sb.corner_radius_top_left = 10
+	sb.corner_radius_top_right = 10
+	sb.corner_radius_bottom_left = 10
+	sb.corner_radius_bottom_right = 10
+	if on:
+		sb.shadow_color = Color(1.0, 0.84, 0.4, 0.3)
+		sb.shadow_size = 16
+	else:
+		sb.shadow_color = Color(0.0, 0.0, 0.0, 0.2)
+		sb.shadow_size = 5
 	add_theme_stylebox_override("panel", sb)
 	_glow.visible = on
-	_glow.color = Color(1, 0.843, 0, 0.08 if on else 0.0)
-	if on:
-		UiAnimations.pulse_gold(_title, 1)
+	_glow.color = Color(1.0, 0.85, 0.42, 0.1 if on else 0.0)
 
 
 func _set_children_mouse_ignore(node: Node) -> void:

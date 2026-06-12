@@ -40,13 +40,14 @@ func set_selected(on: bool) -> void:
 
 func _set_selected(on: bool) -> void:
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.094, 0.243, 0.196, 0.96) if on else Color(0.051, 0.137, 0.114, 0.82)
-	sb.border_width_left = 1
-	sb.border_width_top = 1
-	sb.border_width_right = 1
-	sb.border_width_bottom = 1
-	# 选中：柔和暖金细边 + 金色辉光；未选中：极淡金边，无硬描边
-	sb.border_color = Color(0.93, 0.81, 0.46, 0.8) if on else Color(0.85, 0.78, 0.55, 0.16)
+	sb.bg_color = Color(0.094, 0.243, 0.196, 0.96) if on else Color(0.051, 0.137, 0.114, 0.85)
+	var bw := 2 if on else 1
+	sb.border_width_left = bw
+	sb.border_width_top = bw
+	sb.border_width_right = bw
+	sb.border_width_bottom = bw
+	# 选中：暖金细边 + 金色辉光；未选中：雅致软金描边（成框）
+	sb.border_color = Color(0.95, 0.84, 0.5, 0.92) if on else Color(0.85, 0.78, 0.55, 0.45)
 	sb.corner_radius_top_left = 10
 	sb.corner_radius_top_right = 10
 	sb.corner_radius_bottom_left = 10

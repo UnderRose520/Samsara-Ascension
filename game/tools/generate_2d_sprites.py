@@ -203,44 +203,42 @@ def pil_fill_rounded_rect(
 # ---------------------------------------------------------------------------
 # Generators
 # ---------------------------------------------------------------------------
+def _gold_frame_ramp() -> dict:
+    """Beveled metallic gold frame profile keyed by distance from the nearest edge.
+    Stays within the 32px ninepatch margin so 9-slice edges stretch uniformly."""
+    edge = hex_to_rgba("#5A4A1E")        # dark outer rim
+    gold = hex_to_rgba(TOKENS["accent.gold"])
+    bright = hex_to_rgba("#FFE680")      # bevel highlight
+    soft = hex_to_rgba(TOKENS["accent.gold_soft"])
+    groove = hex_to_rgba("#0C241D")      # dark jade groove between the two gold lines
+    inner = hex_to_rgba(TOKENS["accent.gold_soft"], 200)
+    inner2 = hex_to_rgba(TOKENS["accent.gold_soft"], 90)
+    return {0: edge, 1: gold, 2: bright, 3: gold, 4: soft, 5: groove, 6: groove, 7: inner, 8: inner2}
+
+
+def _draw_gold_frame(buf, w, h, ramp) -> None:
+    for y in range(h):
+        for x in range(w):
+            d = min(x, y, w - 1 - x, h - 1 - y)
+            c = ramp.get(d)
+            if c is not None:
+                set_px(buf, x, y, c)
+
+
 def gen_panel_ninepatch() -> None:
-    """256×256 scroll panel with gold corner accents."""
+    """256×256 jade panel with an ornate beveled gold frame + jade corner inlays."""
     w, h = 256, 256
     panel = hex_to_rgba(TOKENS["bg.panel"])
-    gold = hex_to_rgba(TOKENS["accent.gold"])
-    stroke = (255, 255, 255, 20)
     buf = new_canvas(w, h, (0, 0, 0, 0))
     fill_rect(buf, 0, 0, w, h, panel)
-    margin = 32
-    fill_rect(buf, margin, margin, w - margin, h - margin, hex_to_rgba(TOKENS["bg.panel_alt"], 80))
-    for x in range(1, w - 1):
-        set_px(buf, x, 1, stroke)
-        set_px(buf, x, h - 2, stroke)
-    for y in range(1, h - 1):
-        set_px(buf, 1, y, stroke)
-        set_px(buf, w - 2, y, stroke)
-
-    # Refined continuous thin soft-gold frame — no harsh bright corner brackets.
-    # All lines stay within the 32px ninepatch margin so 9-slice edges stretch cleanly
-    # (avoids the stretched mid-edge "tick" artifacts the old corner brackets produced).
-    frame = hex_to_rgba(TOKENS["accent.gold_soft"])
-    frame_dim = hex_to_rgba(TOKENS["accent.gold_soft"], 70)
-    fi = 8
-    for x in range(fi, w - fi):
-        set_px(buf, x, fi, frame)
-        set_px(buf, x, h - fi - 1, frame)
-        set_px(buf, x, fi + 2, frame_dim)
-        set_px(buf, x, h - fi - 3, frame_dim)
-    for y in range(fi, h - fi):
-        set_px(buf, fi, y, frame)
-        set_px(buf, w - fi - 1, y, frame)
-        set_px(buf, fi + 2, y, frame_dim)
-        set_px(buf, w - fi - 3, y, frame_dim)
-    # subtle jade corner inlays (small, inside the margin)
+    _draw_gold_frame(buf, w, h, _gold_frame_ramp())
+    # jade corner inlay gems sitting on the inner gold line
     jade = hex_to_rgba("#4FD6B8")
-    for cxp, cyp in [(fi, fi), (w - fi - 1, fi), (fi, h - fi - 1), (w - fi - 1, h - fi - 1)]:
-        fill_circle(buf, cxp, cyp, 2, jade)
-
+    jade_hi = (224, 255, 246, 255)
+    for cxp, cyp in [(9, 9), (w - 10, 9), (9, h - 10), (w - 10, h - 10)]:
+        fill_circle(buf, cxp, cyp, 4, hex_to_rgba("#0C241D"))
+        fill_circle(buf, cxp, cyp, 3, jade)
+        set_px(buf, cxp, cyp, jade_hi)
     save_rgba(buf, UI_OUT / "panel_ninepatch_256.png")
 
 

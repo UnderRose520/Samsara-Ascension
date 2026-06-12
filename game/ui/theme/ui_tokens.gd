@@ -3,10 +3,10 @@ extends RefCounted
 
 ## Design tokens from docs/UIUX_轮回仙途_v1.0.md §3.1–3.3
 
-# --- Background ---
-static var BG_DEEP := color_from_hex("#0D0D0D")
-static var BG_PANEL := color_from_hex("#1A1A2E")
-static var BG_PANEL_ALT := color_from_hex("#2D2D44")
+# --- Background (金碧仙宫 jade-palace palette) ---
+static var BG_DEEP := color_from_hex("#06140F")
+static var BG_PANEL := color_from_hex("#0F2A22")
+static var BG_PANEL_ALT := color_from_hex("#1B4438")
 
 # --- Text ---
 static var TEXT_PRIMARY := color_from_hex("#F0ECE4")
@@ -67,8 +67,8 @@ static var RADIUS_MD := 8
 static var RADIUS_LG := 12
 
 # --- Panel decoration ---
-static var PANEL_INNER_STROKE := Color(1.0, 1.0, 1.0, 0.08)
-static var DIVIDER := Color(0.769, 0.714, 0.612, 0.25)
+static var PANEL_INNER_STROKE := Color(1.0, 0.843, 0.0, 0.14)
+static var DIVIDER := Color(1.0, 0.843, 0.0, 0.3)
 
 # --- Dimmer overlays (prototype alignment §13) ---
 static var DIMMER_COMBAT := Color(0.0, 0.0, 0.0, 0.55)

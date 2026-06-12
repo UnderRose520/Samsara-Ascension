@@ -2,9 +2,9 @@ extends Control
 class_name UiGoldCorners
 ## 四角金线装饰 — 用于 HUD 侧栏 / Modal 内框
 
-@export var corner_color: Color = Color(1.0, 0.843, 0.0, 0.55)
-@export var line_width: float = 2.0
-@export var corner_len: float = 16.0
+@export var corner_color: Color = Color(1.0, 0.843, 0.0, 0.85)
+@export var line_width: float = 2.5
+@export var corner_len: float = 18.0
 @export var inset: float = 4.0
 
 func _ready() -> void:

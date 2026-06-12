@@ -14,11 +14,11 @@ ROOT = Path(__file__).resolve().parents[1]
 UI_OUT = ROOT / "assets" / "ui"
 SPRITE_OUT = ROOT / "assets" / "sprites"
 
-# --- Color tokens (UIUX §3.1) ---
+# --- Color tokens (UIUX §3.1; 金碧仙宫 jade-palace palette) ---
 TOKENS = {
-    "bg.deep": "#0D0D0D",
-    "bg.panel": "#1A1A2E",
-    "bg.panel_alt": "#2D2D44",
+    "bg.deep": "#06140F",
+    "bg.panel": "#0F2A22",
+    "bg.panel_alt": "#1B4438",
     "text.primary": "#F0ECE4",
     "text.secondary": "#C4B69C",
     "text.muted": "#8A8278",
@@ -220,15 +220,30 @@ def gen_panel_ninepatch() -> None:
         set_px(buf, 1, y, stroke)
         set_px(buf, w - 2, y, stroke)
 
+    # Continuous carved gold frame (9-slice edge regions stretch cleanly)
+    gold_soft = hex_to_rgba(TOKENS["accent.gold_soft"], 160)
+    fi = 6
+    for x in range(fi, w - fi):
+        set_px(buf, x, fi, gold)
+        set_px(buf, x, h - fi - 1, gold)
+        set_px(buf, x, fi + 1, gold_soft)
+        set_px(buf, x, h - fi - 2, gold_soft)
+    for y in range(fi, h - fi):
+        set_px(buf, fi, y, gold)
+        set_px(buf, w - fi - 1, y, gold)
+        set_px(buf, fi + 1, y, gold_soft)
+        set_px(buf, w - fi - 2, y, gold_soft)
+
     corner_len = 28
     thick = 3
+    jade = hex_to_rgba("#4FD6B8")
     corners = [(8, 8, 1, 1), (w - 9, 8, -1, 1), (8, h - 9, 1, -1), (w - 9, h - 9, -1, -1)]
     for ox, oy, sx, sy in corners:
         draw_line(buf, ox, oy, ox + sx * corner_len, oy, gold, thick)
         draw_line(buf, ox, oy, ox, oy + sy * corner_len, gold, thick)
-        for i in range(4):
-            set_px(buf, ox + sx * (corner_len - 6 + i), oy + sy * 2, gold)
-            set_px(buf, ox + sx * 2, oy + sy * (corner_len - 6 + i), gold)
+        # jade inlay gem at each corner
+        fill_circle(buf, ox + sx * 3, oy + sy * 3, 3, jade)
+        set_px(buf, ox + sx * 3, oy + sy * 3, (220, 255, 245, 255))
 
     save_rgba(buf, UI_OUT / "panel_ninepatch_256.png")
 

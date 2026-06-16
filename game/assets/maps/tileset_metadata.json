@@ -25,7 +25,7 @@
     },
     {
       "index": 2,
-      "name": "wall",
+      "name": "obstacle",
       "atlas_coords": [
         2,
         0
@@ -43,48 +43,53 @@
   "themes": [
     {
       "theme_id": "qi_refining_verdant",
-      "theme_label": "炼气翠绿",
+      "theme_label": "炼气翠林",
       "stage_index": 1,
       "stage_name": "初入仙途",
       "weather_id": "clear",
       "tileset": "res://assets/maps/qi_refining_verdant/tileset.png",
-      "room_background": "res://assets/maps/qi_refining_verdant/room_background.png"
+      "room_background": "res://assets/maps/qi_refining_verdant/room_background.png",
+      "terrain_props": "res://assets/maps/qi_refining_verdant/terrain_props.png"
     },
     {
       "theme_id": "foundation_cavern",
-      "theme_label": "筑基洞窟",
+      "theme_label": "筑基灵窟",
       "stage_index": 2,
       "stage_name": "秘境深处",
       "weather_id": "rain",
       "tileset": "res://assets/maps/foundation_cavern/tileset.png",
-      "room_background": "res://assets/maps/foundation_cavern/room_background.png"
+      "room_background": "res://assets/maps/foundation_cavern/room_background.png",
+      "terrain_props": "res://assets/maps/foundation_cavern/terrain_props.png"
     },
     {
       "theme_id": "golden_core_demon",
       "theme_label": "金丹魔域",
       "stage_index": 3,
-      "stage_name": "渡劫前夕",
+      "stage_name": "渡劫前夜",
       "weather_id": "thunder",
       "tileset": "res://assets/maps/golden_core_demon/tileset.png",
-      "room_background": "res://assets/maps/golden_core_demon/room_background.png"
+      "room_background": "res://assets/maps/golden_core_demon/room_background.png",
+      "terrain_props": "res://assets/maps/golden_core_demon/terrain_props.png"
     },
     {
       "theme_id": "nascent_soul_ruins",
       "theme_label": "元婴遗迹",
       "stage_index": 4,
-      "stage_name": "焚心秘域",
+      "stage_name": "焚心秘境",
       "weather_id": "fire",
       "tileset": "res://assets/maps/nascent_soul_ruins/tileset.png",
-      "room_background": "res://assets/maps/nascent_soul_ruins/room_background.png"
+      "room_background": "res://assets/maps/nascent_soul_ruins/room_background.png",
+      "terrain_props": "res://assets/maps/nascent_soul_ruins/terrain_props.png"
     },
     {
       "theme_id": "tribulation_thunder",
-      "theme_label": "渡劫雷劫",
+      "theme_label": "天劫雷台",
       "stage_index": 5,
       "stage_name": "天劫试场",
       "weather_id": "wind",
       "tileset": "res://assets/maps/tribulation_thunder/tileset.png",
-      "room_background": "res://assets/maps/tribulation_thunder/room_background.png"
+      "room_background": "res://assets/maps/tribulation_thunder/room_background.png",
+      "terrain_props": "res://assets/maps/tribulation_thunder/terrain_props.png"
     }
   ]
 }

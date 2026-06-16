@@ -29,6 +29,11 @@ func _on_spawn_player_projectile(payload: Dictionary) -> void:
 		float(payload.get("radius", 5.0)),
 		payload.get("color", GameConstants.COLOR_PROJECTILE),
 		int(payload.get("pierce", -1)),
+		str(payload.get("element", "fire")),
+		float(payload.get("range", -1.0)),
+		str(payload.get("source_tag", "projectile")),
+		str(payload.get("status_on_hit", "")),
+		float(payload.get("status_duration", 0.0)),
 	)
 	scene_root.add_child(projectile)
 

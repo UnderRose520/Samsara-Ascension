@@ -1,0 +1,5 @@
+weapon_id,name,family,attack_shape,attack_range,attack_arc_deg,projectile_speed,attack_interval_mult,damage_mult,element_hint,visual_color,projectile_radius,summary,start_q
+starter_orb,素玉法珠,orb,projectile,520,0,330,1.00,1.00,fire,#ffd700,5,远程元气弹；保留当前法修手感,lie_yan_bolt
+qing_feng_sword,青锋剑,sword,short_arc,76,96,0,0.82,1.12,physical,#b8e6ff,0,三段近中剑斩的第一步；适合后续接剑芒和铭纹,yu_jian_thrust
+san_cai_flag,三才符旗,talisman,projectile,480,0,285,1.08,0.92,wood,#70d878,6,投符起阵的占位形态；后续扩展为落地符阵,qi_fu
+soul_banner,镇魂幡,banner,projectile,500,0,260,1.12,0.96,soul,#a971ff,7,魂火远击并为召魂流预留残魂接口,summon_soul

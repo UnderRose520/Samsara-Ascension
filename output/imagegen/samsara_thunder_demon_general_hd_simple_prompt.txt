@@ -1,0 +1,16 @@
+Asset: Samsara Ascension thunder demon simplified HD monster concept via gpt-image-2
+
+Generation prompt:
+Use case: stylized-concept
+Asset type: simplified clean HD 2D game monster concept for a cultivation roguelite
+Primary request: create a simpler, more game-readable version of a thunder tribulation demon enemy for Samsara Ascension. Keep the premium hand-painted xianxia boss feeling, but reduce armor filigree, floating objects, and texture noise so it reads clearly at game size.
+Scene/backdrop: perfectly flat solid #FF00FF chroma-key background only, one uniform color, no shadows, no gradients, no texture, no floor plane, no lighting variation
+Subject: thunder demon general, humanoid elite or boss silhouette, dark armor with a few clear lightning cracks, compact horned helm, simplified tattered robe panels, two or three small floating talismans at most, clawed gauntlets, masked face, compact electric aura
+Style/medium: clean HD hand-painted 2D game monster concept, polished fantasy RPG asset, crisp silhouette, simplified fine details, reduced armor ornament complexity, reduced VFX clutter, not photorealistic, not 3D, not pixel art
+Composition/framing: full body visible, three-quarter RPG view, battle-ready idle pose, centered, generous padding, clear feet anchor, subject occupies about 68 percent of the canvas
+Lighting/mood: storm-lit rim light, internal blue lightning glow, dramatic but readable contrast
+Color palette: charcoal black, storm blue, electric cyan, muted steel; avoid magenta in the subject
+Materials/textures: forged dark metal, scorched cloth, controlled lightning fissures
+Constraints: single monster only; no background scene; no UI; no text; no watermark; no extra enemies; no giant floating debris; no many talismans; no oversized lightning arcs; maintain a clean hostile silhouette readable in combat
+Avoid: overdesigned armor, too many floating ornaments, noisy textures, gore, giant wings, chibi style, comic mood
+

@@ -17,7 +17,7 @@ const UiTokens = preload("res://ui/theme/ui_tokens.gd")
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	apply_polish()
-	next_label.text = "下一天象 · —"
+	next_label.text = "下一天象 未知"
 
 
 func apply_polish() -> void:

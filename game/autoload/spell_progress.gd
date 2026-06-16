@@ -17,7 +17,13 @@ func reset() -> void:
 
 
 func get_default_bindings() -> Dictionary:
-	return DEFAULT_SPELL_BINDINGS.duplicate()
+	var bindings := DEFAULT_SPELL_BINDINGS.duplicate()
+	if is_instance_valid(RunContext):
+		var weapon := RunContext.get_weapon()
+		var start_q := str(weapon.get("start_q", ""))
+		if not start_q.is_empty() and not ActiveSpellRegistry.get_spell(start_q).is_empty():
+			bindings["q"] = start_q
+	return bindings
 
 
 func get_unlocks() -> Dictionary:
@@ -47,7 +53,7 @@ func grant_for_realm(realm_level: int, affix_slot_cap: int) -> void:
 
 
 func _emit_learn_feedback(slot: String, source: String, affix_slot_cap: int) -> void:
-	var spell_id := str(DEFAULT_SPELL_BINDINGS.get(slot, ""))
+	var spell_id := str(get_default_bindings().get(slot, ""))
 	var spell := ActiveSpellRegistry.get_spell(spell_id)
 	var spell_name := str(spell.get("name", slot.to_upper()))
 	var slot_label := slot.to_upper()

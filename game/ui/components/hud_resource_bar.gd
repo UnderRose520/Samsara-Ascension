@@ -13,7 +13,7 @@ const UiTokens = preload("res://ui/theme/ui_tokens.gd")
 @onready var mana_bar: ProgressBar = $ManaBar
 @onready var value_label: Label = $ValueLabel
 
-var _placeholder_mana := true
+var _placeholder_mana := false
 
 
 func _ready() -> void:
@@ -27,8 +27,8 @@ func _ready() -> void:
 		hp_bar.visible = false
 		mana_bar.visible = true
 		_apply_mana_bar_styles()
-		tooltip_text = "灵力系统待接入"
-		set_values(68.0, 100.0)
+		tooltip_text = "道韵"
+		set_values(0.0, 100.0)
 
 
 func _apply_frame_texture() -> void:
@@ -77,12 +77,8 @@ func set_values(current: float, maximum: float) -> void:
 	else:
 		mana_bar.max_value = max_v
 		mana_bar.value = cur_v
-		if _placeholder_mana:
-			value_label.text = "%.0f / %.0f" % [cur_v, max_v]
-			value_label.modulate = Color(0.75, 0.78, 0.85, 0.85)
-		else:
-			value_label.text = "%.0f / %.0f" % [cur_v, max_v]
-			value_label.modulate = Color.WHITE
+		value_label.text = "%.0f / %.0f" % [cur_v, max_v]
+		value_label.modulate = Color.WHITE
 
 
 func get_hp_row() -> Control:

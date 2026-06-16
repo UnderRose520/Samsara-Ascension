@@ -1,0 +1,24 @@
+Asset: Samsara Ascension jade cultivator HD character concept
+Project context:
+- TDD v7.0 section 19 defines character and spirit-root systems.
+- TDD v7.0 section 34 defines Godot 4 2D rendering, 45-degree pseudo-isometric/Y-sort, and a 64x64 character baseline.
+- UIUX pixel spec defines the current player as a Chinese cultivation character with white robes, teal trim, gold edging, jade sword, hair ornament, and qi aura.
+
+Generation prompt:
+Use case: stylized-concept
+Asset type: clean HD 2D game character sprite for Godot top-down roguelite
+Input images: the attached reference image is a style and mood reference only; do not copy the exact pose or background.
+Primary request: create a new full-body female xianxia cultivator player character, readable as a controllable hero for Samsara Ascension.
+Subject: elegant young cultivator with long dark hair, jade-and-gold hair ornament, pale jade forehead gem, white and light-jade daoist robes, translucent teal ribbons, gold trim, small jade sword held close to the body. The silhouette should be clear at game scale and feel like a Sword/Wood-spirit cultivator.
+Style/medium: clean HD hand-painted 2D game sprite, polished fantasy RPG asset, crisp silhouette, controlled painterly detail, not photorealistic, not 3D, not pixel art.
+View/framing: full body visible, top-down 45-degree / three-quarter RPG view, standing neutral idle pose, centered, generous padding, feet/bottom anchor visible. Character occupies about 65-75% of the square canvas.
+Color palette: white, pale jade, teal, warm gold, dark ink hair; avoid magenta in the character.
+Game constraints: single character only; no scene background; no UI; no text; no labels; no watermark; no extra characters; no large detached spell effects; keep ribbons and hair inside the canvas; strong readable outline/edge separation for gameplay.
+Background for AI generation: perfectly flat solid #FF00FF chroma-key background only, one uniform color, no shadows, no gradients, no texture, no floor plane, no lighting variation.
+
+Local output:
+- output/imagegen/samsara_jade_cultivator_hd_local_concept.png
+- game/assets/sprites/player_cultivator_hd_jade_concept.png
+
+Note:
+The local PNG is a deterministic drawn concept fallback because the available Image API key returned 401 invalid_api_key and no built-in image_gen tool was exposed in this thread.

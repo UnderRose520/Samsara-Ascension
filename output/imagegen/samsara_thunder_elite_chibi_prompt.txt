@@ -1,0 +1,16 @@
+Asset: Samsara Ascension thunder elite chibi HD monster concept via gpt-image-2
+
+Generation prompt:
+Use case: stylized-concept
+Asset type: chibi clean HD 2D elite enemy concept for a cultivation roguelite
+Primary request: create a cuter, more chibi-like thunder elite enemy for Samsara Ascension. It should still feel hostile and combat-ready, but use a simpler, slightly super-deformed silhouette so it reads better in small in-game combat sizes.
+Scene/backdrop: perfectly flat solid #FF00FF chroma-key background only, one uniform color, no shadows, no gradients, no texture, no floor plane, no lighting variation
+Subject: chibi thunder armored elite warrior, compact body, slightly oversized helmet and gauntlets, one horned helm, dark armor, a few bright lightning cracks on chest and arm, short torn cloth, one small talisman, short lightning spear or blade, hostile but readable stance
+Style/medium: clean HD hand-painted 2D game enemy concept, chibi fantasy RPG asset, crisp silhouette, simplified details, reduced ornament complexity, readable hostile proportions, not photorealistic, not 3D, not pixel art
+Composition/framing: full body visible, three-quarter RPG combat view, compact idle pose, centered, generous padding, clear feet anchor, subject occupies about 56 percent of the canvas
+Lighting/mood: storm-lit blue rim light, controlled electric glow, readable contrast
+Color palette: charcoal black, electric blue, muted steel, a little cyan; avoid magenta in the subject
+Materials/textures: forged armor, worn cloth, controlled lightning cracks
+Constraints: single enemy only; no background scene; no UI; no text; no watermark; no huge VFX; no giant wings; no many ornaments; keep a compact cute-hostile silhouette suitable for repeated encounters
+Avoid: realistic body proportions, giant cape, boss-scale crown, too many floating objects, gore, comedy face, cluttered pose
+

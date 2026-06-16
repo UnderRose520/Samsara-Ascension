@@ -1,0 +1,25 @@
+Asset: Samsara Ascension thunder demon general HD monster concept via gpt-image-2
+
+Project context:
+- TDD v7.0.1 stages 3-5 and boss framework emphasize thunder tribulation, demonized late-run bosses, and readable elite silhouettes.
+- Enemy data includes boss, berserker, shaman, skirmisher, and ranged archetypes, so the monster concept should feel production-relevant for combat readability.
+- User asked for a similar HD hand-painted style to the attached xianxia reference, but with simplified detail.
+
+Generation prompt:
+Use case: stylized-concept
+Asset type: clean HD 2D game monster concept for a cultivation roguelite
+Primary request: create a new cultivation monster concept for Samsara Ascension inspired by the TDD stage bosses and thunder-tribulation setting. Design a readable enemy that feels like a late-run boss or elite. It should visually pair with the jade cultivator art style but remain clearly hostile.
+Scene/backdrop: perfectly flat solid #FF00FF chroma-key background only, one uniform color, no shadows, no gradients, no texture, no floor plane, no lighting variation
+Subject: tribulation thunder demon general, humanoid boss silhouette, blackened armor plates cracked with blue-white lightning veins, long tattered robe panels, horn-like crown, floating thunder talismans close to the body, clawed gauntlets, stern masked face, compact storm aura, readable as a xianxia boss monster
+Style/medium: clean HD hand-painted 2D game enemy concept, polished fantasy RPG asset, crisp silhouette, controlled painterly detail, simplified fine details, not photorealistic, not 3D, not pixel art
+Composition/framing: full body visible, top-down 45-degree three-quarter RPG view, battle-ready idle pose, centered, generous padding, stable feet anchor, subject occupies about 70 percent of the canvas
+Lighting/mood: storm-lit rim light, thunder glow from internal cracks, dramatic but gameplay-readable contrast
+Color palette: charcoal black, storm blue, electric cyan, muted silver, faint ember violet accents kept minimal; avoid magenta in the subject
+Materials/textures: forged dark metal, scorched cloth, lightning energy fissures, talisman paper with metallic edges
+Constraints: single monster only; no scene background; no UI; no text; no watermark; no extra enemies; no oversized detached lightning arcs; keep aura compact and inside the canvas; maintain strong game-readable silhouette; simplify ornamental detail while preserving premium hand-painted look
+Avoid: busy backdrop, giant wings, giant floating debris, photoreal gore, hyper-detailed textures, cropped limbs, chibi proportions, cartoon comedy mood
+
+Planned outputs:
+- output/imagegen/samsara_thunder_demon_general_hd_image2.png
+- output/imagegen/samsara_thunder_demon_general_hd_image2_alpha.png
+

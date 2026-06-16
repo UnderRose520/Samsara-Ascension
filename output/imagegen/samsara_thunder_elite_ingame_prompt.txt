@@ -1,0 +1,16 @@
+Asset: Samsara Ascension thunder elite in-game simplified enemy concept via gpt-image-2
+
+Generation prompt:
+Use case: stylized-concept
+Asset type: simplified clean HD 2D elite enemy concept for a cultivation roguelite
+Primary request: create a thunder-aligned elite enemy that looks more like an in-game combat unit than a final boss. It should fit Samsara Ascension and stay readable at small sizes.
+Scene/backdrop: perfectly flat solid #FF00FF chroma-key background only, one uniform color, no shadows, no gradients, no texture, no floor plane, no lighting variation
+Subject: thunder armored elite warrior, humanoid silhouette, dark plated armor, one horned helm, two bright lightning fissure lines across the chest and one arm, short torn waist cloth, clawed gauntlet, one or two small talismans only, compact hostile stance, no giant cape
+Style/medium: clean HD hand-painted 2D game enemy concept, polished fantasy RPG asset, crisp silhouette, simplified fine details, reduced ornament complexity, reduced VFX clutter, not photorealistic, not 3D, not pixel art
+Composition/framing: full body visible, three-quarter RPG combat view, compact idle pose, centered, generous padding, clear feet anchor, subject occupies about 62 percent of the canvas
+Lighting/mood: storm-lit blue rim light, hard readable contrast, restrained energy glow
+Color palette: charcoal black, electric blue, muted steel, a little cyan; avoid magenta in the subject
+Materials/textures: forged armor, worn cloth, controlled lightning cracks
+Constraints: single elite enemy only; no background scene; no UI; no text; no watermark; no giant floating debris; no giant wings; no many talismans; no oversized lightning arcs; preserve a clean combat silhouette suitable for repeated encounters
+Avoid: boss-scale costume, massive crown, too many ornaments, noisy textures, gore, comedy style, huge aura
+

@@ -1,0 +1,16 @@
+Asset: Samsara Ascension ranged enemy chibi HD concept via gpt-image-2
+
+Generation prompt:
+Use case: stylized-concept
+Asset type: chibi clean HD 2D ranged enemy concept for a cultivation roguelite
+Primary request: create a cute but hostile chibi ranged enemy for Samsara Ascension that can work as a bomber, archer, or shaman-style unit. It should be easy to read at small in-game sizes and visually distinct from the melee unit.
+Scene/backdrop: perfectly flat solid #FF00FF chroma-key background only, one uniform color, no shadows, no gradients, no texture, no floor plane, no lighting variation
+Subject: compact chibi cultist or demon marksman, dark robe-armor mix, oversized shoulder silhouette, one glowing ranged focus such as a short crossbow, talisman launcher, or orb focus, one or two bright blue cracks, small cloth strips, hostile stance
+Style/medium: clean HD hand-painted 2D game enemy concept, chibi fantasy RPG asset, crisp silhouette, simplified details, reduced ornament complexity, readable hostile proportions, not photorealistic, not 3D, not pixel art
+Composition/framing: full body visible, three-quarter RPG combat view, compact idle pose, centered, generous padding, clear feet anchor, subject occupies about 56 percent of the canvas
+Lighting/mood: cool rim light, restrained magical glow, readable contrast
+Color palette: charcoal black, muted steel, electric blue highlights, a little cyan; avoid magenta in the subject
+Materials/textures: robe cloth, dark metal accents, controlled arcane glow
+Constraints: single enemy only; no background scene; no UI; no text; no watermark; no giant spell circles; no many floating objects; keep a compact cute-hostile silhouette suitable for repeated ranged encounters
+Avoid: realistic anatomy, overdesigned staff, boss-scale ornaments, gore, silly expression, cluttered pose
+

@@ -1,0 +1,175 @@
+{
+  "target": "player",
+  "mode": "combat",
+  "prompt": "",
+  "role": "",
+  "input": "output\\imagegen\\player_actions\\player_style_normal_combat_2x2_raw.png",
+  "threshold": 100,
+  "edge_threshold": 150,
+  "duration": 80,
+  "rows": 2,
+  "cols": 2,
+  "cell_size": 64,
+  "fit_scale": 0.92,
+  "trim_border": 4,
+  "edge_clean_depth": 3,
+  "align": "feet",
+  "shared_scale": true,
+  "component_mode": "largest",
+  "component_padding": 8,
+  "min_component_area": 64,
+  "edge_touch_margin": 4,
+  "frame_labels": [
+    "combat-1",
+    "combat-2",
+    "combat-3",
+    "combat-4"
+  ],
+  "frames": [
+    {
+      "grid": [
+        0,
+        0
+      ],
+      "source_box": [
+        0,
+        0,
+        512,
+        512
+      ],
+      "component_mode": "largest",
+      "component_count": 3,
+      "selected_component_area": 80205,
+      "selected_component_bbox": [
+        55,
+        34,
+        424,
+        487
+      ],
+      "crop_bbox": [
+        47,
+        26,
+        432,
+        495
+      ],
+      "edge_touch": false,
+      "output_size": [
+        48,
+        58
+      ],
+      "paste_position": [
+        8,
+        4
+      ]
+    },
+    {
+      "grid": [
+        0,
+        1
+      ],
+      "source_box": [
+        512,
+        0,
+        1024,
+        512
+      ],
+      "component_mode": "largest",
+      "component_count": 1,
+      "selected_component_area": 71414,
+      "selected_component_bbox": [
+        34,
+        49,
+        424,
+        472
+      ],
+      "crop_bbox": [
+        26,
+        41,
+        432,
+        480
+      ],
+      "edge_touch": false,
+      "output_size": [
+        50,
+        55
+      ],
+      "paste_position": [
+        7,
+        7
+      ]
+    },
+    {
+      "grid": [
+        1,
+        0
+      ],
+      "source_box": [
+        0,
+        512,
+        512,
+        1024
+      ],
+      "component_mode": "largest",
+      "component_count": 2,
+      "selected_component_area": 75573,
+      "selected_component_bbox": [
+        30,
+        21,
+        480,
+        449
+      ],
+      "crop_bbox": [
+        22,
+        13,
+        488,
+        457
+      ],
+      "edge_touch": false,
+      "output_size": [
+        58,
+        55
+      ],
+      "paste_position": [
+        3,
+        7
+      ]
+    },
+    {
+      "grid": [
+        1,
+        1
+      ],
+      "source_box": [
+        512,
+        512,
+        1024,
+        1024
+      ],
+      "component_mode": "largest",
+      "component_count": 2,
+      "selected_component_area": 72799,
+      "selected_component_bbox": [
+        60,
+        24,
+        381,
+        466
+      ],
+      "crop_bbox": [
+        52,
+        16,
+        389,
+        474
+      ],
+      "edge_touch": false,
+      "output_size": [
+        42,
+        57
+      ],
+      "paste_position": [
+        11,
+        5
+      ]
+    }
+  ],
+  "edge_touch_frames": []
+}

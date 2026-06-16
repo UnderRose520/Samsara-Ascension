@@ -26,23 +26,23 @@ static func top_bar() -> StyleBoxFlat:
 
 static func left_scroll_panel(_accent: Color = UiTokens.ACCENT_GOLD) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.059, 0.165, 0.133, 0.9)
-	sb.border_width_left = 1
-	sb.border_width_top = 1
+	sb.bg_color = Color(0.025, 0.042, 0.038, 0.965)
+	sb.border_width_left = 2
+	sb.border_width_top = 2
 	sb.border_width_right = 1
 	sb.border_width_bottom = 1
-	sb.border_color = Color(1, 0.843, 0, 0.4)
-	sb.corner_radius_top_left = 4
-	sb.corner_radius_top_right = 12
-	sb.corner_radius_bottom_left = 4
-	sb.corner_radius_bottom_right = 12
-	sb.shadow_color = Color(0, 0, 0, 0.45)
-	sb.shadow_size = 10
-	sb.shadow_offset = Vector2(2, 4)
-	sb.content_margin_left = 12
-	sb.content_margin_top = 10
-	sb.content_margin_right = 10
-	sb.content_margin_bottom = 10
+	sb.border_color = Color(_accent.r, _accent.g, _accent.b, 0.64)
+	sb.corner_radius_top_left = 6
+	sb.corner_radius_top_right = 16
+	sb.corner_radius_bottom_left = 6
+	sb.corner_radius_bottom_right = 16
+	sb.shadow_color = Color(0, 0, 0, 0.72)
+	sb.shadow_size = 18
+	sb.shadow_offset = Vector2(4, 6)
+	sb.content_margin_left = 14
+	sb.content_margin_top = 12
+	sb.content_margin_right = 12
+	sb.content_margin_bottom = 12
 	return sb
 
 
@@ -141,8 +141,8 @@ static func spell_dock_slot(ready: bool, unlocked: bool) -> StyleBoxFlat:
 
 static func realm_badge() -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.31, 0.84, 0.72, 0.12)
-	sb.border_color = Color(1, 0.843, 0, 0.4)
+	sb.bg_color = Color(0.08, 0.18, 0.15, 0.82)
+	sb.border_color = Color(1, 0.843, 0, 0.48)
 	sb.border_width_left = 1
 	sb.border_width_top = 1
 	sb.border_width_right = 1
@@ -155,6 +155,35 @@ static func realm_badge() -> StyleBoxFlat:
 	sb.content_margin_top = 3
 	sb.content_margin_right = 8
 	sb.content_margin_bottom = 3
+	return sb
+
+
+static func objective_panel(accent: Color = UiTokens.ACCENT_GOLD) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.055, 0.105, 0.088, 0.86)
+	sb.border_color = Color(accent.r, accent.g, accent.b, 0.4)
+	sb.border_width_left = 1
+	sb.border_width_top = 1
+	sb.border_width_right = 1
+	sb.border_width_bottom = 1
+	sb.corner_radius_top_left = 8
+	sb.corner_radius_top_right = 8
+	sb.corner_radius_bottom_left = 8
+	sb.corner_radius_bottom_right = 8
+	sb.content_margin_left = 8
+	sb.content_margin_top = 6
+	sb.content_margin_right = 8
+	sb.content_margin_bottom = 6
+	return sb
+
+
+static func objective_bar_fill(accent: Color = UiTokens.ACCENT_GOLD) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(accent.r, accent.g, accent.b, 0.82)
+	sb.corner_radius_top_left = 3
+	sb.corner_radius_top_right = 3
+	sb.corner_radius_bottom_left = 3
+	sb.corner_radius_bottom_right = 3
 	return sb
 
 

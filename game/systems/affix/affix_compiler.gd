@@ -27,6 +27,7 @@ const ELEMENT_MAP := {
 	"wood": 4,
 	"earth": 5,
 	"chaos": 6,
+	"soul": 7,
 }
 
 
@@ -65,6 +66,20 @@ static func _apply_effect_dsl(tag, dsl: String) -> void:
 					"status": parts[1],
 					"duration": float(parts[2]),
 					"chance": float(parts[3]),
+				})
+		"heal_on_hit":
+			if parts.size() >= 3:
+				tag.on_hit.append({
+					"kind": "heal_on_hit",
+					"value": float(parts[1]),
+					"chance": float(parts[2]),
+				})
+		"lifesteal_attack":
+			if parts.size() >= 3:
+				tag.on_hit.append({
+					"kind": "lifesteal_attack",
+					"ratio": float(parts[1]),
+					"chance": float(parts[2]),
 				})
 		"unlock_spell":
 			if parts.size() >= 2:

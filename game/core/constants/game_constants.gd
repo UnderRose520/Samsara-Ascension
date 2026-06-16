@@ -18,6 +18,11 @@ const COLLISION_MASK_ARENA := COLLISION_LAYER_WALL | COLLISION_LAYER_OBSTACLE
 ## 积水地形：可通行，移速倍率与出水后恢复时间
 const TERRAIN_WET_SLOW_MULT := 0.62
 const TERRAIN_WET_RECOVERY_SEC := 1.4
+const TERRAIN_WATER_SLOW_REFRESH_SEC := 0.28
+const TERRAIN_SWAMP_ROOT_SEC := 1.15
+const TERRAIN_SWAMP_RETRIGGER_SEC := 3.2
+const TERRAIN_FIRE_DAMAGE_PER_SEC := 7.0
+const TERRAIN_FIRE_TICK_SEC := 0.45
 const PROJECTILE_SPEED := 300.0
 const ATTACK_INTERVAL := 0.38
 const PLAYER_ATTACK := 18.0
@@ -69,11 +74,33 @@ const QUALITY_COLORS := {
 	4: Color("#ef4444"),
 }
 
-const COMBO_MILESTONES := [10, 30, 50, 100]
+const COMBO_MILESTONES := [10, 30, 60, 100]
+
+static var current_arena_bounds := {
+	"x": -640.0,
+	"y": -352.0,
+	"width": 1280.0,
+	"height": 704.0,
+}
 
 
 static func clamp_to_arena(pos: Vector2, body_radius: float = 12.0) -> Vector2:
 	var margin := body_radius + 2.0
-	var max_x := ARENA_HALF_WIDTH - margin
-	var max_y := ARENA_HALF_HEIGHT - margin
-	return Vector2(clampf(pos.x, -max_x, max_x), clampf(pos.y, -max_y, max_y))
+	var min_x := float(current_arena_bounds.get("x", -ARENA_HALF_WIDTH)) + margin
+	var min_y := float(current_arena_bounds.get("y", -ARENA_HALF_HEIGHT)) + margin
+	var max_x := min_x + float(current_arena_bounds.get("width", ARENA_HALF_WIDTH * 2.0)) - margin * 2.0
+	var max_y := min_y + float(current_arena_bounds.get("height", ARENA_HALF_HEIGHT * 2.0)) - margin * 2.0
+	return Vector2(clampf(pos.x, min_x, max_x), clampf(pos.y, min_y, max_y))
+
+
+static func set_arena_bounds(bounds: Dictionary) -> void:
+	current_arena_bounds = {
+		"x": float(bounds.get("x", -ARENA_HALF_WIDTH)),
+		"y": float(bounds.get("y", -ARENA_HALF_HEIGHT)),
+		"width": float(bounds.get("width", ARENA_HALF_WIDTH * 2.0)),
+		"height": float(bounds.get("height", ARENA_HALF_HEIGHT * 2.0)),
+	}
+
+
+static func reset_arena_bounds() -> void:
+	set_arena_bounds({"x": -640.0, "y": -352.0, "width": 1280.0, "height": 704.0})

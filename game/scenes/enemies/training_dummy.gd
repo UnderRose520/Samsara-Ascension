@@ -32,6 +32,11 @@ var _speed_jitter := 1.0
 var _archetype := "normal"
 var _room_type := "combat"
 var _skills: EnemySkillController
+var _anim_state := "idle"
+var _visual_facing := Vector2.RIGHT
+var _last_damage_source := ""
+var _last_damage_element := ""
+var _status_feedback_cd := 0.0
 
 func _ready() -> void:
 	health.max_hp = GameConstants.ENEMY_HP
@@ -71,13 +76,16 @@ func configure_enemy(display_name: String, is_boss: bool = false, room_type: Str
 func _apply_body_sprite() -> void:
 	if body_visual == null:
 		return
-	var path := AssetPaths.enemy_sprite(_archetype, _is_boss)
+	var path: String = AssetPaths.enemy_sprite_for_style(_archetype, _is_boss, SaveManager.get_sprite_style())
 	if body_visual.has_method("set_texture_path"):
 		body_visual.set_texture_path(path)
 	elif ResourceLoader.exists(path):
 		body_visual.texture = load(path)
 	else:
 		body_visual.texture = null  # Clear default so _draw() uses fallback circle
+	if body_visual.has_method("set_animation_prefix_name"):
+		body_visual.set_animation_prefix_name(_anim_state)
+	_apply_visual_facing()
 
 
 func configure_as_boss() -> void:
@@ -102,7 +110,7 @@ func apply_elite_affixes(affix_ids: Array) -> void:
 			continue
 		_move_speed *= float(row.get("move_speed_mult", 1.0))
 		_contact_damage *= float(row.get("contact_damage_mult", 1.0))
-		var hp_scale := float(row.get("hp_mult", 1.0))
+		var hp_scale: float = float(row.get("hp_mult", 1.0))
 		if hp_scale != 1.0:
 			health.max_hp *= hp_scale
 			health.current_hp = health.max_hp
@@ -142,10 +150,11 @@ func init_combat_slot(spawn_pos: Vector2, player_pos: Vector2, index: int, total
 
 
 func _apply_display_settings() -> void:
-	var show_hp := SaveManager.get_display_setting("show_enemy_hp")
+	var show_hp: bool = SaveManager.get_display_setting("show_enemy_hp")
 	if world_hp:
 		world_hp.visible = show_hp
 	action_label.visible = show_hp
+	_apply_body_sprite()
 
 
 func _refresh_name_label() -> void:
@@ -182,12 +191,16 @@ func _apply_movement() -> void:
 	var radius := 20.0 if _is_boss else 16.0
 	global_position = GameConstants.clamp_to_arena(global_position, radius)
 	_refresh_action_label()
-	queue_redraw()
+	_update_animation_state()
+	if _needs_redraw():
+		queue_redraw()
 
 
 func _physics_process(delta: float) -> void:
 	if get_tree().paused or _death_handled:
 		return
+	_status_feedback_cd = maxf(_status_feedback_cd - delta, 0.0)
+	TerrainSystem.apply_body_effects(self, delta)
 	if not health.is_alive():
 		velocity = Vector2.ZERO
 		return
@@ -206,6 +219,7 @@ func _physics_process(delta: float) -> void:
 			_skills.update_phase(health.current_hp / health.max_hp)
 		_skills.tick(delta, player)
 		if _skills.is_busy():
+			_update_visual_facing(to_player)
 			_apply_movement()
 			return
 
@@ -218,6 +232,10 @@ func _physics_process(delta: float) -> void:
 	if _steer_velocity.length_squared() < 16.0 and target.length_squared() < 1.0:
 		_steer_velocity = Vector2.ZERO
 	velocity = _steer_velocity
+	if velocity.length_squared() > 1.0:
+		_update_visual_facing(velocity)
+	elif to_player.length_squared() > 1.0:
+		_update_visual_facing(to_player)
 
 	_apply_movement()
 
@@ -264,6 +282,45 @@ func _refresh_action_label() -> void:
 	else:
 		action_label.text = "待机"
 		action_label.add_theme_color_override("font_color", Color(0.65, 0.62, 0.58))
+
+
+func _update_animation_state() -> void:
+	if body_visual == null or not body_visual.has_method("set_animation_prefix_name"):
+		return
+	var next_state: String = "idle"
+	if _skills and _skills.is_busy():
+		next_state = "combat"
+	elif velocity.length() > 25.0 or _steer_velocity.length() > 25.0:
+		next_state = "walk"
+	if next_state == _anim_state:
+		return
+	_anim_state = next_state
+	body_visual.set_animation_prefix_name(_anim_state)
+
+
+func _update_visual_facing(direction: Vector2) -> void:
+	if absf(direction.x) < 0.05:
+		return
+	_visual_facing = direction.normalized()
+	_apply_visual_facing()
+
+
+func _apply_visual_facing() -> void:
+	if body_visual == null or absf(_visual_facing.x) < 0.05:
+		return
+	body_visual.flip_h = _visual_facing.x < 0.0
+
+
+func _needs_redraw() -> bool:
+	if body_visual == null or body_visual.texture == null:
+		return true
+	if _flash > 0.0:
+		return true
+	if _skills and (_skills.get_windup_progress() > 0.0 or _skills.is_dashing()):
+		return true
+	if status.is_burning() or status.is_poisoned() or status.is_frozen() or status.is_paralyzed() or status.is_slowed():
+		return true
+	return false
 
 
 func _compute_chase_velocity(player: Node2D, dist_to_player: float, speed: float) -> Vector2:
@@ -326,6 +383,23 @@ func apply_status(status_name: String, duration: float) -> void:
 	status.apply_status(status_name, duration)
 
 
+func receive_terrain_damage(amount: float, terrain_type: String = "") -> void:
+	if amount <= 0.0 or _death_handled:
+		return
+	_remember_damage_source("terrain_%s" % terrain_type, terrain_type)
+	var result := {
+		"final_damage": amount,
+		"world_position": global_position,
+		"target_is_player": false,
+		"is_crit": false,
+		"is_combo": false,
+		"element": terrain_type,
+	}
+	health.take_damage(amount)
+	_flash = 0.12
+	_emit_damage(result)
+
+
 func detonate_burn(base_damage: float) -> float:
 	var raw: float = status.consume_combust(base_damage)
 	if raw <= 0.0:
@@ -355,6 +429,7 @@ func detonate_burn(base_damage: float) -> float:
 		)
 
 	var result: Dictionary = DamagePipeline.compute_pve(ctx)
+	_remember_damage_source("combo_combust", "fire")
 	health.take_damage(result.final_damage)
 	_flash = 0.2
 	result["is_combo"] = true
@@ -365,15 +440,37 @@ func detonate_burn(base_damage: float) -> float:
 func receive_projectile_hit(projectile: Area2D) -> void:
 	var ctx: Dictionary
 	var holder: Node = null
+	var projectile_element := str(projectile.get("element_key") if "element_key" in projectile else "fire")
+	var projectile_source := str(projectile.get("source_tag") if "source_tag" in projectile else "projectile")
 	if projectile.owner_player and projectile.owner_player.has_node("AffixHolder"):
 		holder = projectile.owner_player.get_node("AffixHolder")
-		ctx = holder.build_damage_context(
-			projectile.damage,
-			maxf(health.defense - holder.flat_defense * 0.5, 0.0),
-			projectile.owner_player.crit_rate,
-			projectile.owner_player.crit_mult,
-			"proj",
-		)
+		if projectile_element.is_empty():
+			ctx = holder.build_damage_context(
+				projectile.damage,
+				maxf(health.defense - holder.flat_defense * 0.5, 0.0),
+				projectile.owner_player.crit_rate,
+				projectile.owner_player.crit_mult,
+				"proj",
+			)
+		else:
+			ctx = CombatContextBuilder.build_fallback(
+				projectile.damage + holder.flat_attack,
+				maxf(health.defense - holder.flat_defense * 0.5, 0.0),
+				projectile.owner_player.crit_rate,
+				projectile.owner_player.crit_mult,
+				projectile_element,
+				projectile.owner_player,
+				"proj_%s" % projectile_element,
+				true,
+			)
+			for value in holder.bucket_a:
+				ctx["bucket_a"].append(value)
+			for value in holder.bucket_b:
+				ctx["bucket_b"].append(value)
+			for value in holder.bucket_c:
+				ctx["bucket_c"].append(value)
+			for value in holder.bucket_d:
+				ctx["bucket_d"].append(value)
 	else:
 		var owner := projectile.owner_player as Node2D
 		ctx = CombatContextBuilder.build_fallback(
@@ -381,16 +478,23 @@ func receive_projectile_hit(projectile: Area2D) -> void:
 			health.defense,
 			owner.crit_rate if owner else 0.0,
 			1.5,
-			"fire",
+			projectile_element,
 			owner,
-			"proj",
+			"proj_%s" % projectile_element,
 			false,
 		)
 
 	var result: Dictionary = DamagePipeline.compute_pve(ctx)
+	_remember_damage_source(projectile_source, projectile_element)
 	health.take_damage(result.final_damage)
 	_flash = 0.12
 	_emit_damage(result)
+	var projectile_status := str(projectile.get("status_on_hit") if "status_on_hit" in projectile else "")
+	if not projectile_status.is_empty():
+		apply_status(projectile_status, float(projectile.get("status_duration") if "status_duration" in projectile else 1.0))
+		_show_status_hit_feedback(projectile_status)
+	if projectile_source == "pet_coord":
+		EventBus.pet_coord_hit.emit(self)
 
 	if holder:
 		var bonus: float = holder.proc_on_hit(self)
@@ -400,6 +504,83 @@ func receive_projectile_hit(projectile: Area2D) -> void:
 			projectile.owner_player.get_node("ComboCounter").register_hit()
 		if projectile.owner_player.has_node("SkillProgression"):
 			projectile.owner_player.get_node("SkillProgression").register_hit()
+
+
+func receive_player_weapon_hit(player: CharacterBody2D, damage: float, element_key: String = "", hit_label: String = "weapon") -> void:
+	if player == null or _death_handled:
+		return
+	var holder: Node = player.get_node("AffixHolder") if player.has_node("AffixHolder") else null
+	var resolved_element := element_key
+	if resolved_element.is_empty() or resolved_element == "physical":
+		resolved_element = holder.get_element_bias() if holder and holder.has_method("get_element_bias") else ""
+	if resolved_element.is_empty() or resolved_element == "physical":
+		resolved_element = "earth"
+
+	var ctx: Dictionary
+	if holder:
+		ctx = CombatContextBuilder.build_fallback(
+			damage + holder.flat_attack,
+			maxf(health.defense - holder.flat_defense * 0.5, 0.0),
+			player.crit_rate,
+			player.crit_mult,
+			resolved_element,
+			player,
+			hit_label,
+			true,
+		)
+		for value in holder.bucket_a:
+			ctx["bucket_a"].append(value)
+		for value in holder.bucket_b:
+			ctx["bucket_b"].append(value)
+		for value in holder.bucket_c:
+			ctx["bucket_c"].append(value)
+		for value in holder.bucket_d:
+			ctx["bucket_d"].append(value)
+	else:
+		ctx = CombatContextBuilder.build_fallback(
+			damage,
+			health.defense,
+			player.crit_rate,
+			player.crit_mult,
+			resolved_element,
+			player,
+			hit_label,
+			false,
+		)
+
+	var result: Dictionary = DamagePipeline.compute_pve(ctx)
+	_remember_damage_source(hit_label, resolved_element)
+	health.take_damage(result.final_damage)
+	_flash = 0.14
+	_emit_damage(result)
+
+	if holder:
+		holder.proc_on_hit(self)
+	if player.has_node("ComboCounter"):
+		player.get_node("ComboCounter").register_hit()
+	if player.has_node("SkillProgression"):
+		player.get_node("SkillProgression").register_hit()
+	RunContext.add_dao_momentum(1.5, "weapon_hit")
+
+
+func show_weapon_mod_status_feedback(status_name: String) -> void:
+	_show_status_hit_feedback(status_name)
+
+
+func _remember_damage_source(source: String, element: String = "") -> void:
+	_last_damage_source = source
+	_last_damage_element = element
+
+
+func _show_status_hit_feedback(status_name: String) -> void:
+	if _status_feedback_cd > 0.0:
+		return
+	_status_feedback_cd = 0.08
+	var color := StatusComponent.status_color(status_name)
+	_flash = maxf(_flash, 0.18)
+	VfxManager.spawn_world(global_position, "hit", color)
+	if body_visual:
+		VfxManager.flash_control(body_visual, color.lightened(0.25), 0.12)
 
 
 func _on_died() -> void:
@@ -415,6 +596,14 @@ func _on_died() -> void:
 			player.get_node("SkillProgression").register_status_kill()
 	remove_from_group("enemy")
 	EventBus.enemy_killed.emit(self)
+	var momentum := 2.0 + (13.0 if _is_elite else 0.0) + (18.0 if _is_boss else 0.0)
+	var bonus_label := ""
+	if _last_damage_source.begins_with("terrain_") or _last_damage_source == "combo_combust":
+		momentum += 12.0
+		bonus_label = "天象地形"
+	RunContext.add_dao_momentum(momentum, "kill_%s" % _last_damage_source)
+	if not bonus_label.is_empty():
+		EventBus.pet_coord_feedback.emit("%s击杀 · 道势 +%d" % [bonus_label, int(round(momentum))])
 	var burst_preset := "gold" if _is_boss else ("combo" if _is_elite else "hit")
 	var burst_color := Color(1.0, 0.84, 0.2) if _is_boss else GameConstants.COLOR_ENEMY
 	VfxManager.spawn_world(global_position, burst_preset, burst_color)

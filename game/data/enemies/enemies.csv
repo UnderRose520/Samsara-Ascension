@@ -2,6 +2,7 @@ enemy_id,display_name,archetype,is_elite,hp_mult,atk_mult
 wild_wolf,妖狼,berserker,false,1.0,1.0
 sky_bat,腐翼妖蝠,ranged,false,0.85,0.95
 mud_serpent,泥泽游蛇,sniper,false,0.9,1.05
+wind_mantis,风刃螳螂,skirmisher,false,0.95,1.1
 furnace_golem,火纹傀儡,shaman,true,1.35,1.1
 elite,精英傀儡,elite,true,1.2,1.0
 boss,关底守将,boss,false,1.0,1.0

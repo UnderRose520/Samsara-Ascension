@@ -2,6 +2,8 @@ extends CanvasLayer
 
 const DaoHeartConfig = preload("res://systems/realm/dao_heart_config.gd")
 const AssetPaths = preload("res://assets/asset_paths.gd")
+const CultivationPathRegistry = preload("res://systems/realm/cultivation_path_registry.gd")
+const WeaponRegistry = preload("res://systems/equipment/weapon_registry.gd")
 const UiAnimations = preload("res://ui/ui_animations.gd")
 const UiHelpers = preload("res://ui/ui_helpers.gd")
 const DAO_HEART_CARD := preload("res://ui/components/dao_heart_card.tscn")
@@ -18,10 +20,15 @@ const DAO_HEART_CARD := preload("res://ui/components/dao_heart_card.tscn")
 @onready var random_seed_button: Button = $Panel/Margin/VBox/SeedRow/RandomSeedButton
 @onready var meta_button: Button = $Panel/Margin/VBox/MetaButton
 @onready var hearts_box: HBoxContainer = $Panel/Margin/VBox/Hearts
+@onready var vbox: VBoxContainer = $Panel/Margin/VBox
 
 var _selected: int = DaoHeartConfig.DaoHeart.ENLIGHTEN
+var _selected_path := CultivationPathRegistry.DEFAULT_PATH_ID
 var _meta_panel: CanvasLayer
 var _heart_cards: Array[DaoHeartCard] = []
+var _path_buttons: Dictionary = {}
+var _path_detail_label: Label
+var _paths_box: HBoxContainer
 
 const HEART_DEFS := [
 	{
@@ -56,10 +63,12 @@ func _ready() -> void:
 	meta_button.pressed.connect(_on_meta_pressed)
 	random_seed_button.pressed.connect(_on_random_seed_pressed)
 	_spawn_heart_cards()
+	_spawn_path_picker()
 	_refresh_meta()
 	_setup_seed_input()
 	_add_couplets()
 	_select(DaoHeartConfig.DaoHeart.ENLIGHTEN)
+	_select_path(CultivationPathRegistry.DEFAULT_PATH_ID)
 	call_deferred("_play_open")
 
 
@@ -121,6 +130,54 @@ func _play_open() -> void:
 		var tw := card.create_tween()
 		tw.tween_interval(float(i) * UiAnimations.CARD_STAGGER)
 		tw.tween_property(card, "modulate:a", 1.0, 0.25)
+	for child in _paths_box.get_children():
+		child.modulate.a = 0.0
+	for i in _paths_box.get_child_count():
+		var button := _paths_box.get_child(i) as Control
+		if button == null:
+			continue
+		var tw := button.create_tween()
+		tw.tween_interval(0.12 + float(i) * UiAnimations.CARD_STAGGER)
+		tw.tween_property(button, "modulate:a", 1.0, 0.2)
+
+
+func _spawn_path_picker() -> void:
+	var title := Label.new()
+	title.text = "选择道途 · 本命器"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_color_override("font_color", Color(1.0, 0.843, 0.0, 0.92))
+	title.add_theme_font_size_override("font_size", 16)
+	vbox.add_child(title)
+	vbox.move_child(title, detail_label.get_index() + 1)
+
+	_paths_box = HBoxContainer.new()
+	_paths_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	_paths_box.add_theme_constant_override("separation", 8)
+	vbox.add_child(_paths_box)
+	vbox.move_child(_paths_box, title.get_index() + 1)
+
+	_path_detail_label = Label.new()
+	_path_detail_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_path_detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_path_detail_label.add_theme_color_override("font_color", Color(0.769, 0.714, 0.612, 1))
+	_path_detail_label.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(_path_detail_label)
+	vbox.move_child(_path_detail_label, _paths_box.get_index() + 1)
+
+	_path_buttons.clear()
+	for path in CultivationPathRegistry.get_all_paths():
+		var path_id := str(path.get("path_id", ""))
+		var button := Button.new()
+		button.custom_minimum_size = Vector2(118, 34)
+		button.toggle_mode = true
+		button.text = str(path.get("name", path_id))
+		button.tooltip_text = "%s\n%s" % [
+			CultivationPathRegistry.format_summary(path_id),
+			str(path.get("description", "")),
+		]
+		button.pressed.connect(_on_path_button_pressed.bind(path_id))
+		_paths_box.add_child(button)
+		_path_buttons[path_id] = button
 
 
 func _refresh_meta() -> void:
@@ -147,6 +204,42 @@ func _select(heart: int) -> void:
 		_heart_cards[i].set_selected(on)
 		if on:
 			detail_label.text = str(HEART_DEFS[i]["detail"])
+
+
+func _select_path(path_id: String) -> void:
+	var path := CultivationPathRegistry.get_path_def(path_id)
+	_selected_path = str(path.get("path_id", CultivationPathRegistry.DEFAULT_PATH_ID))
+	for id in _path_buttons.keys():
+		var button := _path_buttons[id] as Button
+		if button == null:
+			continue
+		button.set_pressed_no_signal(str(id) == _selected_path)
+		var sb := StyleBoxFlat.new()
+		var on := str(id) == _selected_path
+		sb.bg_color = Color(0.094, 0.243, 0.196, 0.96) if on else Color(0.051, 0.137, 0.114, 0.78)
+		sb.border_width_left = 1
+		sb.border_width_top = 1
+		sb.border_width_right = 1
+		sb.border_width_bottom = 1
+		sb.border_color = Color(0.95, 0.84, 0.5, 0.92) if on else Color(0.85, 0.78, 0.55, 0.35)
+		sb.corner_radius_top_left = 8
+		sb.corner_radius_top_right = 8
+		sb.corner_radius_bottom_left = 8
+		sb.corner_radius_bottom_right = 8
+		button.add_theme_stylebox_override("normal", sb)
+		button.add_theme_stylebox_override("pressed", sb)
+		button.add_theme_stylebox_override("hover", sb)
+	var weapon_id := str(path.get("weapon_id", WeaponRegistry.DEFAULT_WEAPON_ID))
+	_path_detail_label.text = "%s：%s / 本命器：%s\n%s" % [
+		str(path.get("name", _selected_path)),
+		str(path.get("subtitle", "")),
+		WeaponRegistry.get_weapon_name(weapon_id),
+		str(path.get("description", "")),
+	]
+
+
+func _on_path_button_pressed(path_id: String) -> void:
+	_select_path(path_id)
 
 
 func _on_meta_pressed() -> void:
@@ -185,6 +278,6 @@ func _on_start_pressed() -> void:
 		panel.visible = false
 		visible = false
 		var use_boost := heart_demon_check.visible and heart_demon_check.button_pressed
-		RunContext.begin_run(_selected, _parse_seed_override(), use_boost)
+		RunContext.begin_run(_selected, _parse_seed_override(), use_boost, false, _selected_path)
 		EventBus.run_setup_confirmed.emit()
 	)

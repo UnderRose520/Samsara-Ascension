@@ -3,9 +3,15 @@ extends CanvasLayer
 const BuildAnalyzer = preload("res://systems/affix/build_analyzer.gd")
 const VariantUtils = preload("res://core/utils/variant_utils.gd")
 const AssetPaths = preload("res://assets/asset_paths.gd")
+const CultivationPathRegistry = preload("res://systems/realm/cultivation_path_registry.gd")
+const WeaponRegistry = preload("res://systems/equipment/weapon_registry.gd")
+const ActiveSpellRegistry = preload("res://systems/combat/active_spell_registry.gd")
 const UiTokens = preload("res://ui/theme/ui_tokens.gd")
 const UiAnimations = preload("res://ui/ui_animations.gd")
 const UiHelpers = preload("res://ui/ui_helpers.gd")
+
+const UI_SEP := " / "
+const UI_EMPTY := "无"
 
 @onready var character_panel: HudCharacterPanel = $Root/CharacterAnchor/CharacterPanel
 @onready var weather_panel: HudWeatherPanel = $Root/WeatherAnchor/WeatherPanel
@@ -31,6 +37,7 @@ var _combat_wave := 0
 var _horde_kills := 0
 var _horde_quota := 0
 var _horde_time_left := 0.0
+var _horde_next_wave_in := 0.0
 var _horde_active := false
 var _horde_result_shown := false
 
@@ -58,7 +65,11 @@ func _ready() -> void:
 	EventBus.spell_unlock_changed.connect(_on_spell_unlock_changed)
 	EventBus.learn_feedback.connect(_on_learn_feedback)
 	EventBus.run_started.connect(_on_run_started)
-	hint_label.text = "WASD 移动 · 空格闪避 · 左键/QER 输出 · 斩够魔劫或倒计时结束即可过关"
+	EventBus.weapon_changed.connect(_on_weapon_changed)
+	EventBus.dao_momentum_changed.connect(_on_dao_momentum_changed)
+	EventBus.dao_clarity_started.connect(_on_dao_clarity_started)
+	EventBus.dao_clarity_ended.connect(_on_dao_clarity_ended)
+	hint_label.text = "WASD移动 / 空格闪避 / 左键攻击 / QER法术 / 达成目标过关"
 	call_deferred("_bind_player_systems")
 	_refresh_pet_label()
 	_refresh_active_spell_slots()
@@ -69,7 +80,18 @@ func _ready() -> void:
 	_refresh_meta_labels()
 	_refresh_dao_progress()
 	_on_gold_changed(RunContext.gold)
+	_on_weapon_changed(RunContext.get_weapon())
+	_on_dao_momentum_changed(RunContext.dao_momentum, RunContext.dao_momentum_max, RunContext.dao_momentum_state, RunContext.dao_momentum_state_time)
 	_on_weather_changed(WeatherSystem.current_weather_id, WeatherSystem.current_weather_name)
+	if RunContext.run_active:
+		var q_spell := ActiveSpellRegistry.get_spell(str(SpellProgress.get_default_bindings().get("q", "")))
+		_on_learn_feedback(
+			"道途入命 · %s · Q %s" % [
+				CultivationPathRegistry.format_summary(RunContext.cultivation_path_id),
+				str(q_spell.get("name", "起手法门")),
+			],
+			"skill"
+		)
 
 
 func _apply_toast_polish() -> void:
@@ -91,6 +113,7 @@ func get_build_fly_target_global() -> Vector2:
 func _on_run_started(_seed: int) -> void:
 	EntityCache.invalidate_player()
 	_refresh_seed_label()
+	_on_weapon_changed(RunContext.get_weapon())
 
 
 func _refresh_seed_label() -> void:
@@ -98,11 +121,11 @@ func _refresh_seed_label() -> void:
 	if seed_label == null:
 		return
 	if RunContext.run_active:
-		var suffix := " · 训练" if RunContext.training_mode else ""
+		var suffix := " / 训练" if RunContext.training_mode else ""
 		seed_label.text = "种子 %d%s" % [RunContext.seed_value, suffix]
 		seed_label.visible = true
 	else:
-		seed_label.text = "种子 —"
+		seed_label.text = "种子 未生成"
 		seed_label.visible = false
 
 
@@ -150,7 +173,7 @@ func _on_combo_updated(count: int) -> void:
 	if count > 0:
 		character_panel.combo_label.text = "连击\n%d" % count
 	else:
-		character_panel.combo_label.text = "连击\n—"
+		character_panel.combo_label.text = "连击\n0"
 	character_panel.update_combo_badge(count)
 
 
@@ -158,16 +181,51 @@ func _on_gold_changed(amount: int) -> void:
 	character_panel.gold_label.text = "灵石 %d" % amount
 
 
+func _on_weapon_changed(_weapon: Dictionary) -> void:
+	_refresh_build()
+
+
+func _on_dao_momentum_changed(current: float, maximum: float, state: String, _state_time: float) -> void:
+	if character_panel == null:
+		return
+	var pct := int(round((current / maxf(maximum, 1.0)) * 100.0))
+	var state_label := ""
+	var label_color := UiTokens.TEXT_SECONDARY
+	match state:
+		"full":
+			state_label = " / F归一"
+			label_color = UiTokens.ACCENT_GOLD
+		"clarity":
+			state_label = " / 通明"
+			label_color = UiTokens.ACCENT_GOLD
+	character_panel.combo_track_label.text = "道韵 %d%%%s" % [pct, state_label]
+	character_panel.combo_track_label.add_theme_color_override("font_color", label_color)
+	character_panel.combo_track_bar.value = current / maxf(maximum, 1.0)
+	var mana_current := maximum if state == "clarity" else current
+	character_panel.mana_bar.set_values(mana_current, maximum)
+
+
+func _on_dao_clarity_started(_duration: float, _source: String) -> void:
+	character_panel.combo_track_label.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD)
+	if not VfxManager.should_reduce_motion():
+		VfxManager.spawn_screen(self, character_panel.combo_track_bar.global_position + character_panel.combo_track_bar.size * 0.5, "dao", UiTokens.ACCENT_GOLD)
+
+
+func _on_dao_clarity_ended() -> void:
+	character_panel.combo_track_label.add_theme_color_override("font_color", UiTokens.TEXT_SECONDARY)
+
+
 func _on_wave_changed(wave: int) -> void:
 	_combat_wave = wave
 	_refresh_wave_label()
 
 
-func _on_horde_updated(kills: int, quota: int, time_left: float, wave: int) -> void:
+func _on_horde_updated(kills: int, quota: int, time_left: float, wave: int, next_wave_in: float) -> void:
 	_horde_active = true
 	_horde_kills = kills
 	_horde_quota = quota
 	_horde_time_left = time_left
+	_horde_next_wave_in = next_wave_in
 	_combat_wave = wave
 	_refresh_wave_label()
 
@@ -177,7 +235,8 @@ func _on_horde_ended(kills: int, quota: int, reason: String) -> void:
 	_horde_result_shown = true
 	var suffix := "魔劫已尽" if reason == "quota" else "时限已至"
 	var title := _room_title if not _room_title.is_empty() else "魔劫"
-	character_panel.wave_label.text = "%s · %s %d/%d" % [title, suffix, kills, quota]
+	character_panel.wave_label.text = "%s / %s %d/%d" % [title, suffix, kills, quota]
+	character_panel.hide_objective()
 
 
 func _format_horde_time(seconds: float) -> String:
@@ -189,19 +248,22 @@ func _refresh_wave_label() -> void:
 	var wave_label := character_panel.wave_label
 	if _horde_active and _horde_quota > 0:
 		var title := _room_title if not _room_title.is_empty() else "魔劫"
-		wave_label.text = "%s · 斩魔 %d/%d · %s · 第%d波" % [
-			title,
+		wave_label.text = "%s / 魔劫涌潮" % title
+		character_panel.show_objective(
+			"本关目标",
 			_horde_kills,
 			_horde_quota,
 			_format_horde_time(_horde_time_left),
 			_combat_wave,
-		]
+			_horde_next_wave_in
+		)
 		return
+	character_panel.hide_objective()
 	if _room_title.is_empty():
-		wave_label.text = "第 %d 波" % _combat_wave if _combat_wave > 0 else "—"
+		wave_label.text = "第 %d 波" % _combat_wave if _combat_wave > 0 else UI_EMPTY
 		return
 	if _combat_wave > 0:
-		wave_label.text = "%s · 第 %d 波" % [_room_title, _combat_wave]
+		wave_label.text = "%s / 第 %d 波" % [_room_title, _combat_wave]
 	else:
 		wave_label.text = _room_title
 
@@ -214,22 +276,23 @@ func _on_weather_changed(weather_id: String, weather_name: String) -> void:
 
 
 func _format_weather_text(weather_name: String) -> String:
+	var weather_summary := WeatherSystem.get_weather_summary(WeatherSystem.current_weather_id)
 	var terrain := TerrainSystem.get_active_terrain_label()
 	if terrain.is_empty():
-		return weather_name
-	return "%s · %s" % [weather_name, terrain]
+		return weather_summary if not weather_summary.is_empty() else weather_name
+	return "%s / %s" % [weather_summary if not weather_summary.is_empty() else weather_name, terrain]
 
 
 func _on_room_entered(room: Dictionary, stage: Dictionary) -> void:
 	character_panel.title_label.text = str(stage.get("name", "轮回仙途"))
 	character_panel.apply_stage_accent(int(stage.get("stage_index", 0)))
-	var label := "%s · %s" % [stage.get("name", ""), room.get("label", "")]
+	var label := "%s / %s" % [stage.get("name", ""), room.get("label", "")]
 	if str(room.get("type", "")) == "boss":
 		var boss_name := str(room.get("boss_name", room.get("label", "关底")))
 		var is_first_boss := int(stage.get("stage_index", 0)) == 1
-		label = "BOSS · %s" % boss_name
+		label = "BOSS / %s" % boss_name
 		if is_first_boss:
-			label += " · 结缘关"
+			label += " / 结缘关"
 	elif str(room.get("type", "")) == "event":
 		label = "机缘房"
 	_room_title = label
@@ -238,7 +301,9 @@ func _on_room_entered(room: Dictionary, stage: Dictionary) -> void:
 	_horde_kills = 0
 	_horde_quota = 0
 	_horde_time_left = 0.0
+	_horde_next_wave_in = 0.0
 	_horde_result_shown = false
+	character_panel.hide_objective()
 	character_panel.wave_label.text = label
 	call_deferred("_refresh_weather_text")
 
@@ -248,20 +313,25 @@ func _refresh_weather_text() -> void:
 
 
 func _on_realm_changed(_realm_level: int, affix_slots: int) -> void:
-	character_panel.realm_label.text = "%s · 槽位 %d" % [RunContext.realm_name(), affix_slots]
+	character_panel.realm_label.text = "%s / 槽位 %d" % [RunContext.realm_name(), affix_slots]
 	_refresh_build()
 	_refresh_affixes()
 
 
 func _refresh_build() -> void:
 	var player := _get_player()
+	var path_summary := CultivationPathRegistry.format_summary(RunContext.cultivation_path_id)
+	var weapon_forge := RunContext.weapon_mod_summary()
 	if player == null or not player.has_node("AffixHolder"):
-		character_panel.build_label.text = "层 · 术0 体0 契0"
+		character_panel.build_label.text = "\u9053\u9014 %s / \u672c\u547d\u5668 %s" % [path_summary, weapon_forge]
 		return
 	var holder: Node = player.get_node("AffixHolder")
-	character_panel.build_label.text = "层 · " + BuildAnalyzer.format_layers(holder.equipped).replace("·", " ")
+	character_panel.build_label.text = "\u9053\u9014 %s / \u672c\u547d\u5668 %s / \u6d41\u6d3e %s" % [
+		path_summary,
+		weapon_forge,
+		BuildAnalyzer.format_layers(holder.equipped).replace("\u8def", " "),
+	]
 	_refresh_dao_progress()
-
 
 func _on_pet_acquired(_pet_id: String) -> void:
 	_refresh_pet_label()
@@ -272,16 +342,25 @@ func _refresh_dao_progress() -> void:
 	var dao_label := character_panel.dao_label
 	var player := _get_player()
 	if player == null or not player.has_node("AffixHolder"):
-		dao_label.text = "道统 · —"
+		dao_label.text = "道统 未成"
 		dao_label.add_theme_color_override("font_color", UiTokens.TEXT_SECONDARY)
 		return
 	if not RunContext.dao_tradition_awakened_this_run.is_empty():
 		var tradition = DaoTraditionRegistry.get_tradition(RunContext.dao_tradition_awakened_this_run)
-		dao_label.text = "道统 · %s ✓" % tradition.get("name", RunContext.dao_tradition_awakened_this_run)
+		dao_label.text = "道统 %s 已觉醒" % tradition.get("name", RunContext.dao_tradition_awakened_this_run)
 		dao_label.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD)
 		return
 	var info: Dictionary = DaoTraditionRegistry.get_best_progress(player.get_node("AffixHolder"))
-	dao_label.text = "道统 · %s %d/%d" % [info.get("name", "—"), info.get("matched", 0), info.get("total", 1)]
+	var missing: Array = info.get("missing_slots", [])
+	var missing_text := ""
+	if not missing.is_empty():
+		missing_text = " / 缺%s" % "、".join(missing.slice(0, mini(missing.size(), 3)))
+	dao_label.text = "道统 %s %d/%d%s" % [
+		info.get("name", UI_EMPTY),
+		info.get("matched", 0),
+		info.get("total", 1),
+		missing_text,
+	]
 	dao_label.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD_SOFT)
 
 
@@ -290,7 +369,7 @@ func _on_dao_progress(_progress: Dictionary) -> void:
 
 
 func _on_dao_awakened(tradition: Dictionary) -> void:
-	character_panel.dao_label.text = "道统 · %s ✓" % tradition.get("name", "")
+	character_panel.dao_label.text = "道统 %s 已觉醒" % tradition.get("name", "")
 	character_panel.dao_label.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD)
 
 
@@ -316,7 +395,7 @@ func _refresh_meta_labels() -> void:
 		parts.append("逆%d" % rebellion)
 	if dao_heart > 0:
 		parts.append("道%d" % dao_heart)
-	weather_panel.set_meta_summary(" · ".join(parts))
+	weather_panel.set_meta_summary(UI_SEP.join(parts))
 
 
 func _process(delta: float) -> void:
@@ -331,13 +410,13 @@ func _process(delta: float) -> void:
 	if cd <= 0.05:
 		weather_panel.set_pet(
 			AssetPaths.load_texture(AssetPaths.PET_HUO_YING),
-			"%s · V" % base,
+			"%s / V" % base,
 			UiTokens.ELEM_FIRE
 		)
 	else:
 		weather_panel.set_pet(
 			AssetPaths.load_texture(AssetPaths.PET_HUO_YING),
-			"%s · %.0fs" % [base, ceilf(cd)],
+			"%s / %.0fs" % [base, ceilf(cd)],
 			UiTokens.ELEM_FIRE
 		)
 
@@ -360,7 +439,7 @@ func _on_wave_cleared(wave: int) -> void:
 
 
 func _on_combo_discovered(combo_id: String) -> void:
-	character_panel.combo_track_label.text = "觉醒 · %s" % combo_id
+	character_panel.combo_track_label.text = "觉醒 %s" % combo_id
 	character_panel.combo_track_label.add_theme_color_override("font_color", UiTokens.ELEM_FIRE)
 	if not VfxManager.should_reduce_motion():
 		var bar := character_panel.combo_track_bar
@@ -421,25 +500,27 @@ func _tick_learn_toast(delta: float) -> void:
 func _refresh_affixes() -> void:
 	var player := _get_player()
 	if player == null or not player.has_node("AffixHolder"):
-		character_panel.affix_label.text = "词条 · —"
+		character_panel.affix_label.text = "词条 未装备"
 		return
 	var holder: Node = player.get_node("AffixHolder")
 	var lines: PackedStringArray = holder.get_summary_lines()
 	var slot_text := "%d/%d" % [holder.equipped.size(), holder.get_max_affixes()]
 	if lines.is_empty():
-		character_panel.affix_label.text = "词条 %s · —" % slot_text
+		character_panel.affix_label.text = "词条 %s / 未装备" % slot_text
 	else:
-		character_panel.affix_label.text = "词条 %s · %s" % [slot_text, " · ".join(lines)]
+		character_panel.affix_label.text = "词条 %s / %s" % [slot_text, UI_SEP.join(lines)]
 	_refresh_build()
 
 
 func _refresh_skill() -> void:
 	var player := _get_player()
 	if player == null or not player.has_node("SkillProgression"):
-		character_panel.skill_label.text = "功法 · 烈焰掌 Lv.1"
+		character_panel.skill_label.text = "功法 烈焰掌 Lv.1"
 		return
 	var lines: PackedStringArray = player.get_node("SkillProgression").get_display_lines()
-	character_panel.skill_label.text = "功法 · " + " · ".join(lines)
+	var q_spell := ActiveSpellRegistry.get_spell(str(SpellProgress.get_default_bindings().get("q", "")))
+	var q_name := str(q_spell.get("name", "Q"))
+	character_panel.skill_label.text = "功法 " + UI_SEP.join(lines) + UI_SEP + "Q·%s" % q_name
 
 
 func _refresh_active_spell_slots() -> void:
@@ -477,13 +558,16 @@ func _refresh_combo_track() -> void:
 	var player := _get_player()
 	if player == null or not player.has_node("AffixHolder"):
 		return
+	if RunContext.dao_momentum_state != "idle" or RunContext.dao_momentum > 0.0:
+		_on_dao_momentum_changed(RunContext.dao_momentum, RunContext.dao_momentum_max, RunContext.dao_momentum_state, RunContext.dao_momentum_state_time)
+		return
 	var info: Dictionary = player.get_node("AffixHolder").get_combo_display()
 	var pct: float = float(info.get("progress", 0.0))
 	var matched: Array = info.get("matched", [])
 	var total: int = maxi(int(info.get("total", 1)), 1)
 	character_panel.combo_track_bar.value = pct
 	character_panel.combo_track_label.text = "%s %d/%d" % [
-		info.get("name", "—"),
+		info.get("name", UI_EMPTY),
 		matched.size(),
 		total,
 	]

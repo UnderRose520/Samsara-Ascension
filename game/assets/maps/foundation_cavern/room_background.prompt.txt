@@ -1,0 +1,26 @@
+SYSTEM ROLE
+You are a senior 2D environment art director for a shipped Godot 4 action roguelite. Create one production-ready map foundation asset only; obey the runtime layer separation contract exactly.
+
+PROJECT CONTEXT
+Game: Samsara Ascension / 轮回仙途, Chinese xianxia cultivation roguelite, top-down survivors-like combat.
+Runtime: the PNG will be center-cropped and resized to 1280x720; collision, props, enemies, pickups, spawn zones, and camera bounds are loaded separately from runtime_scene_manifest.json.
+Realm/stage: 筑基灵窟 / 秘境深处.
+Theme motif: wet foundation cavern with jade veins and shallow reflective stone floor.
+
+ART DIRECTION
+Style: clean hand-painted HD 2D game map, readable at 1280x720, dark Chinese cultivation fantasy, elegant but functional, not retro pixel art, not noisy AI texture.
+Camera: top-down with a slight 3/4 painterly material read; flat enough for a TileMap overlay and enemy silhouettes.
+Composition: large open combat floor, visually quiet playable center, darker atmospheric edges, asymmetric terrain masses, subtle paths or worn flow lines that guide movement without looking like UI.
+Terrain detail: include foundation-level material variation only: moss, damp stone, scorched cracks, jade veins, worn ruin slabs, lightning fractures, shallow puddle stains, dust, sand, leaf litter, mineral flecks, faint qi residue. Keep details low and embedded in the ground.
+Lighting: soft environmental glow from the realm palette, no hard spotlight, no centered halo, no ritual target circle.
+Product design intent: every run should feel like a different cultivation trial. Leave broad negative space for dense enemies, make edges tell the realm story, and create enough local terrain variation that randomized larger rooms still feel authored rather than stretched.
+
+LAYER CONTRACT
+This is a foundation/background layer. It may show ground material, low terrain markings, floor patterns, path scars, shallow embedded detail, and non-colliding terrain boundaries.
+It must not bake any runtime-controlled object.
+
+STRICT EXCLUSIONS
+No player, enemies, NPCs, bosses, pets, projectiles, pickups, chests, doors, gates, signs, tall props, trees, buildings, crates, barrels, pillars, rocks that look collidable, walls, fences, stairs, UI, labels, text, arrows, numbers, minimap graphics, circular ritual diagrams, radial target rings, camera-centered halo, or baked collision objects.
+
+OUTPUT
+One square PNG source image, no transparency required, no border, no frame, no text.

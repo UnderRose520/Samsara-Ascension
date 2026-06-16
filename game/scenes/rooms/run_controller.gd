@@ -6,11 +6,18 @@ const AffixOfferSelector = preload("res://systems/affix/affix_offer_selector.gd"
 const TalentSelector = preload("res://systems/realm/talent_selector.gd")
 const EventSelector = preload("res://systems/world/event_selector.gd")
 const EventResolver = preload("res://systems/world/event_resolver.gd")
+const WeaponModCatalog = preload("res://systems/equipment/weapon_mod_catalog.gd")
+const CultivationPathRegistry = preload("res://systems/realm/cultivation_path_registry.gd")
 const RoomLayoutGenerator = preload("res://systems/world/room_layout_generator.gd")
 const RunRng = preload("res://core/utils/run_rng.gd")
 const PLAYER_SCENE = preload("res://scenes/player/player.tscn")
 const HUD_SCENE = preload("res://scenes/ui/hud.tscn")
 const PET_SCENE = preload("res://scenes/pet/pet.tscn")
+
+const CLEAR_REWARD_BASE := 8
+const CLEAR_REWARD_PER_STAGE := 2
+const CLEAR_REWARD_HARD_BONUS := 5
+const CLEAR_REWARD_BOSS_BONUS := 15
 
 enum RoomPhase { COMBAT, EVENT, BREAKTHROUGH, AFFIX, PATH, REST, TRANSITION }
 
@@ -27,10 +34,12 @@ var _waiting_for_path := false
 var _waiting_for_breakthrough := false
 var _waiting_for_event := false
 var _waiting_for_shop := false
+var _waiting_for_weapon_mod := false
 var _event_after_affix := false
 var _phase := RoomPhase.COMBAT
 var _offer_context: Dictionary = {}
 var _current_event: Dictionary = {}
+var _room_clear_pending_type := GameEnums.RoomType.UNKNOWN
 var _pet: Node2D
 var _pet_bonded_this_clear := false
 
@@ -59,6 +68,7 @@ func _ready() -> void:
 	EventBus.breakthrough_closed.connect(_on_breakthrough_closed)
 	EventBus.event_closed.connect(_on_event_closed)
 	EventBus.shop_closed.connect(_on_shop_closed)
+	EventBus.weapon_mod_choice_closed.connect(_on_weapon_mod_choice_closed)
 	EventBus.player_died.connect(_on_player_died)
 
 	EventBus.gold_changed.emit(RunContext.gold)
@@ -123,8 +133,8 @@ func _enter_current_room() -> void:
 	var is_combat_room := GameEnums.is_combat_room_type(room_type) or GameEnums.is_boss_room_type(room_type)
 	if is_combat_room:
 		_apply_room_layout(room, stage_idx, str(stage.get("weather_id", "clear")))
-	elif get_combat_floor() and get_combat_floor().has_method("clear_layout"):
-		get_combat_floor().clear_layout()
+	else:
+		_reset_room_layout()
 	EventBus.room_entered.emit(room, stage)
 
 	if room_type == GameEnums.RoomType.REST:
@@ -141,12 +151,54 @@ func _apply_room_layout(room: Dictionary, stage_idx: int, weather_id: String) ->
 	var floor := get_combat_floor()
 	if floor == null or not floor.has_method("apply_layout"):
 		return
+	_apply_arena_bounds(room)
 	var room_type := str(room.get("type", "combat"))
 	var room_idx := int(room.get("room_index", RunContext.current_room))
 	var rng := RunRng.stage_room(stage_idx, room_idx, room_type)
 	if str(room.get("layout_id", "")).is_empty():
 		room["layout_id"] = RoomLayoutGenerator.pick_layout_id(room_type, stage_idx, rng)
 	floor.apply_layout(room, rng, weather_id)
+
+
+func _apply_arena_bounds(room: Dictionary) -> void:
+	var arena: Dictionary = room.get("arena", {})
+	var bounds: Dictionary = arena.get("world_bounds", {})
+	if bounds.is_empty():
+		GameConstants.reset_arena_bounds()
+		bounds = GameConstants.current_arena_bounds
+	else:
+		GameConstants.set_arena_bounds(bounds)
+	if bounds.is_empty():
+		return
+	var walls := get_node_or_null("Walls")
+	if walls == null:
+		return
+	var x := float(bounds.get("x", -640.0))
+	var y := float(bounds.get("y", -352.0))
+	var width := float(bounds.get("width", 1280.0))
+	var height := float(bounds.get("height", 704.0))
+	_resize_wall(walls.get_node_or_null("WallTop"), Vector2(width + 64.0, 32.0), Vector2(x + width * 0.5, y - 16.0))
+	_resize_wall(walls.get_node_or_null("WallBottom"), Vector2(width + 64.0, 32.0), Vector2(x + width * 0.5, y + height + 16.0))
+	_resize_wall(walls.get_node_or_null("WallLeft"), Vector2(32.0, height + 64.0), Vector2(x - 16.0, y + height * 0.5))
+	_resize_wall(walls.get_node_or_null("WallRight"), Vector2(32.0, height + 64.0), Vector2(x + width + 16.0, y + height * 0.5))
+
+
+func _resize_wall(shape_node: Node, size: Vector2, pos: Vector2) -> void:
+	if shape_node == null:
+		return
+	shape_node.position = pos
+	var collision_shape := shape_node as CollisionShape2D
+	if collision_shape == null:
+		return
+	var shape: Shape2D = collision_shape.shape
+	if shape is RectangleShape2D:
+		(shape as RectangleShape2D).size = size
+
+
+func _reset_room_layout() -> void:
+	if get_combat_floor() and get_combat_floor().has_method("clear_layout"):
+		get_combat_floor().clear_layout()
+	_apply_arena_bounds({})
 
 
 func _room_type(room: Dictionary) -> GameEnums.RoomType:
@@ -212,6 +264,7 @@ func _enemy_kill_blocked() -> bool:
 		or _waiting_for_breakthrough
 		or _waiting_for_event
 		or _waiting_for_shop
+		or _waiting_for_weapon_mod
 		or _waiting_for_wave
 		or get_horde().finishing
 	)
@@ -265,7 +318,7 @@ func _count_wave_enemies(wave_def: Dictionary) -> int:
 
 func _spawn_single_enemy(spawn_def: Dictionary, room: Dictionary, room_type: GameEnums.RoomType) -> void:
 	spawn_def["room_type_id"] = GameEnums.room_type_id(room_type)
-	_spawn_enemy_dummy(spawn_def, room)
+	_spawn_enemy_with_telegraph(spawn_def, room)
 
 
 func _enter_rest_room() -> void:
@@ -283,7 +336,7 @@ func _after_rest() -> void:
 
 
 func _check_wave_clear() -> void:
-	if _waiting_for_affix or _waiting_for_path or _waiting_for_breakthrough or _waiting_for_event or _waiting_for_shop or _waiting_for_wave:
+	if _waiting_for_affix or _waiting_for_path or _waiting_for_breakthrough or _waiting_for_event or _waiting_for_shop or _waiting_for_weapon_mod or _waiting_for_wave:
 		return
 	if _count_living_enemies() <= 0:
 		_on_wave_cleared()
@@ -337,11 +390,91 @@ func _on_room_cleared() -> void:
 				RunContext.heart_demon_shards_earned,
 				SaveManager.get_heart_demon_shards() + RunContext.heart_demon_shards_earned,
 			]
-		)
+	)
+	_grant_room_clear_gold(room_type, int(stage.get("stage_index", RunContext.current_stage + 1)))
+	_room_clear_pending_type = room_type
+	if _maybe_offer_weapon_mod(room_type, int(stage.get("stage_index", RunContext.current_stage + 1))):
+		return
+	_continue_after_room_growth()
+
+
+func _continue_after_room_growth() -> void:
+	var room_type := _room_clear_pending_type
+	_room_clear_pending_type = GameEnums.RoomType.UNKNOWN
 	if room_type == GameEnums.RoomType.BOSS:
 		_offer_breakthrough()
 	else:
 		_offer_affix()
+
+
+func _grant_room_clear_gold(room_type: GameEnums.RoomType, stage_index: int) -> void:
+	if not GameEnums.is_combat_room_type(room_type) and room_type != GameEnums.RoomType.BOSS:
+		return
+	var amount := CLEAR_REWARD_BASE + maxi(stage_index, 1) * CLEAR_REWARD_PER_STAGE
+	if room_type in [GameEnums.RoomType.COMBAT_HARD, GameEnums.RoomType.ELITE]:
+		amount += CLEAR_REWARD_HARD_BONUS
+	if room_type == GameEnums.RoomType.BOSS:
+		amount += CLEAR_REWARD_BOSS_BONUS
+	RunContext.gold += amount
+	EventBus.gold_changed.emit(RunContext.gold)
+	EventBus.pet_coord_feedback.emit("\u6e05\u573a\u5956\u52b1\uff1a\u7075\u77f3 +%d" % amount)
+	if _player:
+		VfxManager.spawn_gold_reward_feedback(_player.global_position + Vector2(0, -24), amount)
+
+
+func _maybe_offer_weapon_mod(room_type: GameEnums.RoomType, stage_index: int) -> bool:
+	if RunContext.weapon_mods.size() >= WeaponModCatalog.MAX_MODS:
+		return false
+	var cleared_after_this := RunContext.rooms_cleared + 1
+	var should_offer := room_type in [GameEnums.RoomType.ELITE, GameEnums.RoomType.BOSS]
+	should_offer = should_offer or cleared_after_this > 0 and cleared_after_this % 2 == 0
+	if not should_offer:
+		return false
+	var element_hint := ""
+	if _player and _player.has_node("AffixHolder"):
+		element_hint = str(_player.get_node("AffixHolder").get_element_bias())
+	if element_hint.is_empty():
+		element_hint = str(WeatherSystem.get_weather_row().get("element_affinity", ""))
+		if element_hint == "none":
+			element_hint = ""
+	var weapon_family := str(RunContext.get_weapon().get("family", ""))
+	var path_hint := weapon_family if not weapon_family.is_empty() else RunContext.cultivation_path_id
+	var focus_tags := CultivationPathRegistry.get_focus_tags(RunContext.cultivation_path_id)
+	var offers := WeaponModCatalog.roll_offers(
+		_flow_rng("weapon_mod_%d_%d" % [stage_index, cleared_after_this]),
+		3,
+		RunContext.weapon_mods,
+		element_hint,
+		path_hint,
+		focus_tags
+	)
+	if offers.is_empty():
+		return false
+	_waiting_for_weapon_mod = true
+	_phase = RoomPhase.AFFIX
+	RunContext.ui_blocking = true
+	Engine.time_scale = 1.0
+	get_tree().paused = true
+	EventBus.weapon_mod_choice_requested.emit(offers, {
+		"source": "\u6e05\u573a\u796d\u70bc",
+		"stage_index": stage_index,
+		"room_type": GameEnums.room_type_id(room_type),
+		"path_hint": path_hint,
+		"element_hint": element_hint,
+		"focus_tags": focus_tags,
+	})
+	return true
+
+
+func _on_weapon_mod_choice_closed(mod_id: String) -> void:
+	if not _waiting_for_weapon_mod:
+		return
+	_waiting_for_weapon_mod = false
+	RunContext.ui_blocking = false
+	if RunContext.add_weapon_mod(mod_id):
+		var mod := WeaponModCatalog.get_mod(mod_id)
+		EventBus.pet_coord_feedback.emit("\u672c\u547d\u5668\u796d\u70bc\uff1a%s" % str(mod.get("name", mod_id)))
+	_continue_after_room_growth()
 
 
 func _offer_breakthrough() -> void:
@@ -379,9 +512,32 @@ func _on_breakthrough_closed(talent_id: String) -> void:
 	if talent and _player.has_node("AffixHolder"):
 		_player.get_node("AffixHolder").apply_talent(talent)
 		RunContext.add_realm_talent(talent_id)
+	_apply_breakthrough_vital_surge()
 	if RunContext.realm_level >= 3:
 		EventBus.pet_coord_feedback.emit("突破成功 · 词条槽 %d" % RunContext.affix_slot_max())
 	_offer_affix()
+
+
+func _apply_breakthrough_vital_surge() -> void:
+	if _player == null or not _player.has_node("HealthComponent"):
+		return
+	var health: Node = _player.get_node("HealthComponent")
+	var before_max := float(health.max_hp)
+	if _player.has_node("AffixHolder"):
+		var holder: Node = _player.get_node("AffixHolder")
+		if holder.has_method("refresh_stats"):
+			holder.refresh_stats()
+	var after_max := float(health.max_hp)
+	var gained_max := maxf(after_max - before_max, 0.0)
+	var heal_amount := gained_max + after_max * 0.22
+	if health.has_method("heal"):
+		health.heal(heal_amount)
+	else:
+		health.current_hp = minf(after_max, float(health.current_hp) + heal_amount)
+		health.changed.emit(health.current_hp, health.max_hp)
+	if not VfxManager.should_reduce_motion():
+		VfxManager.spawn_world(_player.global_position, "heal", Color(0.55, 1.0, 0.62))
+	EventBus.learn_feedback.emit("破境淬体 · %s" % RunContext.realm_growth_summary(), "skill")
 
 
 func _offer_affix() -> void:
@@ -459,6 +615,8 @@ func _on_affix_skip() -> void:
 		return
 	RunContext.gold += GameConstants.AFFIX_SKIP_REWARD
 	EventBus.gold_changed.emit(RunContext.gold)
+	if _player:
+		VfxManager.spawn_gold_reward_feedback(_player.global_position + Vector2(0, -24), GameConstants.AFFIX_SKIP_REWARD)
 
 
 func _on_affix_choice_closed() -> void:

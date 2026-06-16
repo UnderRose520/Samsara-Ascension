@@ -35,5 +35,16 @@ func take_damage(amount: float) -> float:
 	return applied
 
 
+func heal(amount: float) -> float:
+	if amount <= 0.0 or current_hp <= HP_EPSILON:
+		return 0.0
+	var applied := minf(amount, max_hp - current_hp)
+	if applied <= HP_EPSILON:
+		return 0.0
+	current_hp += applied
+	_emit()
+	return applied
+
+
 func _emit() -> void:
 	changed.emit(current_hp, max_hp)

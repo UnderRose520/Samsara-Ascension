@@ -242,6 +242,108 @@ def gen_panel_ninepatch() -> None:
     save_rgba(buf, UI_OUT / "panel_ninepatch_256.png")
 
 
+def _save_transparent_pil(img: "Image.Image", path: Path) -> None:  # noqa: F821
+    save_image_pillow(img.convert("RGBA"), path)
+
+
+def _draw_rounded_frame(
+    img: "Image.Image",  # noqa: F821
+    xy: Tuple[int, int, int, int],
+    radius: int,
+    fill: RGBA,
+    outline: RGBA,
+    width: int = 2,
+) -> None:
+    draw = ImageDraw.Draw(img)
+    draw.rounded_rectangle(xy, radius=radius, fill=fill, outline=outline, width=width)
+
+
+def _draw_cloud_scroll(buf: List[List[RGBA]], x0: int, y: int, length: int, c: RGBA, mirror: bool = False) -> None:
+    step = -1 if mirror else 1
+    start = x0
+    end = x0 + step * length
+    draw_line(buf, start, y, end, y, c, 1)
+    for i in range(0, length, 18):
+        cx = x0 + step * i
+        draw_line(buf, cx, y, cx + step * 8, y - 5, c, 1)
+        draw_line(buf, cx + step * 8, y - 5, cx + step * 15, y - 1, c, 1)
+        draw_line(buf, cx, y, cx + step * 8, y + 5, c, 1)
+        draw_line(buf, cx + step * 8, y + 5, cx + step * 15, y + 1, c, 1)
+
+
+def gen_bg_jade_palace() -> None:
+    """1920×1080 jade palace hall, center-weighted and dark enough for setup UI."""
+    w, h = 1920, 1080
+    img = Image.new("RGBA", (w, h), hex_to_rgba(TOKENS["bg.deep"]))
+    draw = ImageDraw.Draw(img, "RGBA")
+    top = hex_to_rgba("#02100C")
+    bottom = hex_to_rgba("#12382E")
+    for y in range(h):
+        t = y / max(1, h - 1)
+        draw.line((0, y, w, y), fill=lerp_color(top, bottom, t))
+    # distant mountains and cloud layer through the rear arch.
+    for i, color in enumerate([(50, 110, 100, 90), (42, 86, 84, 95), (28, 62, 58, 120)]):
+        base = 640 + i * 80
+        pts = [(0, h), (0, base), (250, base - 120), (460, base - 30), (720, base - 160), (980, base - 60),
+               (1240, base - 190), (1460, base - 70), (1700, base - 150), (w, base - 40), (w, h)]
+        draw.polygon(pts, fill=color)
+    for y in (515, 565, 620):
+        draw.ellipse((-200, y - 45, 600, y + 65), fill=(210, 230, 220, 26))
+        draw.ellipse((520, y - 35, 1540, y + 55), fill=(210, 230, 220, 22))
+        draw.ellipse((1220, y - 50, 2100, y + 60), fill=(210, 230, 220, 20))
+    gold = hex_to_rgba(TOKENS["accent.gold"])
+    gold_soft = hex_to_rgba(TOKENS["accent.gold_soft"])
+    jade = hex_to_rgba(TOKENS["bg.panel_alt"])
+    # palace columns.
+    for cx in (210, 430, 1490, 1710):
+        draw.rounded_rectangle((cx - 52, 145, cx + 52, 965), radius=28, fill=(12, 58, 48, 210), outline=gold, width=5)
+        draw.rectangle((cx - 72, 125, cx + 72, 165), fill=gold_soft, outline=gold, width=3)
+        draw.rectangle((cx - 76, 940, cx + 76, 995), fill=gold_soft, outline=gold, width=3)
+        for yy in range(210, 890, 105):
+            draw.arc((cx - 42, yy, cx + 42, yy + 72), 200, 340, fill=(255, 215, 0, 135), width=3)
+    # arch and floor.
+    draw.arc((360, 90, 1560, 1280), 180, 360, fill=gold, width=10)
+    draw.rectangle((360, 365, 1560, 386), fill=(255, 215, 0, 90))
+    draw.polygon([(220, 1080), (600, 690), (1320, 690), (1700, 1080)], fill=(4, 32, 26, 220), outline=(255, 215, 0, 90))
+    for x in range(360, 1580, 120):
+        draw.line((x, 1080, 860 + (x - 360) * 0.15, 690), fill=(255, 215, 0, 35), width=2)
+    for y in range(720, 1060, 70):
+        draw.line((250, y, 1670, y), fill=(255, 215, 0, 26), width=2)
+    # central safe area subtle glow behind modal.
+    draw.ellipse((540, 230, 1380, 920), fill=(20, 90, 72, 45))
+    # lanterns.
+    for lx in (640, 1280):
+        draw.line((lx, 150, lx, 250), fill=gold_soft, width=3)
+        draw.ellipse((lx - 32, 245, lx + 32, 325), fill=(255, 206, 78, 145), outline=gold, width=3)
+    # dark crop-tolerant vignette.
+    overlay = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    od = ImageDraw.Draw(overlay, "RGBA")
+    for i in range(28):
+        a = int(i * 5)
+        od.rectangle((i * 18, i * 10, w - i * 18, h - i * 10), outline=(0, 0, 0, a), width=18)
+    img = Image.alpha_composite(img, overlay)
+    _save_transparent_pil(img, UI_OUT / "bg_jade_palace_hall.png")
+
+
+def gen_breakthrough_bg_overlay() -> None:
+    w, h = 1920, 1080
+    img = Image.new("RGBA", (w, h), hex_to_rgba("#080313"))
+    draw = ImageDraw.Draw(img, "RGBA")
+    for y in range(h):
+        t = y / max(1, h - 1)
+        draw.line((0, y, w, y), fill=lerp_color(hex_to_rgba("#070514"), hex_to_rgba("#153B31"), t))
+    cx, cy = w // 2, h // 2
+    for r in range(440, 60, -38):
+        a = int(10 + (440 - r) * 0.08)
+        draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=(78, 205, 196, a), width=5)
+    for i in range(18):
+        angle = i * 20
+        import math
+        rad = math.radians(angle)
+        draw.line((cx, cy, cx + int(780 * math.cos(rad)), cy + int(440 * math.sin(rad))), fill=(255, 215, 0, 28), width=2)
+    _save_transparent_pil(img, UI_OUT / "breakthrough_bg_overlay.png")
+
+
 def gen_scroll_toast_banner() -> None:
     """520×72 horizontal scroll banner for learn/rebind toasts."""
     w, h = 520, 72
@@ -421,6 +523,159 @@ def gen_talent_scroll_frame() -> None:
     save_rgba(buf, UI_OUT / "talent_scroll_210x200.png")
 
 
+def gen_decorative_frames_and_buttons() -> None:
+    # Dao-heart card frame.
+    w, h = 168, 200
+    buf = new_canvas(w, h, (0, 0, 0, 0))
+    fill_rect(buf, 2, 2, w - 2, h - 2, hex_to_rgba(TOKENS["bg.panel_alt"]))
+    _draw_gold_frame(buf, w, h, {0: hex_to_rgba("#5A4A1E"), 1: hex_to_rgba(TOKENS["accent.gold"]), 2: hex_to_rgba(TOKENS["accent.gold_soft"]), 7: hex_to_rgba(TOKENS["accent.gold"], 150)})
+    _paper_noise(buf, 10, 10, w - 10, h - 10, 7)
+    for cx, cy in [(10, 10), (w - 11, 10), (10, h - 11), (w - 11, h - 11)]:
+        fill_circle(buf, cx, cy, 3, hex_to_rgba(TOKENS["elem.water"]))
+    save_rgba(buf, UI_OUT / "dao_heart_card_frame.png")
+
+    # Talent scroll hover highlight.
+    gen_talent_scroll_frame()
+    base = Image.open(UI_OUT / "talent_scroll_210x200.png").convert("RGBA")
+    glow = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(glow, "RGBA")
+    d.rounded_rectangle((1, 1, base.width - 2, base.height - 2), radius=10, outline=(255, 215, 0, 145), width=5)
+    d.rounded_rectangle((7, 7, base.width - 8, base.height - 8), radius=7, outline=(255, 246, 170, 105), width=2)
+    _save_transparent_pil(Image.alpha_composite(base, glow), UI_OUT / "talent_scroll_210x200_highlight.png")
+
+    # Title ornament.
+    w, h = 640, 48
+    buf = new_canvas(w, h, (0, 0, 0, 0))
+    gold = hex_to_rgba(TOKENS["accent.gold"])
+    soft = hex_to_rgba(TOKENS["accent.gold_soft"])
+    cy = h // 2
+    draw_line(buf, 42, cy, w // 2 - 24, cy, gold, 2)
+    draw_line(buf, w - 42, cy, w // 2 + 24, cy, gold, 2)
+    _draw_cloud_scroll(buf, 46, cy, 220, soft)
+    _draw_cloud_scroll(buf, w - 46, cy, 220, soft, True)
+    fill_circle(buf, w // 2, cy, 8, hex_to_rgba(TOKENS["elem.water"]))
+    fill_circle(buf, w // 2, cy, 4, hex_to_rgba("#E8FFF8"))
+    save_rgba(buf, UI_OUT / "setup_title_ornament.png")
+
+    # Buttons.
+    def button(path: str, size: Tuple[int, int], primary: bool) -> None:
+        bw, bh = size
+        img = Image.new("RGBA", size, (0, 0, 0, 0))
+        draw = ImageDraw.Draw(img, "RGBA")
+        if primary:
+            for y in range(bh):
+                t = abs(y - bh / 2) / (bh / 2)
+                c = lerp_color(hex_to_rgba("#C58D11"), hex_to_rgba(TOKENS["accent.gold"]), 1.0 - t * 0.65)
+                draw.line((4, y, bw - 5, y), fill=c)
+            draw.rounded_rectangle((2, 2, bw - 3, bh - 3), radius=8, outline=hex_to_rgba("#2E2206"), width=2)
+            draw.rounded_rectangle((7, 7, bw - 8, bh - 8), radius=5, outline=(255, 248, 184, 110), width=1)
+        else:
+            draw.rounded_rectangle((1, 1, bw - 2, bh - 2), radius=7, fill=hex_to_rgba(TOKENS["bg.panel"], 210), outline=hex_to_rgba(TOKENS["text.secondary"], 210), width=1)
+            draw.line((8, 4, bw - 8, 4), fill=(255, 215, 0, 70), width=1)
+            draw.line((8, bh - 5, bw - 8, bh - 5), fill=(255, 215, 0, 50), width=1)
+        _save_transparent_pil(img, UI_OUT / path)
+    button("btn_primary_gold_360x48.png", (360, 48), True)
+    button("btn_secondary_360x40.png", (360, 40), False)
+
+    # Couplet panels.
+    for name in ("left", "right"):
+        cw, ch = 48, 240
+        buf = new_canvas(cw, ch, (0, 0, 0, 0))
+        fill_rect(buf, 5, 6, cw - 5, ch - 6, hex_to_rgba(TOKENS["bg.panel_alt"]))
+        fill_rect(buf, 3, 0, cw - 3, 18, gold)
+        fill_rect(buf, 3, ch - 18, cw - 3, ch, gold)
+        _draw_gold_frame(buf, cw, ch, {0: hex_to_rgba("#5A4A1E"), 1: gold, 2: soft})
+        save_rgba(buf, UI_OUT / f"couplet_panel_{name}.png")
+
+
+def gen_hud_dedicated_frames() -> None:
+    # Weather panel.
+    w, h = 280, 120
+    buf = new_canvas(w, h, (0, 0, 0, 0))
+    fill_rect(buf, 2, 2, w - 2, h - 2, hex_to_rgba(TOKENS["bg.panel"], 220))
+    _draw_gold_frame(buf, w, h, {0: hex_to_rgba("#4A3A13"), 1: hex_to_rgba(TOKENS["accent.gold"]), 2: hex_to_rgba(TOKENS["accent.gold_soft"]), 7: hex_to_rgba(TOKENS["accent.gold"], 100)})
+    save_rgba(buf, UI_OUT / "hud_weather_panel_280x120.png")
+
+    # Skill dock frame.
+    w, h = 360, 80
+    buf = new_canvas(w, h, (0, 0, 0, 0))
+    fill_rect(buf, 4, 10, w - 4, h - 6, hex_to_rgba(TOKENS["bg.panel"], 210))
+    gold = hex_to_rgba(TOKENS["accent.gold"])
+    soft = hex_to_rgba(TOKENS["accent.gold_soft"])
+    draw_line(buf, 24, 14, w - 24, 14, gold, 2)
+    draw_line(buf, 24, h - 10, w - 24, h - 10, soft, 1)
+    for cx in (96, 180, 264):
+        fill_circle(buf, cx, 41, 30, (255, 215, 0, 42))
+        fill_circle(buf, cx, 41, 23, (15, 42, 34, 205))
+    save_rgba(buf, UI_OUT / "hud_spell_dock_frame.png")
+
+    # Boss banner.
+    w, h = 640, 80
+    buf = new_canvas(w, h, (0, 0, 0, 0))
+    fill_rect(buf, 3, 4, w - 3, h - 4, hex_to_rgba(TOKENS["bg.panel"], 230))
+    _draw_gold_frame(buf, w, h, {0: hex_to_rgba("#4A3A13"), 1: gold, 2: soft, 6: hex_to_rgba(TOKENS["accent.gold"], 90)})
+    fill_circle(buf, w // 2, h // 2, 9, hex_to_rgba(TOKENS["elem.water"]))
+    _draw_cloud_scroll(buf, 52, h // 2, 200, soft)
+    _draw_cloud_scroll(buf, w - 52, h // 2, 200, soft, True)
+    save_rgba(buf, UI_OUT / "boss_banner_640x80.png")
+
+    # Enemy HP.
+    w, h = 56, 12
+    buf = new_canvas(w, h, (0, 0, 0, 0))
+    fill_rect(buf, 0, 2, w, h - 2, (0, 0, 0, 150))
+    for x in range(2, w - 2):
+        fill_rect(buf, x, 4, x + 1, h - 4, lerp_color(hex_to_rgba(TOKENS["state.hp"]), hex_to_rgba(TOKENS["state.hp_end"]), x / w))
+    save_rgba(buf, UI_OUT / "enemy_hp_bar_9slice.png")
+
+
+def gen_tags_and_badges() -> None:
+    tags = [
+        ("tag_common.png", 64, 24, TOKENS["quality.common"]),
+        ("tag_rare.png", 64, 24, TOKENS["quality.rare"]),
+        ("tag_epic.png", 64, 24, TOKENS["quality.epic"]),
+        ("tag_ice.png", 80, 20, TOKENS["elem.water"]),
+        ("tag_thunder.png", 80, 20, TOKENS["elem.thunder"]),
+        ("tag_fire.png", 80, 20, TOKENS["elem.fire"]),
+    ]
+    for filename, w, h, color in tags:
+        img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        _draw_rounded_frame(img, (1, 1, w - 2, h - 2), 5, hex_to_rgba(TOKENS["bg.panel"], 180), hex_to_rgba(color), 1)
+        _save_transparent_pil(img, UI_OUT / filename)
+
+    # Talent effect badges.
+    specs = [
+        ("attack", TOKENS["elem.fire"], _draw_sword_icon),
+        ("defense", TOKENS["elem.earth"], _draw_shield_icon),
+        ("spirit", TOKENS["elem.water"], _draw_lotus_icon),
+        ("utility", TOKENS["elem.chaos"], _draw_scroll_icon),
+    ]
+    for name, color, drawer in specs:
+        buf = new_canvas(24, 24, (0, 0, 0, 0))
+        fill_circle(buf, 12, 12, 11, hex_to_rgba(TOKENS["bg.panel"], 220))
+        drawer(buf, hex_to_rgba(color))
+        save_rgba(buf, UI_OUT / f"talent_badge_{name}.png")
+
+    # Corner and training badges.
+    buf = new_canvas(32, 32, (0, 0, 0, 0))
+    gold = hex_to_rgba(TOKENS["accent.gold_soft"])
+    for y in range(1, 31):
+        for x in range(31 - y, 31):
+            set_px(buf, x, y, gold)
+    draw_line(buf, 20, 13, 24, 18, hex_to_rgba(TOKENS["bg.panel"]), 2)
+    draw_line(buf, 24, 18, 30, 8, hex_to_rgba(TOKENS["bg.panel"]), 2)
+    save_rgba(buf, UI_OUT / "badge_owned_32.png")
+
+    img = Image.new("RGBA", (48, 16), (0, 0, 0, 0))
+    _draw_rounded_frame(img, (1, 1, 46, 14), 4, hex_to_rgba(TOKENS["bg.panel"], 180), hex_to_rgba(TOKENS["elem.water"]), 1)
+    _save_transparent_pil(img, UI_OUT / "badge_training_48x16.png")
+
+
+def _draw_shield_icon(buf: List[List[RGBA]], c: RGBA) -> None:
+    pts = [(12, 4), (20, 8), (18, 18), (12, 22), (6, 18), (4, 8)]
+    for i in range(len(pts)):
+        draw_line(buf, pts[i][0], pts[i][1], pts[(i + 1) % len(pts)][0], pts[(i + 1) % len(pts)][1], c, 2)
+
+
 def gen_pet_avatar_ring() -> None:
     size = 40
     gold = hex_to_rgba(TOKENS["accent.gold"])
@@ -462,6 +717,188 @@ def gen_element_icons() -> None:
         buf = new_canvas(32, 32, (0, 0, 0, 0))
         drawer(buf, hex_to_rgba(color_hex))
         save_rgba(buf, UI_OUT / f"elem_{name}_32.png")
+
+
+def gen_large_and_realm_icons() -> None:
+    large = [
+        ("ice", TOKENS["elem.water"], _draw_large_snowflake),
+        ("thunder", TOKENS["elem.thunder"], _draw_large_lightning),
+        ("fire", TOKENS["elem.fire"], _draw_large_flame),
+    ]
+    for name, color, drawer in large:
+        buf = new_canvas(80, 80, (0, 0, 0, 0))
+        drawer(buf, hex_to_rgba(color))
+        save_rgba(buf, UI_OUT / f"elem_{name}_large_80.png")
+
+    realms = [
+        (1, TOKENS["elem.wood"], _draw_wood_icon),
+        (2, TOKENS["elem.earth"], _draw_earth_icon),
+        (3, TOKENS["elem.fire"], _draw_fire_icon),
+        (4, TOKENS["elem.thunder"], _draw_thunder_icon),
+        (5, TOKENS["elem.chaos"], _draw_chaos_icon),
+    ]
+    for idx, color, drawer in realms:
+        buf = new_canvas(48, 48, (0, 0, 0, 0))
+        fill_circle(buf, 24, 24, 22, hex_to_rgba(TOKENS["bg.panel"], 220))
+        fill_circle(buf, 24, 24, 18, (hex_to_rgba(color)[0], hex_to_rgba(color)[1], hex_to_rgba(color)[2], 45))
+        # Draw the existing 32px icon centered inside 48px canvas by drawing to temp.
+        tmp = new_canvas(32, 32, (0, 0, 0, 0))
+        drawer(tmp, hex_to_rgba(color))
+        for y in range(32):
+            for x in range(32):
+                if tmp[y][x][3]:
+                    set_px(buf, x + 8, y + 8, tmp[y][x])
+        save_rgba(buf, UI_OUT / f"talent_icon_realm_{idx}.png")
+
+
+def _draw_large_snowflake(buf: List[List[RGBA]], c: RGBA) -> None:
+    import math
+    cx, cy = 40, 40
+    fill_circle(buf, cx, cy, 28, (c[0], c[1], c[2], 35))
+    for i in range(6):
+        a = i * math.pi / 3
+        x1 = cx + int(30 * math.cos(a))
+        y1 = cy + int(30 * math.sin(a))
+        draw_line(buf, cx, cy, x1, y1, c, 2)
+        for off in (-0.55, 0.55):
+            bx = cx + int(18 * math.cos(a))
+            by = cy + int(18 * math.sin(a))
+            draw_line(buf, bx, by, bx + int(9 * math.cos(a + off)), by + int(9 * math.sin(a + off)), c, 1)
+
+
+def _draw_large_lightning(buf: List[List[RGBA]], c: RGBA) -> None:
+    pts = [(48, 8), (28, 40), (42, 40), (28, 72), (58, 32), (44, 32), (60, 8)]
+    for i in range(len(pts) - 1):
+        draw_line(buf, pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], c, 5)
+        draw_line(buf, pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], (255, 255, 255, 170), 1)
+
+
+def _draw_large_flame(buf: List[List[RGBA]], c: RGBA) -> None:
+    pts = [(40, 8), (58, 42), (48, 72), (32, 72), (22, 44), (32, 28)]
+    for i in range(len(pts)):
+        draw_line(buf, pts[i][0], pts[i][1], pts[(i + 1) % len(pts)][0], pts[(i + 1) % len(pts)][1], c, 4)
+    fill_circle(buf, 40, 52, 12, hex_to_rgba(TOKENS["accent.gold"]))
+
+
+def gen_functional_icons() -> None:
+    # Spirit stone, heal, dodge.
+    icon_specs = [
+        ("icon_spirit_stone_32.png", 32, TOKENS["accent.gold"], _draw_gem_icon),
+        ("icon_heal_32.png", 32, TOKENS["elem.water"], _draw_lotus_icon),
+        ("icon_dodge_32.png", 32, TOKENS["elem.water"], _draw_dodge_icon),
+        ("icon_reroll_24.png", 24, TOKENS["accent.gold"], _draw_reroll_icon),
+        ("icon_skip_24.png", 24, TOKENS["text.secondary"], _draw_skip_icon),
+        ("icon_heart_demon_trial_24.png", 24, TOKENS["quality.dao"], _draw_demon_eye_icon),
+        ("bt_slot_arrow_32.png", 32, TOKENS["accent.gold"], _draw_arrow_icon),
+    ]
+    for filename, size, color, drawer in icon_specs:
+        buf = new_canvas(size, size, (0, 0, 0, 0))
+        drawer(buf, hex_to_rgba(color))
+        save_rgba(buf, UI_OUT / filename)
+
+    karma_specs = [
+        ("good", TOKENS["accent.gold"], _draw_good_dot),
+        ("evil", TOKENS["state.debuff"], _draw_evil_dot),
+        ("greed", TOKENS["quality.legendary"], _draw_greed_dot),
+        ("rebellion", TOKENS["elem.chaos"], _draw_rebellion_dot),
+        ("dao_heart", TOKENS["accent.gold"], _draw_dao_star_dot),
+    ]
+    for name, color, drawer in karma_specs:
+        buf = new_canvas(16, 16, (0, 0, 0, 0))
+        drawer(buf, hex_to_rgba(color))
+        save_rgba(buf, UI_OUT / f"karma_{name}_16.png")
+
+
+def _draw_gem_icon(buf: List[List[RGBA]], c: RGBA) -> None:
+    pts = [(16, 3), (27, 12), (22, 28), (10, 28), (5, 12)]
+    for i in range(len(pts)):
+        draw_line(buf, pts[i][0], pts[i][1], pts[(i + 1) % len(pts)][0], pts[(i + 1) % len(pts)][1], c, 2)
+    fill_circle(buf, 16, 15, 6, (c[0], c[1], c[2], 120))
+
+
+def _draw_dodge_icon(buf: List[List[RGBA]], c: RGBA) -> None:
+    draw_line(buf, 4, 22, 24, 10, c, 2)
+    draw_line(buf, 8, 26, 28, 15, (c[0], c[1], c[2], 120), 1)
+    fill_circle(buf, 20, 12, 4, c)
+
+
+def _draw_reroll_icon(buf: List[List[RGBA]], c: RGBA) -> None:
+    draw_line(buf, 6, 8, 16, 8, c, 2)
+    draw_line(buf, 16, 8, 14, 5, c, 2)
+    draw_line(buf, 18, 16, 8, 16, c, 2)
+    draw_line(buf, 8, 16, 10, 19, c, 2)
+
+
+def _draw_skip_icon(buf: List[List[RGBA]], c: RGBA) -> None:
+    draw_line(buf, 5, 7, 13, 12, c, 2)
+    draw_line(buf, 13, 12, 5, 17, c, 2)
+    draw_line(buf, 13, 7, 21, 12, c, 2)
+    draw_line(buf, 21, 12, 13, 17, c, 2)
+
+
+def _draw_demon_eye_icon(buf: List[List[RGBA]], c: RGBA) -> None:
+    draw_line(buf, 4, 12, 12, 7, c, 2)
+    draw_line(buf, 12, 7, 20, 12, c, 2)
+    draw_line(buf, 4, 12, 12, 17, c, 2)
+    draw_line(buf, 12, 17, 20, 12, c, 2)
+    fill_circle(buf, 12, 12, 3, hex_to_rgba(TOKENS["elem.chaos"]))
+
+
+def _draw_arrow_icon(buf: List[List[RGBA]], c: RGBA) -> None:
+    draw_line(buf, 6, 16, 24, 16, c, 2)
+    draw_line(buf, 24, 16, 18, 10, c, 2)
+    draw_line(buf, 24, 16, 18, 22, c, 2)
+
+
+def _draw_good_dot(buf: List[List[RGBA]], c: RGBA) -> None:
+    fill_circle(buf, 8, 8, 6, (245, 245, 230, 210))
+    fill_circle(buf, 8, 8, 3, c)
+
+
+def _draw_evil_dot(buf: List[List[RGBA]], c: RGBA) -> None:
+    draw_line(buf, 8, 2, 12, 8, c, 2)
+    draw_line(buf, 12, 8, 8, 14, c, 2)
+    draw_line(buf, 8, 14, 4, 8, c, 2)
+    draw_line(buf, 4, 8, 8, 2, c, 2)
+
+
+def _draw_greed_dot(buf: List[List[RGBA]], c: RGBA) -> None:
+    fill_circle(buf, 8, 8, 6, c)
+    draw_line(buf, 5, 8, 11, 8, hex_to_rgba(TOKENS["bg.panel"]), 1)
+
+
+def _draw_rebellion_dot(buf: List[List[RGBA]], c: RGBA) -> None:
+    draw_line(buf, 8, 14, 8, 3, c, 2)
+    draw_line(buf, 8, 3, 4, 8, c, 2)
+    draw_line(buf, 8, 3, 12, 8, c, 2)
+
+
+def _draw_dao_star_dot(buf: List[List[RGBA]], c: RGBA) -> None:
+    draw_line(buf, 8, 1, 8, 15, c, 1)
+    draw_line(buf, 1, 8, 15, 8, c, 1)
+    draw_line(buf, 4, 4, 12, 12, c, 1)
+    draw_line(buf, 12, 4, 4, 12, c, 1)
+    fill_circle(buf, 8, 8, 3, c)
+
+
+def gen_event_illustration() -> None:
+    w, h = 560, 96
+    buf = new_canvas(w, h, hex_to_rgba(TOKENS["bg.deep"]))
+    for y in range(h):
+        c = lerp_color(hex_to_rgba("#06140F"), hex_to_rgba("#1B4438"), y / h)
+        fill_rect(buf, 0, y, w, y + 1, c)
+    mountain = hex_to_rgba(TOKENS["bg.panel_alt"])
+    for i, ybase in enumerate((74, 66, 58)):
+        c = (mountain[0], mountain[1], mountain[2], 170 - i * 35)
+        pts = [(0, h), (40, ybase), (98, ybase - 18), (160, ybase + 6), (238, ybase - 24), (330, ybase + 8), (430, ybase - 20), (w, ybase + 2), (w, h)]
+        for j in range(len(pts) - 1):
+            draw_line(buf, pts[j][0], pts[j][1], pts[j + 1][0], pts[j + 1][1], c, 2)
+    for y in (54, 66, 78):
+        draw_line(buf, 20, y, w - 20, y, (220, 235, 225, 28), 2)
+    gold = hex_to_rgba(TOKENS["accent.gold_soft"])
+    draw_line(buf, 270, 72, 290, 58, gold, 1)
+    draw_line(buf, 290, 58, 310, 72, gold, 1)
+    save_rgba(buf, UI_OUT / "event_illustration_560x96.png")
 
 
 def _draw_fire_icon(buf: List[List[RGBA]], c: RGBA) -> None:
@@ -910,17 +1347,25 @@ def main() -> int:
     SPRITE_OUT.mkdir(parents=True, exist_ok=True)
 
     print("Generating UI assets...")
+    gen_bg_jade_palace()
+    gen_breakthrough_bg_overlay()
     gen_panel_ninepatch()
+    gen_decorative_frames_and_buttons()
     gen_scroll_toast_banner()
     gen_hud_panel_bg()
+    gen_hud_dedicated_frames()
     gen_modal_title_bar()
     gen_divider_gold()
+    gen_tags_and_badges()
     gen_path_icons()
     gen_event_banner()
+    gen_event_illustration()
     gen_talent_scroll_frame()
     gen_pet_avatar_ring()
     gen_combo_track()
     gen_element_icons()
+    gen_large_and_realm_icons()
+    gen_functional_icons()
     gen_quality_frames()
     gen_spell_icons()
     gen_progress_bars()

@@ -1,0 +1,5 @@
+path_id,name,subtitle,weapon_id,focus_tags,description
+caster,法修,远程御法,starter_orb,fire|spell,以法珠驭气，保留当前远程弹道手感，适合熟悉原型。
+sword,剑修,近中剑斩,qing_feng_sword,sword|crit,以青锋剑入道，普攻改为短扇形剑斩，适合聚怪后贴身破势。
+talisman,符修,符箓布势,san_cai_flag,talisman|wood,以符旗起势，当前先使用投符弹道，后续扩展为三符成阵。
+soul,邪修,魂幡摄魄,soul_banner,soul|curse,以魂幡摄魄，当前先使用魂火弹道，后续接召魂和心魔代价。

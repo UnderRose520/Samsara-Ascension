@@ -1,0 +1,278 @@
+{
+  "source": "Existing project PNG assets derived from docs/UI asset prompts.",
+  "note": "Legacy actors/projectiles use deterministic runtime animation derivatives. Styled player frames are generated from dedicated 2x2 action sheets under output/imagegen/player_actions. Styled enemy, training dummy, and pet frames are generated from dedicated 2x2 action sheets under output/imagegen/actor_actions.",
+  "actors": {
+    "player_cultivator": {
+      "idle": {
+        "fps": 6,
+        "frames": [
+          "assets/sprites/frames/player_cultivator/idle_00.png",
+          "assets/sprites/frames/player_cultivator/idle_01.png",
+          "assets/sprites/frames/player_cultivator/idle_02.png",
+          "assets/sprites/frames/player_cultivator/idle_03.png",
+          "assets/sprites/gifs/player_cultivator_idle.gif"
+        ]
+      }
+    },
+    "player_style_normal": {
+      "idle": {
+        "fps": 6,
+        "frames": [
+          "assets/sprites/frames/player_style_normal/idle_00.png",
+          "assets/sprites/frames/player_style_normal/idle_01.png",
+          "assets/sprites/frames/player_style_normal/idle_02.png",
+          "assets/sprites/frames/player_style_normal/idle_03.png",
+          "assets/sprites/gifs/player_style_normal_idle.gif"
+        ]
+      },
+      "walk": {
+        "fps": 8,
+        "frames": [
+          "assets/sprites/frames/player_style_normal/walk_00.png",
+          "assets/sprites/frames/player_style_normal/walk_01.png",
+          "assets/sprites/frames/player_style_normal/walk_02.png",
+          "assets/sprites/frames/player_style_normal/walk_03.png",
+          "assets/sprites/gifs/player_style_normal_walk.gif"
+        ]
+      },
+      "combat": {
+        "fps": 10,
+        "frames": [
+          "assets/sprites/frames/player_style_normal/combat_00.png",
+          "assets/sprites/frames/player_style_normal/combat_01.png",
+          "assets/sprites/frames/player_style_normal/combat_02.png",
+          "assets/sprites/frames/player_style_normal/combat_03.png",
+          "assets/sprites/gifs/player_style_normal_combat.gif"
+        ]
+      }
+    },
+    "player_style_chibi": {
+      "idle": {
+        "fps": 6,
+        "frames": [
+          "assets/sprites/frames/player_style_chibi/idle_00.png",
+          "assets/sprites/frames/player_style_chibi/idle_01.png",
+          "assets/sprites/frames/player_style_chibi/idle_02.png",
+          "assets/sprites/frames/player_style_chibi/idle_03.png",
+          "assets/sprites/gifs/player_style_chibi_idle.gif"
+        ]
+      },
+      "walk": {
+        "fps": 8,
+        "frames": [
+          "assets/sprites/frames/player_style_chibi/walk_00.png",
+          "assets/sprites/frames/player_style_chibi/walk_01.png",
+          "assets/sprites/frames/player_style_chibi/walk_02.png",
+          "assets/sprites/frames/player_style_chibi/walk_03.png",
+          "assets/sprites/gifs/player_style_chibi_walk.gif"
+        ]
+      },
+      "combat": {
+        "fps": 10,
+        "frames": [
+          "assets/sprites/frames/player_style_chibi/combat_00.png",
+          "assets/sprites/frames/player_style_chibi/combat_01.png",
+          "assets/sprites/frames/player_style_chibi/combat_02.png",
+          "assets/sprites/frames/player_style_chibi/combat_03.png",
+          "assets/sprites/gifs/player_style_chibi_combat.gif"
+        ]
+      }
+    },
+    "pet_huo_ying": {
+      "idle": {
+        "fps": 6,
+        "frames": [
+          "assets/sprites/frames/pet_huo_ying/idle_00.png",
+          "assets/sprites/frames/pet_huo_ying/idle_01.png",
+          "assets/sprites/frames/pet_huo_ying/idle_02.png",
+          "assets/sprites/frames/pet_huo_ying/idle_03.png",
+          "assets/sprites/gifs/pet_huo_ying_idle.gif"
+        ]
+      }
+    },
+    "enemy_training_dummy": {
+      "idle": {
+        "fps": 6,
+        "frames": [
+          "assets/sprites/frames/enemy_training_dummy/idle_00.png",
+          "assets/sprites/frames/enemy_training_dummy/idle_01.png",
+          "assets/sprites/frames/enemy_training_dummy/idle_02.png",
+          "assets/sprites/frames/enemy_training_dummy/idle_03.png",
+          "assets/sprites/gifs/enemy_training_dummy_idle.gif"
+        ]
+      }
+    },
+    "enemy_berserker": {
+      "idle": {
+        "fps": 6,
+        "frames": [
+          "assets/sprites/frames/enemy_berserker/idle_00.png",
+          "assets/sprites/frames/enemy_berserker/idle_01.png",
+          "assets/sprites/frames/enemy_berserker/idle_02.png",
+          "assets/sprites/frames/enemy_berserker/idle_03.png",
+          "assets/sprites/gifs/enemy_berserker_idle.gif"
+        ]
+      }
+    },
+    "enemy_archer": {
+      "idle": {
+        "fps": 6,
+        "frames": [
+          "assets/sprites/frames/enemy_archer/idle_00.png",
+          "assets/sprites/frames/enemy_archer/idle_01.png",
+          "assets/sprites/frames/enemy_archer/idle_02.png",
+          "assets/sprites/frames/enemy_archer/idle_03.png",
+          "assets/sprites/gifs/enemy_archer_idle.gif"
+        ]
+      }
+    },
+    "enemy_bomber": {
+      "idle": {
+        "fps": 6,
+        "frames": [
+          "assets/sprites/frames/enemy_bomber/idle_00.png",
+          "assets/sprites/frames/enemy_bomber/idle_01.png",
+          "assets/sprites/frames/enemy_bomber/idle_02.png",
+          "assets/sprites/frames/enemy_bomber/idle_03.png",
+          "assets/sprites/gifs/enemy_bomber_idle.gif"
+        ]
+      }
+    }
+  },
+  "projectiles": {
+    "projectile_fire": {
+      "action": "fly",
+      "fps": 12,
+      "frames": [
+        "assets/sprites/frames/projectile_fire/fly_00.png",
+        "assets/sprites/frames/projectile_fire/fly_01.png",
+        "assets/sprites/frames/projectile_fire/fly_02.png",
+        "assets/sprites/frames/projectile_fire/fly_03.png",
+        "assets/sprites/gifs/projectile_fire_fly.gif"
+      ]
+    },
+    "projectile_thunder": {
+      "action": "fly",
+      "fps": 12,
+      "frames": [
+        "assets/sprites/frames/projectile_thunder/fly_00.png",
+        "assets/sprites/frames/projectile_thunder/fly_01.png",
+        "assets/sprites/frames/projectile_thunder/fly_02.png",
+        "assets/sprites/frames/projectile_thunder/fly_03.png",
+        "assets/sprites/gifs/projectile_thunder_fly.gif"
+      ]
+    },
+    "projectile_ice": {
+      "action": "fly",
+      "fps": 12,
+      "frames": [
+        "assets/sprites/frames/projectile_ice/fly_00.png",
+        "assets/sprites/frames/projectile_ice/fly_01.png",
+        "assets/sprites/frames/projectile_ice/fly_02.png",
+        "assets/sprites/frames/projectile_ice/fly_03.png",
+        "assets/sprites/gifs/projectile_ice_fly.gif"
+      ]
+    },
+    "projectile_water": {
+      "action": "fly",
+      "fps": 12,
+      "frames": [
+        "assets/sprites/frames/projectile_water/fly_00.png",
+        "assets/sprites/frames/projectile_water/fly_01.png",
+        "assets/sprites/frames/projectile_water/fly_02.png",
+        "assets/sprites/frames/projectile_water/fly_03.png",
+        "assets/sprites/gifs/projectile_water_fly.gif"
+      ]
+    },
+    "projectile_generic": {
+      "action": "fly",
+      "fps": 12,
+      "frames": [
+        "assets/sprites/frames/projectile_generic/fly_00.png",
+        "assets/sprites/frames/projectile_generic/fly_01.png",
+        "assets/sprites/frames/projectile_generic/fly_02.png",
+        "assets/sprites/frames/projectile_generic/fly_03.png",
+        "assets/sprites/gifs/projectile_generic_fly.gif"
+      ]
+    },
+    "projectile_chaos": {
+      "action": "fly",
+      "fps": 12,
+      "frames": [
+        "assets/sprites/frames/projectile_chaos/fly_00.png",
+        "assets/sprites/frames/projectile_chaos/fly_01.png",
+        "assets/sprites/frames/projectile_chaos/fly_02.png",
+        "assets/sprites/frames/projectile_chaos/fly_03.png",
+        "assets/sprites/gifs/projectile_chaos_fly.gif"
+      ]
+    }
+  },
+  "impacts": {
+    "impact_fire": {
+      "action": "impact",
+      "fps": 14,
+      "frames": [
+        "assets/sprites/frames/impact_fire/impact_00.png",
+        "assets/sprites/frames/impact_fire/impact_01.png",
+        "assets/sprites/frames/impact_fire/impact_02.png",
+        "assets/sprites/frames/impact_fire/impact_03.png",
+        "assets/sprites/gifs/impact_fire_impact.gif"
+      ]
+    },
+    "impact_thunder": {
+      "action": "impact",
+      "fps": 14,
+      "frames": [
+        "assets/sprites/frames/impact_thunder/impact_00.png",
+        "assets/sprites/frames/impact_thunder/impact_01.png",
+        "assets/sprites/frames/impact_thunder/impact_02.png",
+        "assets/sprites/frames/impact_thunder/impact_03.png",
+        "assets/sprites/gifs/impact_thunder_impact.gif"
+      ]
+    },
+    "impact_ice": {
+      "action": "impact",
+      "fps": 14,
+      "frames": [
+        "assets/sprites/frames/impact_ice/impact_00.png",
+        "assets/sprites/frames/impact_ice/impact_01.png",
+        "assets/sprites/frames/impact_ice/impact_02.png",
+        "assets/sprites/frames/impact_ice/impact_03.png",
+        "assets/sprites/gifs/impact_ice_impact.gif"
+      ]
+    },
+    "impact_water": {
+      "action": "impact",
+      "fps": 14,
+      "frames": [
+        "assets/sprites/frames/impact_water/impact_00.png",
+        "assets/sprites/frames/impact_water/impact_01.png",
+        "assets/sprites/frames/impact_water/impact_02.png",
+        "assets/sprites/frames/impact_water/impact_03.png",
+        "assets/sprites/gifs/impact_water_impact.gif"
+      ]
+    },
+    "impact_generic": {
+      "action": "impact",
+      "fps": 14,
+      "frames": [
+        "assets/sprites/frames/impact_generic/impact_00.png",
+        "assets/sprites/frames/impact_generic/impact_01.png",
+        "assets/sprites/frames/impact_generic/impact_02.png",
+        "assets/sprites/frames/impact_generic/impact_03.png",
+        "assets/sprites/gifs/impact_generic_impact.gif"
+      ]
+    },
+    "impact_chaos": {
+      "action": "impact",
+      "fps": 14,
+      "frames": [
+        "assets/sprites/frames/impact_chaos/impact_00.png",
+        "assets/sprites/frames/impact_chaos/impact_01.png",
+        "assets/sprites/frames/impact_chaos/impact_02.png",
+        "assets/sprites/frames/impact_chaos/impact_03.png",
+        "assets/sprites/gifs/impact_chaos_impact.gif"
+      ]
+    }
+  }
+}

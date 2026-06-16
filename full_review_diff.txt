@@ -1,0 +1,1578 @@
+warning: in the working copy of 'game/scenes/ui/affix_choice_panel.gd', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/affix_choice_panel.tscn', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/breakthrough_panel.gd', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/breakthrough_panel.tscn', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/combat_feedback_layer.gd', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/crit_moment_overlay.gd', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/crit_moment_overlay.tscn', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/dao_tradition_overlay.gd', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/dao_tradition_overlay.tscn', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/event_panel.tscn', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/hud.gd', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/hud.tscn', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/legacy_select_panel.gd', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/path_choice_panel.gd', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/run_result_panel.gd', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/run_result_panel.tscn', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/run_setup_panel.tscn', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/scenes/ui/shop_panel.gd', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/ui/components/affix_card.gd', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'game/ui/components/talent_card.gd', LF will be replaced by CRLF the next time Git touches it
+diff --git a/game/scenes/ui/affix_choice_panel.gd b/game/scenes/ui/affix_choice_panel.gd
+index 5d8290c..0b30196 100644
+--- a/game/scenes/ui/affix_choice_panel.gd
++++ b/game/scenes/ui/affix_choice_panel.gd
+@@ -135,7 +135,7 @@ func _play_pickup_fx(card: Control, tag) -> void:
+ 	var target_global: Vector2 = hud.get_build_fly_target_global()
+ 	var icon_path := AssetPaths.elem_icon(tag.element)
+ 	UiFlyEffects.fly_icon(start_global, target_global, icon_path, self)
+-	VfxManager.spawn_world(start_global, "gold", UiTokens.quality_color(tag.quality))
++	VfxManager.spawn_world(start_global, "dao", UiTokens.quality_color(tag.quality))
+ 
+ 
+ func _on_reroll_pressed() -> void:
+diff --git a/game/scenes/ui/affix_choice_panel.tscn b/game/scenes/ui/affix_choice_panel.tscn
+index 9c38025..b01b02f 100644
+--- a/game/scenes/ui/affix_choice_panel.tscn
++++ b/game/scenes/ui/affix_choice_panel.tscn
+@@ -41,7 +41,7 @@ theme_override_constants/separation = 12
+ 
+ [node name="Title" type="Label" parent="Panel/Margin/VBox"]
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 22
+ text = "选择你的机缘"
+ horizontal_alignment = 1
+diff --git a/game/scenes/ui/breakthrough_panel.gd b/game/scenes/ui/breakthrough_panel.gd
+index 0d16b0b..07124e0 100644
+--- a/game/scenes/ui/breakthrough_panel.gd
++++ b/game/scenes/ui/breakthrough_panel.gd
+@@ -50,7 +50,7 @@ func _on_breakthrough_requested(offers: Array, context: Dictionary) -> void:
+ 
+ func _spawn_breakthrough_vfx() -> void:
+ 	var burst_pos := panel.global_position + panel.size * 0.5
+-	VfxManager.spawn_world(burst_pos, "gold", Color(1.0, 0.84, 0.2))
++	VfxManager.spawn_world(burst_pos, "dao", Color(0.55, 0.75, 1.0))
+ 
+ 
+ func _on_talent_selected(talent_id: String) -> void:
+diff --git a/game/scenes/ui/breakthrough_panel.tscn b/game/scenes/ui/breakthrough_panel.tscn
+index ef93cab..046b17c 100644
+--- a/game/scenes/ui/breakthrough_panel.tscn
++++ b/game/scenes/ui/breakthrough_panel.tscn
+@@ -41,7 +41,7 @@ theme_override_constants/separation = 16
+ 
+ [node name="Title" type="Label" parent="Panel/Margin/VBox"]
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 22
+ text = "突破天赋"
+ horizontal_alignment = 1
+diff --git a/game/scenes/ui/combat_feedback_layer.gd b/game/scenes/ui/combat_feedback_layer.gd
+index 19fb7fb..6c58b91 100644
+--- a/game/scenes/ui/combat_feedback_layer.gd
++++ b/game/scenes/ui/combat_feedback_layer.gd
+@@ -46,17 +46,14 @@ func _spawn_floater(world_pos: Vector2, result: Dictionary) -> void:
+ 
+ 	var font_size := 15
+ 	var text_color := UiTokens.TEXT_PRIMARY
+-	var outline := Color(0, 0, 0, 0.55)
+ 	if is_combo:
+ 		label.text = "爆燃 %.0f!" % amount
+ 		text_color = UiTokens.ELEM_FIRE
+ 		font_size = 22
+-		outline = Color(0.35, 0.08, 0.0, 0.7)
+ 	elif is_crit:
+ 		label.text = "天机 %.0f!" % amount
+-		text_color = UiTokens.ACCENT_GOLD
++		text_color = UiTokens.STATE_SKILL
+ 		font_size = 20
+-		outline = Color(0.25, 0.18, 0.0, 0.75)
+ 	elif to_player:
+ 		label.text = "-%.0f" % amount
+ 		text_color = UiTokens.STATE_DEBUFF
+@@ -66,8 +63,7 @@ func _spawn_floater(world_pos: Vector2, result: Dictionary) -> void:
+ 
+ 	label.add_theme_color_override("font_color", text_color)
+ 	label.add_theme_font_size_override("font_size", font_size)
+-	label.add_theme_constant_override("outline_size", 3)
+-	label.add_theme_color_override("font_outline_color", outline)
++	label.add_theme_constant_override("outline_size", 0)
+ 
+ 	add_child(root)
+ 	var screen_pos: Vector2 = get_viewport().get_canvas_transform() * world_pos
+diff --git a/game/scenes/ui/crit_moment_overlay.gd b/game/scenes/ui/crit_moment_overlay.gd
+index 02fa792..b0c757b 100644
+--- a/game/scenes/ui/crit_moment_overlay.gd
++++ b/game/scenes/ui/crit_moment_overlay.gd
+@@ -29,7 +29,7 @@ func _on_room_entered(_room: Dictionary, _stage: Dictionary) -> void:
+ 
+ 
+ func _on_moment(text: String, duration: float) -> void:
+-	_play_moment(text, duration, Color(1.0, 0.88, 0.25), 2)
++	_play_moment(text, duration, Color(0.85, 0.92, 1.0), 2)
+ 
+ 
+ func _on_damage_crit(result: Dictionary) -> void:
+@@ -37,7 +37,7 @@ func _on_damage_crit(result: Dictionary) -> void:
+ 		return
+ 	if VariantUtils.as_bool(result.get("target_is_player", false)):
+ 		return
+-	_play_moment("天机一击!", 0.45, Color(1.0, 0.92, 0.35), 1)
++	_play_moment("天机一击!", 0.45, Color(0.75, 0.95, 1.0), 1)
+ 
+ 
+ func _play_moment(text: String, duration: float, slash_color: Color, priority: int = 1) -> void:
+@@ -52,8 +52,7 @@ func _play_moment(text: String, duration: float, slash_color: Color, priority: i
+ 	banner.modulate.a = 0.0
+ 	banner.scale = Vector2(1.15, 1.15)
+ 	banner.pivot_offset = banner.size * 0.5
+-	banner.add_theme_constant_override("outline_size", 2)
+-	banner.add_theme_color_override("font_outline_color", Color(0.35, 0.25, 0.0, 0.9))
++	banner.add_theme_constant_override("outline_size", 0)
+ 	banner.add_theme_color_override("font_color", slash_color)
+ 	slash.visible = true
+ 	slash.set_anchors_preset(Control.PRESET_FULL_RECT)
+diff --git a/game/scenes/ui/crit_moment_overlay.tscn b/game/scenes/ui/crit_moment_overlay.tscn
+index b214e94..beb9909 100644
+--- a/game/scenes/ui/crit_moment_overlay.tscn
++++ b/game/scenes/ui/crit_moment_overlay.tscn
+@@ -38,9 +38,8 @@ offset_right = 220.0
+ offset_bottom = -60.0
+ grow_horizontal = 2
+ grow_vertical = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
+-theme_override_colors/font_outline_color = Color(0.1, 0.05, 0, 1)
+-theme_override_constants/outline_size = 8
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
++theme_override_constants/outline_size = 0
+ theme_override_font_sizes/font_size = 42
+ text = "天机!"
+ horizontal_alignment = 1
+diff --git a/game/scenes/ui/dao_tradition_overlay.gd b/game/scenes/ui/dao_tradition_overlay.gd
+index 8f05c01..62d45ad 100644
+--- a/game/scenes/ui/dao_tradition_overlay.gd
++++ b/game/scenes/ui/dao_tradition_overlay.gd
+@@ -17,7 +17,7 @@ func _ready() -> void:
+ 	banner.visible = false
+ 	subtitle.visible = false
+ 	glow.modulate.a = 0.0
+-	frame.texture = AssetPaths.load_texture(AssetPaths.MODAL_TITLE_BAR)
++	frame.visible = false
+ 	EventBus.dao_tradition_awakened.connect(_on_awakened)
+ 	EventBus.run_completed.connect(_force_cleanup)
+ 
+@@ -48,8 +48,8 @@ func _on_awakened(tradition: Dictionary) -> void:
+ 		Engine.time_scale = 0.2
+ 		_time_scale_modified = true
+ 		var center := get_viewport().get_visible_rect().size * 0.5
+-		VfxManager.spawn_screen(self, center * Vector2(1.0, 0.96), "dao", Color(1.0, 0.84, 0.0))
+-		VfxManager.spawn_screen(self, center * Vector2(1.0, 1.04), "gold", Color(1.0, 0.95, 0.6))
++		VfxManager.spawn_screen(self, center * Vector2(1.0, 0.96), "dao", Color(0.55, 0.65, 1.0))
++		VfxManager.spawn_screen(self, center * Vector2(1.0, 1.04), "dao", Color(0.45, 0.55, 0.95, 0.7))
+ 
+ 
+ func _process(_delta: float) -> void:
+diff --git a/game/scenes/ui/dao_tradition_overlay.tscn b/game/scenes/ui/dao_tradition_overlay.tscn
+index 98b8c8e..3bf1b29 100644
+--- a/game/scenes/ui/dao_tradition_overlay.tscn
++++ b/game/scenes/ui/dao_tradition_overlay.tscn
+@@ -14,9 +14,10 @@ anchor_bottom = 1.0
+ grow_horizontal = 2
+ grow_vertical = 2
+ mouse_filter = 2
+-color = Color(1, 0.843, 0, 1)
++color = Color(0.15, 0.18, 0.28, 0.35)
+ 
+ [node name="Frame" type="TextureRect" parent="."]
++visible = false
+ anchors_preset = 8
+ anchor_left = 0.5
+ anchor_top = 0.5
+@@ -44,9 +45,8 @@ offset_right = 320.0
+ offset_bottom = -10.0
+ grow_horizontal = 2
+ grow_vertical = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
+-theme_override_constants/outline_size = 2
+-theme_override_colors/font_outline_color = Color(0.2, 0.12, 0, 0.8)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
++theme_override_constants/outline_size = 0
+ theme_override_font_sizes/font_size = 34
+ text = "道统觉醒"
+ horizontal_alignment = 1
+diff --git a/game/scenes/ui/event_panel.tscn b/game/scenes/ui/event_panel.tscn
+index f81bc0f..d7db58c 100644
+--- a/game/scenes/ui/event_panel.tscn
++++ b/game/scenes/ui/event_panel.tscn
+@@ -1,7 +1,6 @@
+-[gd_scene load_steps=3 format=3 uid="uid://beventpanel001"]
++[gd_scene load_steps=2 format=3 uid="uid://beventpanel001"]
+ 
+ [ext_resource type="Script" path="res://scenes/ui/event_panel.gd" id="1"]
+-[ext_resource type="Texture2D" path="res://assets/ui/panel_ninepatch_256.png" id="2"]
+ 
+ [node name="EventPanel" type="CanvasLayer"]
+ layer = 55
+@@ -42,15 +41,15 @@ theme_override_constants/separation = 12
+ 
+ [node name="Title" type="Label" parent="Panel/Margin/VBox"]
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 22
+ text = "机缘"
+ horizontal_alignment = 1
+ 
+ [node name="ArtBanner" type="TextureRect" parent="Panel/Margin/VBox"]
++visible = false
+ custom_minimum_size = Vector2(0, 96)
+ layout_mode = 2
+-texture = ExtResource("2")
+ expand_mode = 1
+ stretch_mode = 6
+ 
+diff --git a/game/scenes/ui/hud.gd b/game/scenes/ui/hud.gd
+index f858bca..5242a60 100644
+--- a/game/scenes/ui/hud.gd
++++ b/game/scenes/ui/hud.gd
+@@ -45,7 +45,7 @@ const UiHelpers = preload("res://ui/ui_helpers.gd")
+ }
+ 
+ const LEARN_TOAST_COLORS := {
+-	"spell": Color(1.0, 0.843, 0.0),
++	"spell": UiTokens.STATE_LEARN,
+ 	"rebind": Color(0.55, 0.85, 1.0),
+ 	"skill": Color(0.65, 1.0, 0.75),
+ }
+@@ -54,7 +54,7 @@ var _learn_toast_timer := 0.0
+ var _last_hp := -1.0
+ var _spell_pulse_tween: Tween
+ var _low_hp_tween: Tween
+-var _stage_accent := UiTokens.ACCENT_GOLD
++var _stage_accent := UiTokens.TEXT_SECONDARY
+ var _combo_count := 0
+ 
+ var _room_title := ""
+@@ -152,45 +152,26 @@ func get_build_fly_target_global() -> Vector2:
+ func _apply_hud_polish() -> void:
+ 	top_bar.add_theme_stylebox_override("panel", HudStyles.top_bar())
+ 	left_panel.add_theme_stylebox_override("panel", HudStyles.left_scroll_panel(_stage_accent))
+-	accent_stripe.color = Color(_stage_accent.r, _stage_accent.g, _stage_accent.b, 0.88)
+-	call_deferred("_layout_accent_stripe")
++	accent_stripe.visible = false
++	scroll_bg.visible = false
+ 	realm_badge.add_theme_stylebox_override("panel", HudStyles.realm_badge())
+ 	combo_badge.add_theme_stylebox_override("panel", HudStyles.combo_badge(false))
+ 	spell_bar.add_theme_stylebox_override("panel", HudStyles.spell_dock())
+ 	UiHelpers.apply_panel_polish(learn_toast_panel, false)
++	learn_toast_bg.visible = false
+ 	_apply_combo_track_style()
+ 	_style_info_labels()
+-	var scroll_tex := AssetPaths.load_texture(AssetPaths.HUD_PANEL_BG)
+-	if scroll_tex and scroll_bg:
+-		scroll_bg.texture = scroll_tex
+-		scroll_bg.modulate = Color(1, 1, 1, 0.42)
+ 	weather_pill.setup(UiTokens.ELEM_WATER)
+-	gold_pill.setup(UiTokens.ACCENT_GOLD)
++	gold_pill.setup(UiTokens.TEXT_SECONDARY)
+ 	meta_pill.setup(UiTokens.ELEM_CHAOS)
+ 	pet_pill.setup(UiTokens.ELEM_FIRE)
+ 	for slot in spell_slots.values():
+ 		if slot.has_method("set_dock"):
+ 			slot.set_dock(true)
+-	var toast_tex := AssetPaths.load_texture(AssetPaths.SCROLL_TOAST)
+-	if toast_tex and learn_toast_bg:
+-		learn_toast_bg.texture = toast_tex
+-		learn_toast_bg.visible = true
+ 
+ 
+ func _layout_accent_stripe() -> void:
+-	scroll_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+-	scroll_bg.offset_left = 6
+-	scroll_bg.offset_top = 4
+-	scroll_bg.offset_right = -6
+-	scroll_bg.offset_bottom = -4
+-	accent_stripe.set_anchors_preset(Control.PRESET_LEFT_WIDE)
+-	accent_stripe.offset_left = 0
+-	accent_stripe.offset_top = 10
+-	accent_stripe.offset_right = 3
+-	accent_stripe.offset_bottom = -10
+-	left_panel.move_child(scroll_bg, 0)
+-	left_panel.move_child(accent_stripe, 1)
+-	left_panel.move_child(left_panel.get_node("Margin"), left_panel.get_child_count() - 1)
++	pass
+ 
+ 
+ func _style_info_labels() -> void:
+@@ -199,12 +180,13 @@ func _style_info_labels() -> void:
+ 
+ 
+ func _apply_combo_track_style() -> void:
+-	var fill := StyleBoxTexture.new()
+-	fill.texture = AssetPaths.load_texture(AssetPaths.COMBO_TRACK)
+-	if fill.texture:
+-		fill.texture_margin_left = 2
+-		fill.texture_margin_right = 2
+-		combo_track_bar.add_theme_stylebox_override("fill", fill)
++	var fill := StyleBoxFlat.new()
++	fill.bg_color = Color(UiTokens.ELEM_FIRE.r, UiTokens.ELEM_FIRE.g, UiTokens.ELEM_FIRE.b, 0.85)
++	fill.corner_radius_top_left = 3
++	fill.corner_radius_top_right = 3
++	fill.corner_radius_bottom_left = 3
++	fill.corner_radius_bottom_right = 3
++	combo_track_bar.add_theme_stylebox_override("fill", fill)
+ 	var bg := StyleBoxFlat.new()
+ 	bg.bg_color = Color(0, 0, 0, 0.4)
+ 	bg.corner_radius_top_left = 3
+@@ -212,6 +194,7 @@ func _apply_combo_track_style() -> void:
+ 	bg.corner_radius_bottom_left = 3
+ 	bg.corner_radius_bottom_right = 3
+ 	combo_track_bar.add_theme_stylebox_override("background", bg)
++	combo_track_label.add_theme_color_override("font_color", UiTokens.TEXT_SECONDARY)
+ 
+ 
+ func _apply_stage_accent(stage_index: int) -> void:
+@@ -219,7 +202,7 @@ func _apply_stage_accent(stage_index: int) -> void:
+ 	title_label.add_theme_color_override("font_color", _stage_accent)
+ 	wave_label.add_theme_color_override("font_color", Color(_stage_accent.r, _stage_accent.g, _stage_accent.b, 0.72))
+ 	left_panel.add_theme_stylebox_override("panel", HudStyles.left_scroll_panel(_stage_accent))
+-	accent_stripe.color = Color(_stage_accent.r, _stage_accent.g, _stage_accent.b, 0.88)
++	accent_stripe.visible = false
+ 
+ 
+ func _update_combo_badge() -> void:
+@@ -375,11 +358,11 @@ func _refresh_dao_progress() -> void:
+ 	if not RunContext.dao_tradition_awakened_this_run.is_empty():
+ 		var tradition = DaoTraditionRegistry.get_tradition(RunContext.dao_tradition_awakened_this_run)
+ 		dao_label.text = "道统 · %s ✓" % tradition.get("name", RunContext.dao_tradition_awakened_this_run)
+-		dao_label.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD)
++		dao_label.add_theme_color_override("font_color", UiTokens.STATE_SKILL)
+ 		return
+ 	var info: Dictionary = DaoTraditionRegistry.get_best_progress(player.get_node("AffixHolder"))
+ 	dao_label.text = "道统 · %s %d/%d" % [info.get("name", "—"), info.get("matched", 0), info.get("total", 1)]
+-	dao_label.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD_SOFT)
++	dao_label.add_theme_color_override("font_color", UiTokens.TEXT_SECONDARY)
+ 
+ 
+ func _on_dao_progress(_progress: Dictionary) -> void:
+@@ -388,7 +371,7 @@ func _on_dao_progress(_progress: Dictionary) -> void:
+ 
+ func _on_dao_awakened(tradition: Dictionary) -> void:
+ 	dao_label.text = "道统 · %s ✓" % tradition.get("name", "")
+-	dao_label.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD)
++	dao_label.add_theme_color_override("font_color", UiTokens.STATE_SKILL)
+ 
+ 
+ func _on_karma_changed(_karma: Dictionary) -> void:
+@@ -509,7 +492,7 @@ func _pulse_spell_bar() -> void:
+ 	if _spell_pulse_tween and _spell_pulse_tween.is_running():
+ 		_spell_pulse_tween.kill()
+ 	_spell_pulse_tween = create_tween()
+-	spell_bar.modulate = Color(1.2, 1.15, 0.9)
++	spell_bar.modulate = Color(1.08, 1.1, 1.15)
+ 	_spell_pulse_tween.tween_property(spell_bar, "modulate", Color.WHITE, 1.0)
+ 
+ 
+diff --git a/game/scenes/ui/hud.tscn b/game/scenes/ui/hud.tscn
+index b0759a3..47e6384 100644
+--- a/game/scenes/ui/hud.tscn
++++ b/game/scenes/ui/hud.tscn
+@@ -49,10 +49,9 @@ theme_override_constants/separation = 0
+ 
+ [node name="Title" type="Label" parent="Root/TopBar/Margin/HBox/TitleBlock"]
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 19
+-theme_override_constants/outline_size = 1
+-theme_override_colors/font_outline_color = Color(0.2, 0.14, 0.04, 0.8)
++theme_override_constants/outline_size = 0
+ text = "轮回仙途"
+ 
+ [node name="WaveLabel" type="Label" parent="Root/TopBar/Margin/HBox/TitleBlock"]
+@@ -95,11 +94,13 @@ offset_right = 278.0
+ offset_bottom = 332.0
+ 
+ [node name="AccentStripe" type="ColorRect" parent="Root/LeftPanel"]
++visible = false
+ layout_mode = 2
+ mouse_filter = 2
+ color = Color(0.482, 0.776, 0.494, 0.85)
+ 
+ [node name="ScrollBg" type="TextureRect" parent="Root/LeftPanel"]
++visible = false
+ layout_mode = 2
+ expand_mode = 1
+ stretch_mode = 6
+@@ -183,7 +184,7 @@ text = "层 · 术0 体0 契0"
+ 
+ [node name="DaoLabel" type="Label" parent="Root/LeftPanel/Margin/VBox"]
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 0.9)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 0.9)
+ theme_override_font_sizes/font_size = 11
+ text = "道统 · —"
+ 
+@@ -199,7 +200,7 @@ show_percentage = false
+ 
+ [node name="ComboTrackLabel" type="Label" parent="Root/LeftPanel/Margin/VBox/ComboTrackRow"]
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.647, 0.302, 0.88)
++theme_override_colors/font_color = Color(0.769, 0.714, 0.612, 0.88)
+ theme_override_font_sizes/font_size = 10
+ text = "Combo — 0/0"
+ 
+@@ -291,6 +292,7 @@ theme_override_constants/margin_bottom = 10
+ layout_mode = 2
+ 
+ [node name="ScrollBg" type="TextureRect" parent="Root/LearnToastPanel/Margin/Body"]
++visible = false
+ layout_mode = 0
+ anchor_right = 1.0
+ anchor_bottom = 1.0
+@@ -306,7 +308,7 @@ anchor_right = 1.0
+ anchor_bottom = 1.0
+ grow_horizontal = 2
+ grow_vertical = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 22
+ text = ""
+ horizontal_alignment = 1
+@@ -326,7 +328,7 @@ offset_right = 120.0
+ offset_bottom = 88.0
+ grow_horizontal = 2
+ grow_vertical = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 18
+ text = ""
+ horizontal_alignment = 1
+diff --git a/game/scenes/ui/legacy_select_panel.gd b/game/scenes/ui/legacy_select_panel.gd
+index 6778e93..9f5d958 100644
+--- a/game/scenes/ui/legacy_select_panel.gd
++++ b/game/scenes/ui/legacy_select_panel.gd
+@@ -32,9 +32,8 @@ func _on_legacy_requested(affixes: Array) -> void:
+ 		card.custom_minimum_size = Vector2(200, 88)
+ 		UiHelpers.apply_card_polish(card, false)
+ 		var sb := StyleBoxFlat.new()
+-		sb.bg_color = Color(0, 0, 0, 0)
+-		sb.border_width_left = 3
+-		sb.border_color = UiTokens.quality_color(tag.quality)
++		var qcolor := UiTokens.quality_color(tag.quality)
++		sb.bg_color = Color(qcolor.r, qcolor.g, qcolor.b, 0.1)
+ 		sb.corner_radius_top_left = 8
+ 		sb.corner_radius_top_right = 8
+ 		sb.corner_radius_bottom_left = 8
+@@ -50,7 +49,7 @@ func _on_legacy_requested(affixes: Array) -> void:
+ 		margin.add_child(vbox)
+ 		var name_l := Label.new()
+ 		name_l.text = tag.name
+-		name_l.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD_SOFT)
++		name_l.add_theme_color_override("font_color", UiTokens.TEXT_PRIMARY)
+ 		name_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+ 		vbox.add_child(name_l)
+ 		var sub := Label.new()
+diff --git a/game/scenes/ui/meta_upgrade_panel.tscn b/game/scenes/ui/meta_upgrade_panel.tscn
+index f49f01d..45a98b7 100644
+--- a/game/scenes/ui/meta_upgrade_panel.tscn
++++ b/game/scenes/ui/meta_upgrade_panel.tscn
+@@ -41,7 +41,7 @@ theme_override_constants/separation = 12
+ 
+ [node name="Title" type="Label" parent="Panel/Margin/VBox"]
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 24
+ text = "轮回成长"
+ horizontal_alignment = 1
+diff --git a/game/scenes/ui/path_choice_panel.gd b/game/scenes/ui/path_choice_panel.gd
+index e07ae0a..9396c75 100644
+--- a/game/scenes/ui/path_choice_panel.gd
++++ b/game/scenes/ui/path_choice_panel.gd
+@@ -75,7 +75,7 @@ func _make_path_card(branch: Dictionary) -> PanelContainer:
+ 	row.add_child(icon)
+ 	var title := Label.new()
+ 	title.text = str(branch.get("label", ""))
+-	title.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD_SOFT)
++	title.add_theme_color_override("font_color", UiTokens.TEXT_PRIMARY)
+ 	title.add_theme_font_size_override("font_size", 16)
+ 	row.add_child(title)
+ 	var desc := Label.new()
+@@ -97,9 +97,8 @@ func _make_path_card(branch: Dictionary) -> PanelContainer:
+ 
+ func _apply_path_card_accent(card: PanelContainer, path_id: String) -> void:
+ 	var sb := StyleBoxFlat.new()
+-	sb.bg_color = Color(0, 0, 0, 0)
+-	sb.border_width_left = 3
+-	sb.border_color = _path_accent_color(path_id)
++	var accent := _path_accent_color(path_id)
++	sb.bg_color = Color(accent.r, accent.g, accent.b, 0.08)
+ 	sb.corner_radius_top_left = 8
+ 	sb.corner_radius_top_right = 8
+ 	sb.corner_radius_bottom_left = 8
+@@ -115,7 +114,7 @@ func _path_accent_color(path_id: String) -> Color:
+ 		"rest":
+ 			return UiTokens.ELEM_WOOD
+ 		"shop":
+-			return UiTokens.ACCENT_GOLD
++			return UiTokens.ELEM_WATER
+ 		"event":
+ 			return UiTokens.ELEM_CHAOS
+ 		"elite":
+diff --git a/game/scenes/ui/run_result_panel.gd b/game/scenes/ui/run_result_panel.gd
+index 7981b29..b145b28 100644
+--- a/game/scenes/ui/run_result_panel.gd
++++ b/game/scenes/ui/run_result_panel.gd
+@@ -34,7 +34,7 @@ func _on_run_completed(victory: bool) -> void:
+ 		]
+ 	if victory:
+ 		title_label.text = "飞升成功"
+-		title_label.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD)
++		title_label.add_theme_color_override("font_color", UiTokens.STATE_SKILL)
+ 		detail_label.text = "完成五重天试炼 · 房间 %d · 灵石 %d · 轮回点 +%d%s%s" % [
+ 			RunContext.rooms_cleared,
+ 			RunContext.gold,
+diff --git a/game/scenes/ui/run_result_panel.tscn b/game/scenes/ui/run_result_panel.tscn
+index 3fedc6c..c605fea 100644
+--- a/game/scenes/ui/run_result_panel.tscn
++++ b/game/scenes/ui/run_result_panel.tscn
+@@ -42,7 +42,7 @@ theme_override_constants/separation = 12
+ 
+ [node name="Title" type="Label" parent="Panel/Margin/VBox"]
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 28
+ text = "结果"
+ horizontal_alignment = 1
+diff --git a/game/scenes/ui/run_setup_panel.tscn b/game/scenes/ui/run_setup_panel.tscn
+index 2185087..2e8a243 100644
+--- a/game/scenes/ui/run_setup_panel.tscn
++++ b/game/scenes/ui/run_setup_panel.tscn
+@@ -41,7 +41,7 @@ theme_override_constants/separation = 14
+ 
+ [node name="Title" type="Label" parent="Panel/Margin/VBox"]
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 26
+ text = "选择道心 · 入轮回"
+ horizontal_alignment = 1
+diff --git a/game/scenes/ui/shop_panel.gd b/game/scenes/ui/shop_panel.gd
+index e1f9e09..b4a5673 100644
+--- a/game/scenes/ui/shop_panel.gd
++++ b/game/scenes/ui/shop_panel.gd
+@@ -80,7 +80,7 @@ func _make_offer_row(offer: Dictionary) -> PanelContainer:
+ 	hbox.add_child(vbox)
+ 	var title := Label.new()
+ 	title.text = str(offer.get("label", ""))
+-	title.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD_SOFT)
++	title.add_theme_color_override("font_color", UiTokens.TEXT_PRIMARY)
+ 	vbox.add_child(title)
+ 	var desc := Label.new()
+ 	desc.text = str(offer.get("desc", ""))
+diff --git a/game/scenes/ui/shop_panel.tscn b/game/scenes/ui/shop_panel.tscn
+index 8f4e053..76b0d65 100644
+--- a/game/scenes/ui/shop_panel.tscn
++++ b/game/scenes/ui/shop_panel.tscn
+@@ -41,7 +41,7 @@ theme_override_constants/separation = 12
+ 
+ [node name="Title" type="Label" parent="Panel/Margin/VBox"]
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 22
+ text = "坊市"
+ horizontal_alignment = 1
+diff --git a/game/scenes/ui/top_announcement_overlay.gd b/game/scenes/ui/top_announcement_overlay.gd
+index 6db1da1..cd2820d 100644
+--- a/game/scenes/ui/top_announcement_overlay.gd
++++ b/game/scenes/ui/top_announcement_overlay.gd
+@@ -2,7 +2,6 @@ extends CanvasLayer
+ 
+ const UiTokens = preload("res://ui/theme/ui_tokens.gd")
+ const UiAnimations = preload("res://ui/ui_animations.gd")
+-const AssetPaths = preload("res://assets/asset_paths.gd")
+ 
+ @onready var bar: PanelContainer = $Bar
+ @onready var label: Label = $Bar/Margin/Label
+@@ -14,22 +13,20 @@ func _ready() -> void:
+ 	process_mode = Node.PROCESS_MODE_ALWAYS
+ 	layer = 55
+ 	bar.visible = false
+-	var bg := TextureRect.new()
+-	bg.name = "StripBg"
+-	bg.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+-	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+-	bg.texture = AssetPaths.load_texture(AssetPaths.SCROLL_TOAST)
+-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+-	bar.add_child(bg)
+-	bar.move_child(bg, 0)
+-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
++	var sb := StyleBoxFlat.new()
++	sb.bg_color = Color(0.08, 0.09, 0.14, 0.92)
++	sb.corner_radius_top_left = 6
++	sb.corner_radius_top_right = 6
++	sb.corner_radius_bottom_left = 6
++	sb.corner_radius_bottom_right = 6
++	bar.add_theme_stylebox_override("panel", sb)
+ 	EventBus.pet_coord_feedback.connect(_on_announce)
+ 
+ 
+ func _on_announce(text: String) -> void:
+ 	if text.is_empty():
+ 		return
+-	_show(text, UiTokens.ACCENT_GOLD_SOFT, 2.0)
++	_show(text, UiTokens.TEXT_PRIMARY, 2.0)
+ 
+ 
+ func _show(text: String, color: Color, duration: float) -> void:
+diff --git a/game/scenes/ui/top_announcement_overlay.tscn b/game/scenes/ui/top_announcement_overlay.tscn
+index 7a9b79b..6aec4b9 100644
+--- a/game/scenes/ui/top_announcement_overlay.tscn
++++ b/game/scenes/ui/top_announcement_overlay.tscn
+@@ -27,7 +27,7 @@ theme_override_constants/margin_bottom = 8
+ 
+ [node name="Label" type="Label" parent="Bar/Margin"]
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 18
+ text = "公告"
+ horizontal_alignment = 1
+diff --git a/game/ui/components/affix_card.gd b/game/ui/components/affix_card.gd
+index 1d935bb..e33f3e0 100644
+--- a/game/ui/components/affix_card.gd
++++ b/game/ui/components/affix_card.gd
+@@ -24,6 +24,11 @@ func _ready() -> void:
+ 	select_button.pressed.connect(_on_select_pressed)
+ 	mouse_entered.connect(_on_mouse_enter)
+ 	mouse_exited.connect(_on_mouse_exit)
++	var divider := get_node_or_null("Margin/VBox/Divider")
++	if divider:
++		divider.visible = false
++	if frame_bg:
++		frame_bg.visible = false
+ 
+ 
+ func get_offer():
+@@ -44,7 +49,7 @@ func bind_offer(tag, disabled: bool = false) -> void:
+ 	var combo_text := " · ".join(tag.combo_tags) if tag.combo_tags.size() > 0 else "—"
+ 	combo_label.text = "Combo %s" % combo_text
+ 	UiHelpers.set_icon(icon, AssetPaths.elem_icon(tag.element))
+-	UiHelpers.apply_quality_frame(frame_bg, tag.quality)
++	_apply_card_panel(tag.quality)
+ 	_apply_quality_glow(tag.quality)
+ 	select_button.disabled = disabled
+ 	modulate = Color(0.72, 0.72, 0.72) if disabled else Color.WHITE
+@@ -72,7 +77,7 @@ func _play_entrance_deferred(delay: float) -> void:
+ func _on_mouse_enter() -> void:
+ 	if _tag == null or select_button.disabled:
+ 		return
+-	frame_bg.modulate = Color(1.08, 1.05, 0.95, 1.0)
++	frame_bg.modulate = Color(1.05, 1.05, 1.05, 1.0)
+ 
+ 
+ func _on_mouse_exit() -> void:
+@@ -84,15 +89,18 @@ func _on_select_pressed() -> void:
+ 		offer_selected.emit()
+ 
+ 
+-func _apply_quality_glow(quality: int) -> void:
+-	if quality < 2:
+-		if _quality_glow:
+-			_quality_glow.visible = false
+-		return
+-	if _quality_glow == null:
+-		_quality_glow = QualityGlow.new()
+-		add_child(_quality_glow)
+-		_quality_glow.z_index = 5
+-	_quality_glow.visible = true
+-	_quality_glow.glow_color = UiTokens.quality_color(quality)
+-	_quality_glow.glow_color.a = 0.45 if quality < 4 else 0.6
++func _apply_card_panel(quality: int) -> void:
++	frame_bg.visible = false
++	var qc := UiTokens.quality_color(quality)
++	var sb := StyleBoxFlat.new()
++	sb.bg_color = Color(qc.r, qc.g, qc.b, 0.1)
++	sb.corner_radius_top_left = 8
++	sb.corner_radius_top_right = 8
++	sb.corner_radius_bottom_left = 8
++	sb.corner_radius_bottom_right = 8
++	add_theme_stylebox_override("panel", sb)
++
++
++func _apply_quality_glow(_quality: int) -> void:
++	if _quality_glow:
++		_quality_glow.visible = false
+diff --git a/game/ui/components/affix_card.tscn b/game/ui/components/affix_card.tscn
+index 0f77048..ef6a03f 100644
+--- a/game/ui/components/affix_card.tscn
++++ b/game/ui/components/affix_card.tscn
+@@ -1,9 +1,7 @@
+-[gd_scene load_steps=5 format=3 uid="uid://baffixcard001"]
++[gd_scene load_steps=3 format=3 uid="uid://baffixcard001"]
+ 
+ [ext_resource type="Script" path="res://ui/components/affix_card.gd" id="1"]
+-[ext_resource type="Texture2D" path="res://assets/ui/quality_common_220x280.png" id="2_frame"]
+ [ext_resource type="Texture2D" path="res://assets/ui/elem_fire_32.png" id="3_icon"]
+-[ext_resource type="Texture2D" path="res://assets/ui/divider_gold_256x2.png" id="4_div"]
+ 
+ [node name="AffixCard" type="PanelContainer"]
+ custom_minimum_size = Vector2(220, 280)
+@@ -12,9 +10,9 @@ offset_bottom = 280.0
+ script = ExtResource("1")
+ 
+ [node name="FrameBg" type="TextureRect" parent="."]
++visible = false
+ z_index = -1
+ layout_mode = 2
+-texture = ExtResource("2_frame")
+ expand_mode = 1
+ stretch_mode = 5
+ 
+@@ -39,7 +37,7 @@ stretch_mode = 5
+ 
+ [node name="NameLabel" type="Label" parent="Margin/VBox"]
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 18
+ text = "词条名"
+ horizontal_alignment = 1
+@@ -52,11 +50,7 @@ text = "凡品 · 法术"
+ horizontal_alignment = 1
+ 
+ [node name="Divider" type="TextureRect" parent="Margin/VBox"]
+-custom_minimum_size = Vector2(0, 6)
+-layout_mode = 2
+-texture = ExtResource("4_div")
+-expand_mode = 1
+-stretch_mode = 5
++visible = false
+ 
+ [node name="DescLabel" type="Label" parent="Margin/VBox"]
+ layout_mode = 2
+diff --git a/game/ui/components/dao_heart_card.gd b/game/ui/components/dao_heart_card.gd
+index 0698a94..4ba82a2 100644
+--- a/game/ui/components/dao_heart_card.gd
++++ b/game/ui/components/dao_heart_card.gd
+@@ -40,21 +40,15 @@ func set_selected(on: bool) -> void:
+ 
+ func _set_selected(on: bool) -> void:
+ 	var sb := StyleBoxFlat.new()
+-	sb.bg_color = UiTokens.BG_PANEL if not on else Color(0.12, 0.1, 0.08, 0.95)
+-	sb.border_width_left = 2
+-	sb.border_width_top = 2
+-	sb.border_width_right = 2
+-	sb.border_width_bottom = 2
+-	sb.border_color = UiTokens.ACCENT_GOLD if on else Color(1, 0.843, 0, 0.25)
++	sb.bg_color = UiTokens.BG_PANEL if not on else Color(0.11, 0.12, 0.18, 0.95)
+ 	sb.corner_radius_top_left = 8
+ 	sb.corner_radius_top_right = 8
+ 	sb.corner_radius_bottom_left = 8
+ 	sb.corner_radius_bottom_right = 8
+-	sb.shadow_color = Color(1, 0.843, 0, 0.35) if on else Color(0, 0, 0, 0.25)
+-	sb.shadow_size = 8 if on else 4
++	sb.shadow_color = Color(0, 0, 0, 0.25)
++	sb.shadow_size = 4 if on else 2
+ 	add_theme_stylebox_override("panel", sb)
+-	_glow.visible = on
+-	_glow.color = Color(1, 0.843, 0, 0.08 if on else 0.0)
++	_glow.visible = false
+ 	if on:
+ 		UiAnimations.pulse_gold(_title, 1)
+ 
+@@ -73,7 +67,7 @@ func _on_gui_input(event: InputEvent) -> void:
+ 
+ func _on_hover_in() -> void:
+ 	if not _selected:
+-		modulate = Color(1.05, 1.02, 0.98, 1.0)
++		modulate = Color(1.03, 1.03, 1.05, 1.0)
+ 
+ 
+ func _on_hover_out() -> void:
+diff --git a/game/ui/components/dao_heart_card.tscn b/game/ui/components/dao_heart_card.tscn
+index 5f01280..b5940d9 100644
+--- a/game/ui/components/dao_heart_card.tscn
++++ b/game/ui/components/dao_heart_card.tscn
+@@ -1,7 +1,6 @@
+ [gd_scene format=3 uid="uid://d070u02kheb0s"]
+ 
+ [ext_resource type="Script" path="res://ui/components/dao_heart_card.gd" id="1"]
+-[ext_resource type="Script" path="res://ui/components/ui_gold_corners.gd" id="2"]
+ 
+ [node name="DaoHeartCard" type="PanelContainer"]
+ custom_minimum_size = Vector2(168, 200)
+@@ -29,7 +28,7 @@ anchor_bottom = 1.0
+ grow_horizontal = 2
+ grow_vertical = 2
+ mouse_filter = 2
+-color = Color(1, 0.843, 0, 0.08)
++color = Color(0.2, 0.22, 0.3, 0.08)
+ 
+ [node name="VBox" type="VBoxContainer" parent="Margin/Body"]
+ layout_mode = 0
+@@ -51,7 +50,7 @@ stretch_mode = 5
+ [node name="Title" type="Label" parent="Margin/Body/VBox"]
+ unique_name_in_owner = true
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 20
+ text = "悟道"
+ horizontal_alignment = 1
+@@ -66,11 +65,4 @@ horizontal_alignment = 1
+ autowrap_mode = 2
+ 
+ [node name="Corners" type="Control" parent="Margin/Body"]
+-unique_name_in_owner = true
+-layout_mode = 0
+-anchor_right = 1.0
+-anchor_bottom = 1.0
+-grow_horizontal = 2
+-grow_vertical = 2
+-mouse_filter = 2
+-script = ExtResource("2")
++visible = false
+diff --git a/game/ui/components/hud_hp_bar.gd b/game/ui/components/hud_hp_bar.gd
+index 9eed018..7425302 100644
+--- a/game/ui/components/hud_hp_bar.gd
++++ b/game/ui/components/hud_hp_bar.gd
+@@ -30,7 +30,6 @@ func _draw() -> void:
+ 	var radius := h * 0.5
+ 	var bg_rect := Rect2(0, 1, w, h - 2)
+ 	draw_rect(bg_rect, _BG, true)
+-	draw_rect(bg_rect, _RIM, false, 1.0)
+ 	var ratio := value / max_value
+ 	if ratio <= 0.001:
+ 		return
+@@ -46,6 +45,3 @@ func _draw() -> void:
+ 			continue
+ 		var c := _FILL_START.lerp(_FILL_END, t0 + (t1 - t0) * 0.5)
+ 		draw_rect(Rect2(seg_x, fill_rect.position.y, seg_w, fill_rect.size.y), c, true)
+-	if ratio > 0.08:
+-		draw_rect(Rect2(fill_rect.position.x, fill_rect.position.y, minf(fill_w * 0.35, 28.0), fill_rect.size.y), _GLOW, true)
+-	draw_rect(Rect2(fill_rect.position.x + fill_w - 2.0, fill_rect.position.y, 2.0, fill_rect.size.y), Color(1, 0.92, 0.82, 0.55), true)
+diff --git a/game/ui/components/hud_section_header.gd b/game/ui/components/hud_section_header.gd
+index 3f62c42..ccbcb5a 100644
+--- a/game/ui/components/hud_section_header.gd
++++ b/game/ui/components/hud_section_header.gd
+@@ -8,7 +8,6 @@ const UiTokens = preload("res://ui/theme/ui_tokens.gd")
+ 		title = v
+ 		if _label:
+ 			_label.text = v
+-		queue_redraw()
+ 
+ var _label: Label
+ 
+@@ -19,7 +18,7 @@ func _ready() -> void:
+ 	_label = Label.new()
+ 	_label.text = title
+ 	_label.add_theme_font_size_override("font_size", 10)
+-	_label.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD_SOFT)
++	_label.add_theme_color_override("font_color", UiTokens.TEXT_SECONDARY)
+ 	add_child(_label)
+ 	resized.connect(_on_resized)
+ 	call_deferred("_on_resized")
+@@ -28,12 +27,3 @@ func _ready() -> void:
+ func _on_resized() -> void:
+ 	if _label:
+ 		_label.position = Vector2(0, 2)
+-
+-
+-func _draw() -> void:
+-	if _label == null:
+-		return
+-	var line_y := 11.0
+-	var start_x := _label.size.x + 10.0
+-	if start_x < size.x - 12.0:
+-		draw_line(Vector2(start_x, line_y), Vector2(size.x - 4.0, line_y), Color(1, 0.843, 0, 0.28), 1.0)
+diff --git a/game/ui/components/quality_glow.gd b/game/ui/components/quality_glow.gd
+index 1288ced..0a932bc 100644
+--- a/game/ui/components/quality_glow.gd
++++ b/game/ui/components/quality_glow.gd
+@@ -1,26 +1,8 @@
+ extends Control
+ class_name QualityGlow
+-## 仙品及以上词条卡片外发光脉冲
+-
+-@export var glow_color: Color = Color(1.0, 0.843, 0.0, 0.35)
+-@export var pulse_speed: float = 1.6
+-
+-var _strength: float = 0.0
+-
++## 词条外发光（已禁用描边脉冲）
+ 
+ func _ready() -> void:
+ 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+ 	set_anchors_preset(Control.PRESET_FULL_RECT)
+-	set_process(true)
+-
+-
+-func _process(_delta: float) -> void:
+-	_strength = 0.5 + sin(Time.get_ticks_msec() * 0.001 * pulse_speed) * 0.5
+-	queue_redraw()
+-
+-
+-func _draw() -> void:
+-	var inset := 4.0
+-	var rect := Rect2(inset, inset, size.x - inset * 2.0, size.y - inset * 2.0)
+-	var c := Color(glow_color.r, glow_color.g, glow_color.b, glow_color.a * _strength)
+-	draw_rect(rect, c, false, 2.0)
++	visible = false
+diff --git a/game/ui/components/spell_icon_frame.gd b/game/ui/components/spell_icon_frame.gd
+index b401b93..6a2bfe9 100644
+--- a/game/ui/components/spell_icon_frame.gd
++++ b/game/ui/components/spell_icon_frame.gd
+@@ -1,15 +1,14 @@
+ extends Control
+ class_name SpellIconFrame
+-## UIUX §6.3 — 40px 法术槽 + 冷却环描边
++## 40px 法术槽 — 仅冷却遮罩，无外环描边
+ 
+-@export var ring_color: Color = Color(1.0, 0.843, 0.0, 0.85)
+ @export var cd_color: Color = Color(0.08, 0.08, 0.12, 0.72)
+-@export var ready_glow: Color = Color(1.0, 0.92, 0.55, 0.9)
+ 
+ var cd_ratio: float = 0.0
+ var is_ready: bool = true
+ var _pulse: float = 0.0
+ 
++
+ func _process(delta: float) -> void:
+ 	if _pulse > 0.0:
+ 		_pulse = maxf(0.0, _pulse - delta * 2.5)
+@@ -17,6 +16,7 @@ func _process(delta: float) -> void:
+ 	if _pulse <= 0.01 and is_ready:
+ 		set_process(false)
+ 
++
+ func set_cooldown(ratio: float, ready: bool) -> void:
+ 	var was_ready := is_ready
+ 	cd_ratio = clampf(ratio, 0.0, 1.0)
+@@ -26,15 +26,12 @@ func set_cooldown(ratio: float, ready: bool) -> void:
+ 		set_process(true)
+ 	queue_redraw()
+ 
++
+ func _draw() -> void:
++	if is_ready or cd_ratio <= 0.001:
++		return
+ 	var center := size * 0.5
+ 	var radius := minf(size.x, size.y) * 0.46
+-	draw_arc(center, radius + 2.0, 0.0, TAU, 48, Color(1, 1, 1, 0.12), 2.0, true)
+-	if not is_ready and cd_ratio > 0.001:
+-		var start := -PI * 0.5
+-		var sweep := TAU * cd_ratio
+-		draw_arc(center, radius, start, start + sweep, 32, cd_color, radius * 0.38, true)
+-	draw_arc(center, radius, 0.0, TAU, 48, ring_color, 2.5, true)
+-	if is_ready and _pulse > 0.01:
+-		var glow_a := _pulse * 0.55
+-		draw_arc(center, radius + 3.0, 0.0, TAU, 48, Color(ready_glow.r, ready_glow.g, ready_glow.b, glow_a), 3.0, true)
++	var start := -PI * 0.5
++	var sweep := TAU * cd_ratio
++	draw_arc(center, radius, start, start + sweep, 32, cd_color, radius * 0.38, true)
+diff --git a/game/ui/components/spell_slot.gd b/game/ui/components/spell_slot.gd
+index 5ae8fbd..2b9048f 100644
+--- a/game/ui/components/spell_slot.gd
++++ b/game/ui/components/spell_slot.gd
+@@ -42,7 +42,7 @@ func set_dock(enabled: bool) -> void:
+ 		key_label.add_theme_font_size_override("font_size", 9)
+ 		key_label.add_theme_color_override("font_color", UiTokens.BG_DEEP)
+ 		var key_bg := StyleBoxFlat.new()
+-		key_bg.bg_color = UiTokens.ACCENT_GOLD
++		key_bg.bg_color = UiTokens.BG_PANEL_ALT
+ 		key_bg.corner_radius_top_left = 4
+ 		key_bg.corner_radius_top_right = 4
+ 		key_bg.corner_radius_bottom_left = 4
+diff --git a/game/ui/components/spell_slot.tscn b/game/ui/components/spell_slot.tscn
+index 2ef7560..ea845ac 100644
+--- a/game/ui/components/spell_slot.tscn
++++ b/game/ui/components/spell_slot.tscn
+@@ -55,7 +55,7 @@ theme_override_constants/separation = 2
+ 
+ [node name="KeyLabel" type="Label" parent="Margin/HBox/Info"]
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 11
+ text = "Q"
+ 
+diff --git a/game/ui/components/talent_card.gd b/game/ui/components/talent_card.gd
+index 35acefb..b16ab7f 100644
+--- a/game/ui/components/talent_card.gd
++++ b/game/ui/components/talent_card.gd
+@@ -2,7 +2,7 @@ extends PanelContainer
+ 
+ signal talent_selected(talent_id: String)
+ 
+-@onready var frame_bg: TextureRect = $FrameBg
++const UiTokens = preload("res://ui/theme/ui_tokens.gd")
+ @onready var name_label: Label = $Margin/VBox/NameLabel
+ @onready var desc_label: Label = $Margin/VBox/DescLabel
+ @onready var select_button: Button = $Margin/VBox/SelectButton
+@@ -12,7 +12,16 @@ var _talent_id := ""
+ 
+ func _ready() -> void:
+ 	select_button.pressed.connect(_on_select_pressed)
+-	add_theme_stylebox_override("panel", StyleBoxEmpty.new())
++	var frame_bg := get_node_or_null("FrameBg") as TextureRect
++	if frame_bg:
++		frame_bg.visible = false
++	var sb := StyleBoxFlat.new()
++	sb.bg_color = UiTokens.BG_PANEL_ALT
++	sb.corner_radius_top_left = 8
++	sb.corner_radius_top_right = 8
++	sb.corner_radius_bottom_left = 8
++	sb.corner_radius_bottom_right = 8
++	add_theme_stylebox_override("panel", sb)
+ 
+ 
+ func bind_talent(talent: Dictionary) -> void:
+@@ -22,7 +31,6 @@ func bind_talent(talent: Dictionary) -> void:
+ 	visible = not _talent_id.is_empty()
+ 	scale = Vector2.ONE
+ 	modulate = Color.WHITE
+-	frame_bg.modulate = Color.WHITE
+ 
+ 
+ func play_entrance(delay: float = 0.0) -> void:
+diff --git a/game/ui/components/talent_card.tscn b/game/ui/components/talent_card.tscn
+index 00d9bd2..5bcad9a 100644
+--- a/game/ui/components/talent_card.tscn
++++ b/game/ui/components/talent_card.tscn
+@@ -1,16 +1,15 @@
+-[gd_scene load_steps=3 format=3 uid="uid://c1a2y3d0fqm53"]
++[gd_scene load_steps=2 format=3 uid="uid://c1a2y3d0fqm53"]
+ 
+ [ext_resource type="Script" path="res://ui/components/talent_card.gd" id="1"]
+-[ext_resource type="Texture2D" path="res://assets/ui/talent_scroll_210x200.png" id="2"]
+ 
+ [node name="TalentCard" type="PanelContainer"]
+ custom_minimum_size = Vector2(210, 200)
+ script = ExtResource("1")
+ 
+ [node name="FrameBg" type="TextureRect" parent="."]
++visible = false
+ z_index = -1
+ layout_mode = 2
+-texture = ExtResource("2")
+ expand_mode = 1
+ stretch_mode = 5
+ 
+@@ -27,7 +26,7 @@ theme_override_constants/separation = 8
+ 
+ [node name="NameLabel" type="Label" parent="Margin/VBox"]
+ layout_mode = 2
+-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
++theme_override_colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ theme_override_font_sizes/font_size = 17
+ text = "天赋名"
+ horizontal_alignment = 1
+diff --git a/game/ui/components/ui_gold_corners.gd b/game/ui/components/ui_gold_corners.gd
+index 41b64b5..20740ef 100644
+--- a/game/ui/components/ui_gold_corners.gd
++++ b/game/ui/components/ui_gold_corners.gd
+@@ -1,31 +1,10 @@
+ extends Control
+ class_name UiGoldCorners
+-## 四角金线装饰 — 用于 HUD 侧栏 / Modal 内框
+-
+-@export var corner_color: Color = Color(1.0, 0.843, 0.0, 0.55)
+-@export var line_width: float = 2.0
+-@export var corner_len: float = 16.0
+-@export var inset: float = 4.0
++## 四角装饰（已禁用描边绘制）
+ 
+ func _ready() -> void:
+ 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+-	resized.connect(queue_redraw)
++	visible = false
+ 
+ func _draw() -> void:
+-	var w := size.x
+-	var h := size.y
+-	var l := corner_len
+-	var i := inset
+-	var c := corner_color
+-	# 左上
+-	draw_line(Vector2(i, i + l), Vector2(i, i), c, line_width)
+-	draw_line(Vector2(i, i), Vector2(i + l, i), c, line_width)
+-	# 右上
+-	draw_line(Vector2(w - i - l, i), Vector2(w - i, i), c, line_width)
+-	draw_line(Vector2(w - i, i), Vector2(w - i, i + l), c, line_width)
+-	# 左下
+-	draw_line(Vector2(i, h - i - l), Vector2(i, h - i), c, line_width)
+-	draw_line(Vector2(i, h - i), Vector2(i + l, h - i), c, line_width)
+-	# 右下
+-	draw_line(Vector2(w - i - l, h - i), Vector2(w - i, h - i), c, line_width)
+-	draw_line(Vector2(w - i, h - i - l), Vector2(w - i, h - i), c, line_width)
++	pass
+diff --git a/game/ui/hud_styles.gd b/game/ui/hud_styles.gd
+index 5e1a010..ecd174e 100644
+--- a/game/ui/hud_styles.gd
++++ b/game/ui/hud_styles.gd
+@@ -1,15 +1,21 @@
+ class_name HudStyles
+ extends RefCounted
+-## 战斗 HUD 专用样式 — 玉简仪表盘
++## 战斗 HUD 专用样式 — 无描边、无金色装饰线
+ 
+ const UiTokens = preload("res://ui/theme/ui_tokens.gd")
+ 
+ 
++static func _flat(sb: StyleBoxFlat) -> StyleBoxFlat:
++	sb.border_width_left = 0
++	sb.border_width_top = 0
++	sb.border_width_right = 0
++	sb.border_width_bottom = 0
++	return sb
++
++
+ static func top_bar() -> StyleBoxFlat:
+ 	var sb := StyleBoxFlat.new()
+ 	sb.bg_color = Color(0.04, 0.045, 0.08, 0.72)
+-	sb.border_width_bottom = 1
+-	sb.border_color = Color(1, 0.843, 0, 0.22)
+ 	sb.corner_radius_top_left = 0
+ 	sb.corner_radius_top_right = 0
+ 	sb.corner_radius_bottom_left = 8
+@@ -21,17 +27,12 @@ static func top_bar() -> StyleBoxFlat:
+ 	sb.content_margin_top = 4
+ 	sb.content_margin_right = 8
+ 	sb.content_margin_bottom = 6
+-	return sb
++	return _flat(sb)
+ 
+ 
+-static func left_scroll_panel(_accent: Color = UiTokens.ACCENT_GOLD) -> StyleBoxFlat:
++static func left_scroll_panel(_accent: Color = UiTokens.TEXT_SECONDARY) -> StyleBoxFlat:
+ 	var sb := StyleBoxFlat.new()
+ 	sb.bg_color = Color(0.06, 0.065, 0.11, 0.88)
+-	sb.border_width_left = 1
+-	sb.border_width_top = 1
+-	sb.border_width_right = 1
+-	sb.border_width_bottom = 1
+-	sb.border_color = Color(1, 0.843, 0, 0.16)
+ 	sb.corner_radius_top_left = 4
+ 	sb.corner_radius_top_right = 12
+ 	sb.corner_radius_bottom_left = 4
+@@ -43,17 +44,12 @@ static func left_scroll_panel(_accent: Color = UiTokens.ACCENT_GOLD) -> StyleBox
+ 	sb.content_margin_top = 10
+ 	sb.content_margin_right = 10
+ 	sb.content_margin_bottom = 10
+-	return sb
++	return _flat(sb)
+ 
+ 
+ static func stat_pill(accent: Color = UiTokens.TEXT_SECONDARY) -> StyleBoxFlat:
+ 	var sb := StyleBoxFlat.new()
+ 	sb.bg_color = Color(0.08, 0.08, 0.13, 0.72)
+-	sb.border_width_left = 1
+-	sb.border_width_top = 1
+-	sb.border_width_right = 1
+-	sb.border_width_bottom = 1
+-	sb.border_color = Color(accent.r, accent.g, accent.b, 0.35)
+ 	sb.corner_radius_top_left = 12
+ 	sb.corner_radius_top_right = 12
+ 	sb.corner_radius_bottom_left = 12
+@@ -62,21 +58,15 @@ static func stat_pill(accent: Color = UiTokens.TEXT_SECONDARY) -> StyleBoxFlat:
+ 	sb.content_margin_top = 3
+ 	sb.content_margin_right = 10
+ 	sb.content_margin_bottom = 3
+-	return sb
++	return _flat(sb)
+ 
+ 
+ static func combo_badge(active: bool) -> StyleBoxFlat:
+ 	var sb := StyleBoxFlat.new()
+ 	if active:
+-		sb.bg_color = Color(1, 0.45, 0.15, 0.18)
+-		sb.border_color = Color(1, 0.55, 0.2, 0.55)
++		sb.bg_color = Color(0.45, 0.32, 0.72, 0.22)
+ 	else:
+ 		sb.bg_color = Color(1, 1, 1, 0.04)
+-		sb.border_color = Color(1, 1, 1, 0.1)
+-	sb.border_width_left = 1
+-	sb.border_width_top = 1
+-	sb.border_width_right = 1
+-	sb.border_width_bottom = 1
+ 	sb.corner_radius_top_left = 8
+ 	sb.corner_radius_top_right = 8
+ 	sb.corner_radius_bottom_left = 8
+@@ -85,17 +75,12 @@ static func combo_badge(active: bool) -> StyleBoxFlat:
+ 	sb.content_margin_top = 4
+ 	sb.content_margin_right = 8
+ 	sb.content_margin_bottom = 4
+-	return sb
++	return _flat(sb)
+ 
+ 
+ static func spell_dock() -> StyleBoxFlat:
+ 	var sb := StyleBoxFlat.new()
+ 	sb.bg_color = Color(0.05, 0.05, 0.09, 0.82)
+-	sb.border_width_left = 1
+-	sb.border_width_top = 1
+-	sb.border_width_right = 1
+-	sb.border_width_bottom = 1
+-	sb.border_color = Color(1, 0.843, 0, 0.28)
+ 	sb.corner_radius_top_left = 18
+ 	sb.corner_radius_top_right = 18
+ 	sb.corner_radius_bottom_left = 18
+@@ -107,24 +92,17 @@ static func spell_dock() -> StyleBoxFlat:
+ 	sb.content_margin_top = 8
+ 	sb.content_margin_right = 14
+ 	sb.content_margin_bottom = 8
+-	return sb
++	return _flat(sb)
+ 
+ 
+ static func spell_dock_slot(ready: bool, unlocked: bool) -> StyleBoxFlat:
+ 	var sb := StyleBoxFlat.new()
+ 	if not unlocked:
+ 		sb.bg_color = Color(0.06, 0.06, 0.08, 0.65)
+-		sb.border_color = Color(0.4, 0.4, 0.45, 0.35)
+ 	elif ready:
+-		sb.bg_color = Color(1, 0.843, 0, 0.08)
+-		sb.border_color = Color(1, 0.843, 0, 0.45)
++		sb.bg_color = Color(0.14, 0.18, 0.26, 0.55)
+ 	else:
+ 		sb.bg_color = Color(0.1, 0.1, 0.14, 0.75)
+-		sb.border_color = Color(1, 1, 1, 0.12)
+-	sb.border_width_left = 1
+-	sb.border_width_top = 1
+-	sb.border_width_right = 1
+-	sb.border_width_bottom = 1
+ 	sb.corner_radius_top_left = 12
+ 	sb.corner_radius_top_right = 12
+ 	sb.corner_radius_bottom_left = 12
+@@ -133,17 +111,12 @@ static func spell_dock_slot(ready: bool, unlocked: bool) -> StyleBoxFlat:
+ 	sb.content_margin_top = 4
+ 	sb.content_margin_right = 4
+ 	sb.content_margin_bottom = 4
+-	return sb
++	return _flat(sb)
+ 
+ 
+ static func realm_badge() -> StyleBoxFlat:
+ 	var sb := StyleBoxFlat.new()
+ 	sb.bg_color = Color(0.55, 0.45, 0.95, 0.12)
+-	sb.border_color = Color(0.75, 0.65, 1, 0.35)
+-	sb.border_width_left = 1
+-	sb.border_width_top = 1
+-	sb.border_width_right = 1
+-	sb.border_width_bottom = 1
+ 	sb.corner_radius_top_left = 6
+ 	sb.corner_radius_top_right = 6
+ 	sb.corner_radius_bottom_left = 6
+@@ -152,4 +125,4 @@ static func realm_badge() -> StyleBoxFlat:
+ 	sb.content_margin_top = 3
+ 	sb.content_margin_right = 8
+ 	sb.content_margin_bottom = 3
+-	return sb
++	return _flat(sb)
+diff --git a/game/ui/theme/samsara_theme.tres b/game/ui/theme/samsara_theme.tres
+index 5720c62..b612f8a 100644
+--- a/game/ui/theme/samsara_theme.tres
++++ b/game/ui/theme/samsara_theme.tres
+@@ -2,11 +2,6 @@
+ 
+ [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+ bg_color = Color(0.101961, 0.101961, 0.180392, 1)
+-border_width_left = 1
+-border_width_top = 1
+-border_width_right = 1
+-border_width_bottom = 1
+-border_color = Color(1, 1, 1, 0.08)
+ corner_radius_top_left = 8
+ corner_radius_top_right = 8
+ corner_radius_bottom_right = 8
+@@ -17,7 +12,7 @@ content_margin_right = 16.0
+ content_margin_bottom = 16.0
+ 
+ [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_primary_normal"]
+-bg_color = Color(1, 0.843137, 0, 0.9)
++bg_color = Color(0.176471, 0.203922, 0.301961, 0.95)
+ corner_radius_top_left = 8
+ corner_radius_top_right = 8
+ corner_radius_bottom_right = 8
+@@ -28,7 +23,7 @@ content_margin_right = 12.0
+ content_margin_bottom = 8.0
+ 
+ [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_primary_hover"]
+-bg_color = Color(1, 0.876471, 0.039216, 0.95)
++bg_color = Color(0.219608, 0.254902, 0.368627, 1)
+ corner_radius_top_left = 8
+ corner_radius_top_right = 8
+ corner_radius_bottom_right = 8
+@@ -39,7 +34,7 @@ content_margin_right = 12.0
+ content_margin_bottom = 8.0
+ 
+ [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_primary_pressed"]
+-bg_color = Color(0.9, 0.758824, 0, 1)
++bg_color = Color(0.141176, 0.164706, 0.239216, 1)
+ corner_radius_top_left = 8
+ corner_radius_top_right = 8
+ corner_radius_bottom_right = 8
+@@ -61,12 +56,7 @@ content_margin_right = 12.0
+ content_margin_bottom = 8.0
+ 
+ [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_secondary_normal"]
+-bg_color = Color(0, 0, 0, 0)
+-border_width_left = 1
+-border_width_top = 1
+-border_width_right = 1
+-border_width_bottom = 1
+-border_color = Color(0.768627, 0.713725, 0.611765, 1)
++bg_color = Color(0.08, 0.08, 0.12, 0.6)
+ corner_radius_top_left = 8
+ corner_radius_top_right = 8
+ corner_radius_bottom_right = 8
+@@ -77,12 +67,7 @@ content_margin_right = 12.0
+ content_margin_bottom = 8.0
+ 
+ [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_secondary_hover"]
+-bg_color = Color(1, 1, 1, 0.04)
+-border_width_left = 1
+-border_width_top = 1
+-border_width_right = 1
+-border_width_bottom = 1
+-border_color = Color(0.941176, 0.92549, 0.894118, 1)
++bg_color = Color(0.12, 0.12, 0.18, 0.75)
+ corner_radius_top_left = 8
+ corner_radius_top_right = 8
+ corner_radius_bottom_right = 8
+@@ -93,12 +78,7 @@ content_margin_right = 12.0
+ content_margin_bottom = 8.0
+ 
+ [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_secondary_pressed"]
+-bg_color = Color(1, 1, 1, 0.08)
+-border_width_left = 1
+-border_width_top = 1
+-border_width_right = 1
+-border_width_bottom = 1
+-border_color = Color(0.768627, 0.713725, 0.611765, 1)
++bg_color = Color(0.06, 0.06, 0.1, 0.85)
+ corner_radius_top_left = 8
+ corner_radius_top_right = 8
+ corner_radius_bottom_right = 8
+@@ -109,12 +89,7 @@ content_margin_right = 12.0
+ content_margin_bottom = 8.0
+ 
+ [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_secondary_disabled"]
+-bg_color = Color(0, 0, 0, 0)
+-border_width_left = 1
+-border_width_top = 1
+-border_width_right = 1
+-border_width_bottom = 1
+-border_color = Color(0.541176, 0.509804, 0.470588, 0.5)
++bg_color = Color(0.06, 0.06, 0.08, 0.35)
+ corner_radius_top_left = 8
+ corner_radius_top_right = 8
+ corner_radius_bottom_right = 8
+@@ -153,10 +128,10 @@ HpProgressBar/styles/fill = SubResource("StyleBoxFlat_hp_fill")
+ Label/colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ Panel/styles/panel = SubResource("StyleBoxFlat_panel")
+ PanelContainer/styles/panel = SubResource("StyleBoxFlat_panel")
+-PrimaryButton/colors/font_color = Color(0.05098, 0.05098, 0.05098, 1)
++PrimaryButton/colors/font_color = Color(0.941176, 0.92549, 0.894118, 1)
+ PrimaryButton/colors/font_disabled_color = Color(0.541176, 0.509804, 0.470588, 1)
+-PrimaryButton/colors/font_hover_color = Color(0.05098, 0.05098, 0.05098, 1)
+-PrimaryButton/colors/font_pressed_color = Color(0.05098, 0.05098, 0.05098, 1)
++PrimaryButton/colors/font_hover_color = Color(0.941176, 0.92549, 0.894118, 1)
++PrimaryButton/colors/font_pressed_color = Color(0.941176, 0.92549, 0.894118, 1)
+ PrimaryButton/styles/disabled = SubResource("StyleBoxFlat_btn_primary_disabled")
+ PrimaryButton/styles/hover = SubResource("StyleBoxFlat_btn_primary_hover")
+ PrimaryButton/styles/normal = SubResource("StyleBoxFlat_btn_primary_normal")
+diff --git a/game/ui/theme/ui_tokens.gd b/game/ui/theme/ui_tokens.gd
+index fa11714..4bf3800 100644
+--- a/game/ui/theme/ui_tokens.gd
++++ b/game/ui/theme/ui_tokens.gd
+@@ -13,9 +13,9 @@ static var TEXT_PRIMARY := color_from_hex("#F0ECE4")
+ static var TEXT_SECONDARY := color_from_hex("#C4B69C")
+ static var TEXT_MUTED := color_from_hex("#8A8278")
+ 
+-# --- Accent ---
+-static var ACCENT_GOLD := color_from_hex("#FFD700")
+-static var ACCENT_GOLD_SOFT := color_from_hex("#F0D68A")
++# --- Accent (neutral — no gold/yellow in UI chrome) ---
++static var ACCENT_GOLD := color_from_hex("#C4B69C")
++static var ACCENT_GOLD_SOFT := color_from_hex("#8A8278")
+ 
+ # --- Elements ---
+ static var ELEM_FIRE := color_from_hex("#FF6B35")
+@@ -29,7 +29,7 @@ static var ELEM_CHAOS := color_from_hex("#B57EDC")
+ static var QUALITY_COMMON := color_from_hex("#B0B0B0")
+ static var QUALITY_RARE := color_from_hex("#4E9AF1")
+ static var QUALITY_EPIC := color_from_hex("#A855F7")
+-static var QUALITY_LEGENDARY := color_from_hex("#F59E0B")
++static var QUALITY_LEGENDARY := color_from_hex("#E879F9")
+ static var QUALITY_DAO := color_from_hex("#EF4444")
+ 
+ static var QUALITY_COLORS: Array[Color] = [
+@@ -47,7 +47,7 @@ static var STATE_MANA := color_from_hex("#5B9BD5")
+ static var STATE_MANA_GRADIENT_END := color_from_hex("#7EC8FF")
+ static var STATE_BUFF := color_from_hex("#7BC67E")
+ static var STATE_DEBUFF := color_from_hex("#C45C5C")
+-static var STATE_LEARN := color_from_hex("#FFD700")
++static var STATE_LEARN := color_from_hex("#A6F0C6")
+ static var STATE_REBIND := color_from_hex("#8EC5FF")
+ static var STATE_SKILL := color_from_hex("#A6F0C6")
+ 
+@@ -66,9 +66,9 @@ static var RADIUS_SM := 4
+ static var RADIUS_MD := 8
+ static var RADIUS_LG := 12
+ 
+-# --- Panel decoration ---
+-static var PANEL_INNER_STROKE := Color(1.0, 1.0, 1.0, 0.08)
+-static var DIVIDER := Color(0.769, 0.714, 0.612, 0.25)
++# --- Panel decoration (unused strokes — flat panels only) ---
++static var PANEL_INNER_STROKE := Color(0, 0, 0, 0)
++static var DIVIDER := Color(0, 0, 0, 0)
+ 
+ # --- Dimmer overlays (prototype alignment §13) ---
+ static var DIMMER_COMBAT := Color(0.0, 0.0, 0.0, 0.55)
+@@ -106,6 +106,6 @@ static func stage_accent(stage_index: int) -> Color:
+ 		1: return ELEM_WOOD
+ 		2: return ELEM_WATER
+ 		3: return ELEM_FIRE
+-		4: return ELEM_THUNDER
++		4: return ELEM_CHAOS
+ 		5: return QUALITY_DAO
+-		_: return ACCENT_GOLD
++		_: return TEXT_SECONDARY
+diff --git a/game/ui/ui_animations.gd b/game/ui/ui_animations.gd
+index bf9386a..dc8ad13 100644
+--- a/game/ui/ui_animations.gd
++++ b/game/ui/ui_animations.gd
+@@ -115,5 +115,5 @@ static func pulse_gold(control: CanvasItem, loops: int = 2) -> void:
+ 		return
+ 	var base := control.modulate
+ 	var tw := control.create_tween().set_loops(loops)
+-	tw.tween_property(control, "modulate", Color(1.15, 1.05, 0.75, base.a), 0.22)
++	tw.tween_property(control, "modulate", Color(1.08, 1.08, 1.12, base.a), 0.22)
+ 	tw.tween_property(control, "modulate", base, 0.22)
+diff --git a/game/ui/ui_helpers.gd b/game/ui/ui_helpers.gd
+index c31036d..7266c9a 100644
+--- a/game/ui/ui_helpers.gd
++++ b/game/ui/ui_helpers.gd
+@@ -31,50 +31,34 @@ static func set_icon(texture_rect: TextureRect, path: String) -> void:
+ static func apply_quality_frame(frame: TextureRect, quality: int) -> void:
+ 	if frame == null:
+ 		return
+-	var path := AssetPaths.quality_frame(quality)
+-	var tex := AssetPaths.load_texture(path)
+-	frame.texture = tex
+-	frame.visible = tex != null
++	frame.visible = false
+ 
+ 
+-static func make_ninepatch_panel_style() -> StyleBoxTexture:
+-	var sb := StyleBoxTexture.new()
+-	sb.texture = AssetPaths.load_texture(AssetPaths.PANEL_NINEPATCH)
+-	sb.texture_margin_left = 32
+-	sb.texture_margin_top = 32
+-	sb.texture_margin_right = 32
+-	sb.texture_margin_bottom = 32
++static func make_ninepatch_panel_style() -> StyleBoxFlat:
++	var sb := StyleBoxFlat.new()
++	sb.bg_color = UiTokens.BG_PANEL
++	sb.corner_radius_top_left = 8
++	sb.corner_radius_top_right = 8
++	sb.corner_radius_bottom_left = 8
++	sb.corner_radius_bottom_right = 8
+ 	sb.content_margin_left = 12
+ 	sb.content_margin_top = 10
+ 	sb.content_margin_right = 12
+ 	sb.content_margin_bottom = 10
+-	sb.modulate_color = Color(1, 1, 1, 0.96)
+ 	return sb
+ 
+ 
+ static func attach_gold_corners(parent: Control) -> UiGoldCorners:
+-	var existing := parent.get_node_or_null("UiGoldCorners") as UiGoldCorners
+-	if existing:
+-		return existing
+-	var corners := UiGoldCorners.new()
+-	corners.name = "UiGoldCorners"
+-	parent.add_child(corners)
+-	corners.set_anchors_preset(Control.PRESET_FULL_RECT)
+-	corners.mouse_filter = Control.MOUSE_FILTER_IGNORE
+-	return corners
+-
+-
+-static func apply_panel_polish(panel: PanelContainer, with_corners: bool = true) -> void:
++	return null
++
++
++static func apply_panel_polish(panel: PanelContainer, with_corners: bool = false) -> void:
+ 	if panel == null:
+ 		return
+ 	panel.add_theme_stylebox_override("panel", make_ninepatch_panel_style())
+-	if with_corners:
+-		var host := panel.get_child(0) as Control
+-		if host:
+-			attach_gold_corners(host)
+ 
+ 
+-static func apply_card_polish(card: PanelContainer, with_corners: bool = true) -> void:
++static func apply_card_polish(card: PanelContainer, with_corners: bool = false) -> void:
+ 	apply_panel_polish(card, with_corners)
+ 
+ 
+@@ -105,10 +89,7 @@ static func apply_hp_bar_polish(bar: ProgressBar) -> void:
+ static func add_gold_divider(parent: Control, before: Control = null) -> TextureRect:
+ 	var div := TextureRect.new()
+ 	div.name = "UiGoldDivider_%s" % (before.name if before else "tail")
+-	div.custom_minimum_size = Vector2(0, 6)
+-	div.texture = AssetPaths.load_texture(AssetPaths.DIVIDER_GOLD)
+-	div.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+-	div.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
++	div.visible = false
+ 	div.mouse_filter = Control.MOUSE_FILTER_IGNORE
+ 	parent.add_child(div)
+ 	if before:
+@@ -117,23 +98,10 @@ static func add_gold_divider(parent: Control, before: Control = null) -> Texture
+ 
+ 
+ static func decorate_modal_header(vbox: VBoxContainer, title: Label) -> void:
+-	if vbox.get_node_or_null("ModalTitleBar") != null:
++	if title == null:
+ 		return
+-	var bar := TextureRect.new()
+-	bar.name = "ModalTitleBar"
+-	bar.custom_minimum_size = Vector2(0, 44)
+-	bar.texture = AssetPaths.load_texture(AssetPaths.MODAL_TITLE_BAR)
+-	bar.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+-	bar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+-	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+-	vbox.add_child(bar)
+-	vbox.move_child(bar, title.get_index())
+ 	title.add_theme_font_size_override("font_size", 24)
+-	title.add_theme_constant_override("outline_size", 1)
+-	title.add_theme_color_override("font_outline_color", Color(0.25, 0.18, 0.05, 0.85))
+-	title.add_theme_constant_override("shadow_offset_x", 1)
+-	title.add_theme_constant_override("shadow_offset_y", 1)
+-	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.45))
++	title.add_theme_constant_override("outline_size", 0)
+ 
+ 
+ static func wrap_with_panel_texture(panel: PanelContainer, texture_path: String) -> void:
+diff --git a/game/vfx/ui_fly_effects.gd b/game/vfx/ui_fly_effects.gd
+index 583a823..dd932f3 100644
+--- a/game/vfx/ui_fly_effects.gd
++++ b/game/vfx/ui_fly_effects.gd
+@@ -41,7 +41,7 @@ static func fly_icon(from_global: Vector2, to_global: Vector2, icon_path: String
+ 			on_done.call()
+ 		return
+ 	if not ResourceLoader.exists(icon_path):
+-		fly_control(from_global, to_global, Vector2(32, 32), Color(1, 0.84, 0, 0.85), host, on_done)
++		fly_control(from_global, to_global, Vector2(32, 32), Color(0.65, 0.75, 1.0, 0.85), host, on_done)
+ 		return
+ 	var ghost := TextureRect.new()
+ 	ghost.custom_minimum_size = Vector2(32, 32)

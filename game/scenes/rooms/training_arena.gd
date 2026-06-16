@@ -54,12 +54,26 @@ func _start_training_wave(next_wave: int) -> void:
 
 
 func _training_room_def() -> Dictionary:
+	var scale := 1.10 + float(mini(wave, 8) - 1) * 0.045
+	var width := round(1280.0 * scale / 32.0) * 32.0
+	var height := round(704.0 * scale / 32.0) * 32.0
 	return {
 		"type": "combat",
 		"stage_index": mini(wave, 5),
 		"room_index": wave,
 		"hp_mult": 1.0 + float(wave - 1) * 0.08,
 		"layout_id": "open_scatter",
+		"arena": {
+			"tile_size": 32,
+			"tilemap_cells": [int(width / 32.0), int(height / 32.0)],
+			"world_bounds": {"x": -width * 0.5, "y": -height * 0.5, "width": width, "height": height},
+			"camera_bounds": {"x": -width * 0.5, "y": -height * 0.5 - 8.0, "width": width, "height": height + 16.0},
+			"room_scale": Vector2(scale, scale),
+		},
+		"layout_profile": {
+			"room_scale": [scale, scale],
+			"arena_bounds": {"x": -width * 0.5, "y": -height * 0.5, "width": width, "height": height},
+		},
 	}
 
 
@@ -72,10 +86,44 @@ func _apply_training_layout() -> void:
 	if floor == null or not floor.has_method("apply_layout"):
 		return
 	var room := _training_room_def()
+	if floor.has_method("apply_theme"):
+		floor.apply_theme(int(room["stage_index"]))
+	_apply_training_arena_bounds(room)
 	var rng := RunRng.training("layout_%d" % wave)
 	room["layout_id"] = RoomLayoutGenerator.pick_layout_id("combat", int(room["stage_index"]), rng)
 	var weather_id := "rain" if wave % 2 == 0 else "clear"
 	floor.apply_layout(room, rng, weather_id)
+
+
+func _apply_training_arena_bounds(room: Dictionary) -> void:
+	var arena: Dictionary = room.get("arena", {})
+	var bounds: Dictionary = arena.get("world_bounds", {})
+	if bounds.is_empty():
+		return
+	GameConstants.set_arena_bounds(bounds)
+	var walls := get_node_or_null("Walls")
+	if walls == null:
+		return
+	var x := float(bounds.get("x", -640.0))
+	var y := float(bounds.get("y", -352.0))
+	var width := float(bounds.get("width", 1280.0))
+	var height := float(bounds.get("height", 704.0))
+	_resize_training_wall(walls.get_node_or_null("WallTop"), Vector2(width + 64.0, 32.0), Vector2(x + width * 0.5, y - 16.0))
+	_resize_training_wall(walls.get_node_or_null("WallBottom"), Vector2(width + 64.0, 32.0), Vector2(x + width * 0.5, y + height + 16.0))
+	_resize_training_wall(walls.get_node_or_null("WallLeft"), Vector2(32.0, height + 64.0), Vector2(x - 16.0, y + height * 0.5))
+	_resize_training_wall(walls.get_node_or_null("WallRight"), Vector2(32.0, height + 64.0), Vector2(x + width + 16.0, y + height * 0.5))
+
+
+func _resize_training_wall(shape_node: Node, size: Vector2, pos: Vector2) -> void:
+	if shape_node == null:
+		return
+	shape_node.position = pos
+	var collision_shape := shape_node as CollisionShape2D
+	if collision_shape == null:
+		return
+	var shape: Shape2D = collision_shape.shape
+	if shape is RectangleShape2D:
+		(shape as RectangleShape2D).size = size
 
 
 func _arena_flow_rng(context: String) -> RandomNumberGenerator:

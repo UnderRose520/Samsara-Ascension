@@ -5,9 +5,9 @@
 [ext_resource type="Script" path="res://ui/components/hud_section_header.gd" id="3"]
 
 [node name="HudCharacterPanel" type="PanelContainer"]
-custom_minimum_size = Vector2(320, 0)
-offset_right = 320.0
-offset_bottom = 360.0
+custom_minimum_size = Vector2(316, 0)
+offset_right = 316.0
+offset_bottom = 284.0
 mouse_filter = 2
 script = ExtResource("1")
 
@@ -24,37 +24,97 @@ color = Color(0.482, 0.776, 0.494, 0.85)
 
 [node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
+theme_override_constants/margin_left = 13
+theme_override_constants/margin_top = 11
+theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 10
 
 [node name="VBox" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 5
 
 [node name="TitleLabel" type="Label" parent="Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.843, 0, 1)
 theme_override_font_sizes/font_size = 18
-theme_override_constants/outline_size = 1
-theme_override_colors/font_outline_color = Color(0.2, 0.14, 0.04, 0.8)
+theme_override_constants/outline_size = 3
+theme_override_colors/font_outline_color = Color(0.02, 0.018, 0.012, 0.92)
 text = "轮回仙途"
 
 [node name="WaveLabel" type="Label" parent="Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.769, 0.714, 0.612, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.75)
+text = "初入仙途 / 战斗"
+
+[node name="ObjectivePanel" type="PanelContainer" parent="Margin/VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Margin/VBox/ObjectivePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="VBox" type="VBoxContainer" parent="Margin/VBox/ObjectivePanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TopRow" type="HBoxContainer" parent="Margin/VBox/ObjectivePanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ObjectiveTitleLabel" type="Label" parent="Margin/VBox/ObjectivePanel/Margin/VBox/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.843, 0, 0.98)
+theme_override_font_sizes/font_size = 13
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.78)
+text = "本关目标"
+
+[node name="ObjectiveTimerLabel" type="Label" parent="Margin/VBox/ObjectivePanel/Margin/VBox/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.94, 0.86, 0.96)
+theme_override_font_sizes/font_size = 12
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.7)
+text = "下波 0.0s"
+horizontal_alignment = 2
+
+[node name="ObjectiveProgress" type="ProgressBar" parent="Margin/VBox/ObjectivePanel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 7)
+layout_mode = 2
+max_value = 1.0
+show_percentage = false
+
+[node name="ObjectiveDetailLabel" type="Label" parent="Margin/VBox/ObjectivePanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.86, 0.82, 0.72, 0.98)
 theme_override_font_sizes/font_size = 11
-text = "初入仙途 · 战斗"
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.68)
+text = "斩魔 0/0 / 第1波 / 剩 0:00"
 
 [node name="SeedLabel" type="Label" parent="Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.612, 0.58, 0.502, 0.85)
-theme_override_font_sizes/font_size = 10
-text = "种子 —"
+theme_override_colors/font_color = Color(0.78, 0.735, 0.64, 0.95)
+theme_override_font_sizes/font_size = 12
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.65)
+text = "种子 未生成"
 
 [node name="CombatHeader" type="Control" parent="Margin/VBox"]
 custom_minimum_size = Vector2(0, 20)
@@ -92,9 +152,11 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.769, 0.714, 0.612, 1)
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 12
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.75)
 text = "连击
-—"
+0"
 horizontal_alignment = 1
 
 [node name="BuildHeader" type="Control" parent="Margin/VBox"]
@@ -104,7 +166,7 @@ script = ExtResource("3")
 title = "道路"
 
 [node name="BuildScroll" type="ScrollContainer" parent="Margin/VBox"]
-custom_minimum_size = Vector2(0, 120)
+custom_minimum_size = Vector2(0, 82)
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
@@ -125,21 +187,27 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.88, 0.82, 1, 1)
-theme_override_font_sizes/font_size = 11
-text = "炼气 · 槽位 3"
+theme_override_font_sizes/font_size = 12
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.68)
+text = "炼气 / 槽位 3"
 
 [node name="BuildLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 11
-text = "层 · 术0 体0 契0"
+theme_override_font_sizes/font_size = 12
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.62)
+text = "流派 术0 体0 契0"
 
 [node name="DaoLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.843, 0, 0.9)
-theme_override_font_sizes/font_size = 11
-text = "道统 · —"
+theme_override_font_sizes/font_size = 12
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.62)
+text = "道统 未成"
 
 [node name="ComboTrackRow" type="VBoxContainer" parent="Margin/VBox/BuildScroll/BuildVBox"]
 layout_mode = 2
@@ -156,21 +224,27 @@ show_percentage = false
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.647, 0.302, 0.88)
-theme_override_font_sizes/font_size = 10
-text = "Combo — 0/0"
+theme_override_font_sizes/font_size = 11
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.62)
+text = "Combo 无 0/0"
 
 [node name="AffixLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 11
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.62)
 autowrap_mode = 3
-text = "词条 · —"
+text = "词条 未装备"
 
 [node name="SkillLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 10
-text = "功法 · 烈焰掌 Lv.1"
+theme_override_font_sizes/font_size = 11
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.62)
+text = "功法 烈焰掌 Lv.1"
 
 [node name="GoldRow" type="HBoxContainer" parent="Margin/VBox"]
 layout_mode = 2
@@ -187,5 +261,7 @@ stretch_mode = 5
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.843, 0, 0.95)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 14
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.72)
 text = "灵石 0"

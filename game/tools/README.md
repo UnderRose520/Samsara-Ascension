@@ -1,52 +1,53 @@
-# 2D 资产生成工具（generate2dmap / generate2dsprite）
+# 2D Asset Generation Tools
 
-对应 UIUX 规范 `docs/UIUX_轮回仙途_v1.0.md`，输出 Godot 4 可直接引用的 PNG。
+The current runtime map pipeline is `generate_runtime_maps.py`. Older scripts
+such as `generate_2d_maps.py` are legacy placeholder generators and should not
+be used for the new realm-art runtime path unless you intentionally want to
+overwrite art with placeholders.
 
-## 依赖
+## Dependencies
 
 ```powershell
 pip install pillow
 ```
 
-## generate_2d_sprites.py（UI + 角色 + 技能图标）
+## Runtime Maps
+
+Remote image generation through the SSSToken OpenAI-compatible endpoint:
 
 ```powershell
-python game/tools/generate_2d_sprites.py
+python game/tools/generate_runtime_maps.py --provider ssstoken --no-fallback
 ```
 
-输出：
+The tool reads the key from `SSSTOKEN_API_KEY` or `OPENAI_API_KEY`, uses
+`gpt-image-2` by default, and writes:
 
-- `game/assets/ui/` — 面板、元素/天象/法术/品质/道心图标、进度条 9-slice
-- `game/assets/sprites/` — 玩家、敌人、弹道、灵宠
+- `game/assets/maps/runtime_scene_manifest.json`
+- `game/assets/maps/<theme_id>/room_background.png`
+- `game/assets/maps/<theme_id>/tileset.png`
+- `game/assets/maps/<theme_id>/terrain_props.png`
+- `game/assets/maps/<theme_id>/qa_runtime_preview.png`
+- prompt files beside every visible generated asset
 
-## generate_2d_maps.py（关卡地板 + 背景）
+Offline/procedural fallback for smoke tests:
 
 ```powershell
-python game/tools/generate_2d_maps.py
+python game/tools/generate_runtime_maps.py --provider procedural
 ```
 
-输出：
+## Runtime Integration
 
-- `game/assets/maps/<theme_id>/tileset.png` — 4×32px 图块
-- `game/assets/maps/<theme_id>/room_background.png` — 1280×720 战斗背景
-- `game/assets/maps/tileset_metadata.json` — 主题与 stage_index 映射
+Godot loads map art through `runtime_scene_manifest.json`:
 
-## Godot 集成
+- `StageGenerator` copies manifest stage fields into stage/room definitions.
+- Combat rooms receive seeded, larger randomized `arena` bounds and tile counts.
+- `CombatFloor` swaps the background, tileset, and terrain prop atlas from the
+  manifest.
+- `RunController` and `TrainingArena` resize arena walls to match room bounds.
 
-| 模块 | 路径 |
-|------|------|
-| 资源路径常量 | `game/assets/asset_paths.gd` |
-| Design Token | `game/ui/theme/ui_tokens.gd` |
-| 全局 Theme | `game/ui/theme/samsara_theme.tres` |
-| 战斗地板 | `game/scenes/rooms/combat_floor.tscn` |
-| 词条卡组件 | `game/ui/components/affix_card.tscn` |
-| 精灵占位脚本 | `game/scenes/visual/sprite_visual.gd` |
+Seeded randomness flows through `RunContext.derive_rng_seed()` and
+`RunRng.stage_room(...)`, so copying a run seed reproduces the room sizes,
+layouts, terrain slots, and spawn-zone scaling.
 
-## Godot MCP
-
-1. 用 Godot 4.6 打开 `game/` 项目
-2. 启用插件 **Godot MCP**（已写入 `project.godot`）
-3. 编辑器底部 MCP 面板启动服务（默认 `127.0.0.1:3000`）
-4. 在 Cursor 或外部 MCP 客户端连接后，可用 `resource/manage` 导入、`scene/*` 编辑场景
-
-重新生成 PNG 后，在 Godot 中 **Project → Reload Current Project** 或 MCP `resource/reload` 刷新资源。
+After regenerating PNGs, open/import the Godot project so `.import` files are
+refreshed before manual runtime testing.

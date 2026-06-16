@@ -1,0 +1,36 @@
+SYSTEM ROLE
+You are generating a transparent prop pack for runtime terrain details in a top-down Godot 4 combat arena. Use the rules of a professional game prop sheet: consistent scale, clean silhouettes, no edge touching, and no unrelated objects.
+
+PROJECT CONTEXT
+Game: Samsara Ascension / 轮回仙途, Chinese xianxia cultivation roguelite.
+Realm/stage: 元婴遗迹 / 焚心秘境.
+Theme motif: ancient nascent-soul ruin with worn stone and scattered gold fragments.
+Runtime: this sheet will be resized to 384x384 and sliced into a 3x3 grid of 128x128 cells. Props are rendered separately from the background and may be tinted or scaled by runtime_scene_manifest.json.
+
+STRICT SHEET LAYOUT
+Create exactly 9 compact terrain-detail props arranged in a clean 3x3 grid.
+Each prop must stay centered inside its own invisible 128x128 cell with generous padding; no prop may touch or cross a cell edge.
+Use a solid #FF00FF magenta background across the entire sheet for chroma-key/alpha postprocessing.
+Do not draw visible grid lines, labels, numbers, captions, borders, or cell guides.
+
+PROP LIST
+1. small embedded floor crack / qi scar
+2. small moss, spirit grass, ash, or mineral cluster
+3. compact non-colliding stone/slab/debris accent
+4. glowing vein or elemental trace
+5. shallow stain, puddle rim, scorch, dust swirl, or wind streak
+6. tiny broken talisman/glyph fragment embedded flat in the ground
+7. compact realm-specific terrain motif
+8. alternate low ground ornament
+9. subtle aura residue patch
+
+ART DIRECTION
+Clean hand-painted HD xianxia map-prop style, top-down with slight 3/4 material read, readable at small sizes, matching the realm palette and lighting. These are low terrain details, not tall props.
+Make silhouettes varied and useful for random placement: some horizontal, some diagonal, some round, some narrow. Keep them subtle enough not to obscure combat.
+The pack should add tactical readability and atmosphere to larger randomized rooms: cracks suggest danger history, grass/minerals suggest realm identity, stains and aura residue break repetition, but every prop remains flat and non-colliding.
+
+STRICT EXCLUSIONS
+No player, enemies, NPCs, bosses, pets, projectiles, weapons, pickups, chests, doors, gates, signs, trees, buildings, crates, barrels, UI, labels, text, arrows, large walls, tall pillars, large rocks, collision-critical blockers, or full room backgrounds.
+
+OUTPUT
+One square PNG prop sheet, solid #FF00FF background, exactly nine compact props.

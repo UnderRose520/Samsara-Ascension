@@ -63,16 +63,29 @@ func get_move_speed_mult() -> float:
 
 func get_visual_tint() -> Color:
 	if _burn_time > 0.0:
-		return Color(1.0, 0.45, 0.2)
+		return status_color("burn")
 	if _freeze_time > 0.0:
-		return Color(0.55, 0.9, 1.0)
+		return status_color("freeze")
 	if _paralyze_time > 0.0:
-		return Color(1.0, 0.95, 0.4)
+		return status_color("paralyze")
 	if _poison_time > 0.0:
-		return Color(0.55, 1.0, 0.45)
+		return status_color("poison")
 	if _slow_time > 0.0:
-		return Color(0.55, 0.85, 1.0)
+		return status_color("slow")
 	return Color.WHITE
+
+
+static func status_color(status_name: String) -> Color:
+	match status_name:
+		"burn":
+			return Color(1.0, 0.36, 0.08)
+		"slow", "freeze":
+			return Color(0.45, 0.9, 1.0)
+		"paralyze":
+			return Color(1.0, 0.95, 0.28)
+		"poison":
+			return Color(0.42, 1.0, 0.35)
+	return Color(0.9, 0.85, 1.0)
 
 
 func consume_combust(base_damage: float) -> float:

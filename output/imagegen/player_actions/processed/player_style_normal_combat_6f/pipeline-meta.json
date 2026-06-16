@@ -1,0 +1,174 @@
+{
+  "input": "output\\imagegen\\player_actions\\player_style_normal_combat_2x3_raw.png",
+  "rows": 2,
+  "cols": 3,
+  "cell_size": 64,
+  "fit_scale": 0.86,
+  "align": "feet",
+  "shared_scale": true,
+  "frames": [
+    {
+      "grid": [
+        0,
+        0
+      ],
+      "source_box": [
+        0,
+        0,
+        341,
+        512
+      ],
+      "crop_bbox": [
+        88,
+        89,
+        293,
+        461
+      ],
+      "edge_touch": false,
+      "output_size": [
+        30,
+        55
+      ],
+      "paste_position": [
+        17,
+        5
+      ]
+    },
+    {
+      "grid": [
+        0,
+        1
+      ],
+      "source_box": [
+        341,
+        0,
+        682,
+        512
+      ],
+      "crop_bbox": [
+        72,
+        103,
+        257,
+        471
+      ],
+      "edge_touch": false,
+      "output_size": [
+        27,
+        54
+      ],
+      "paste_position": [
+        18,
+        6
+      ]
+    },
+    {
+      "grid": [
+        0,
+        2
+      ],
+      "source_box": [
+        682,
+        0,
+        1023,
+        512
+      ],
+      "crop_bbox": [
+        46,
+        132,
+        307,
+        471
+      ],
+      "edge_touch": false,
+      "output_size": [
+        38,
+        50
+      ],
+      "paste_position": [
+        13,
+        10
+      ]
+    },
+    {
+      "grid": [
+        1,
+        0
+      ],
+      "source_box": [
+        0,
+        512,
+        341,
+        1024
+      ],
+      "crop_bbox": [
+        68,
+        83,
+        300,
+        429
+      ],
+      "edge_touch": false,
+      "output_size": [
+        34,
+        51
+      ],
+      "paste_position": [
+        15,
+        9
+      ]
+    },
+    {
+      "grid": [
+        1,
+        1
+      ],
+      "source_box": [
+        341,
+        512,
+        682,
+        1024
+      ],
+      "crop_bbox": [
+        41,
+        69,
+        269,
+        418
+      ],
+      "edge_touch": false,
+      "output_size": [
+        34,
+        51
+      ],
+      "paste_position": [
+        15,
+        9
+      ]
+    },
+    {
+      "grid": [
+        1,
+        2
+      ],
+      "source_box": [
+        682,
+        512,
+        1023,
+        1024
+      ],
+      "crop_bbox": [
+        54,
+        64,
+        259,
+        430
+      ],
+      "edge_touch": false,
+      "output_size": [
+        30,
+        54
+      ],
+      "paste_position": [
+        17,
+        6
+      ]
+    }
+  ],
+  "edge_touch_frames": []
+}

@@ -16,6 +16,9 @@ static func default_for(stage_index: int, room_type: String) -> Dictionary:
 		"wave_interval_sec": maxf(4.0 - stage_index * 0.3, 2.5),
 		"spawn_per_wave": mini(3 + stage_index, 7),
 		"max_alive": mini(8 + stage_index, 14),
+		"initial_spawn": mini(2 + maxi(stage_index - 1, 0), mini(3 + stage_index, 7)),
+		"opening_delay_sec": maxf(6.5 - stage_index * 0.45, 3.8),
+		"ramp_waves": 3 if stage_index <= 3 else 2,
 	}
 
 
@@ -40,5 +43,8 @@ static func _ensure_loaded() -> void:
 			"wave_interval_sec": float(row.get("wave_interval_sec", 4.0)),
 			"spawn_per_wave": int(row.get("spawn_per_wave", 4)),
 			"max_alive": int(row.get("max_alive", 10)),
+			"initial_spawn": int(row.get("initial_spawn", row.get("spawn_per_wave", 4))),
+			"opening_delay_sec": float(row.get("opening_delay_sec", row.get("wave_interval_sec", 4.0))),
+			"ramp_waves": int(row.get("ramp_waves", 1)),
 		}
 	_loaded = true

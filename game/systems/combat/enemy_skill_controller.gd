@@ -120,7 +120,7 @@ func tick(delta: float, player: Node2D) -> void:
 	var pick := _pick_skill(dist)
 	if pick.is_empty():
 		return
-	_start_windup(pick)
+	_start_windup(pick, player)
 
 
 func _apply_boss_phase(index: int) -> void:
@@ -182,9 +182,38 @@ func _pick_skill(dist: float) -> Dictionary:
 	return best
 
 
-func _start_windup(skill: Dictionary) -> void:
+func _start_windup(skill: Dictionary, player: Node2D) -> void:
 	_windup_skill = skill
 	_windup = float(skill.get("windup", 0.4)) * _windup_scale
+	_show_windup_telegraph(skill, player)
+
+
+func _show_windup_telegraph(skill: Dictionary, player: Node2D) -> void:
+	if owner_body == null or player == null:
+		return
+	var dir := (player.global_position - owner_body.global_position).normalized()
+	if dir == Vector2.ZERO:
+		dir = Vector2.DOWN
+	var skill_type := str(skill.get("type", ""))
+	var duration := maxf(float(skill.get("windup", 0.4)) * _windup_scale, 0.16)
+	var length := clampf(float(skill.get("range", 160.0)), 72.0, 420.0)
+	var width := 8.0
+	var color := Color(1.0, 0.38, 0.24, 1.0)
+	match skill_type:
+		"dash":
+			width = 13.0
+			color = Color(1.0, 0.46, 0.18, 1.0)
+		"sniper":
+			width = 5.0
+			color = Color(1.0, 0.28, 0.22, 1.0)
+		"projectile":
+			width = 7.0
+			color = Color(1.0, 0.55, 0.22, 1.0)
+		"melee":
+			length = 64.0
+			width = 16.0
+			color = Color(1.0, 0.62, 0.28, 1.0)
+	VfxManager.spawn_enemy_attack_telegraph(owner_body.global_position, dir, length, duration, width, color)
 
 
 func _execute_skill(skill: Dictionary, player: Node2D) -> void:

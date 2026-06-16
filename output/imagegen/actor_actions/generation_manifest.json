@@ -1,0 +1,146 @@
+[
+  {
+    "runtime_slug": "enemy_style_normal_melee",
+    "action": "idle",
+    "fit": 0.9,
+    "raw": "output/imagegen/actor_actions/enemy_style_normal_melee_idle_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_normal_melee",
+    "action": "walk",
+    "fit": 0.9,
+    "raw": "output/imagegen/actor_actions/enemy_style_normal_melee_walk_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_normal_melee",
+    "action": "combat",
+    "fit": 0.9,
+    "raw": "output/imagegen/actor_actions/enemy_style_normal_melee_combat_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_normal_ranged",
+    "action": "idle",
+    "fit": 0.9,
+    "raw": "output/imagegen/actor_actions/enemy_style_normal_ranged_idle_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_normal_ranged",
+    "action": "walk",
+    "fit": 0.9,
+    "raw": "output/imagegen/actor_actions/enemy_style_normal_ranged_walk_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_normal_ranged",
+    "action": "combat",
+    "fit": 0.9,
+    "raw": "output/imagegen/actor_actions/enemy_style_normal_ranged_combat_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_normal_elite",
+    "action": "idle",
+    "fit": 0.86,
+    "raw": "output/imagegen/actor_actions/enemy_style_normal_elite_idle_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_normal_elite",
+    "action": "walk",
+    "fit": 0.86,
+    "raw": "output/imagegen/actor_actions/enemy_style_normal_elite_walk_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_normal_elite",
+    "action": "combat",
+    "fit": 0.86,
+    "raw": "output/imagegen/actor_actions/enemy_style_normal_elite_combat_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_chibi_melee",
+    "action": "idle",
+    "fit": 0.9,
+    "raw": "output/imagegen/actor_actions/enemy_style_chibi_melee_idle_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_chibi_melee",
+    "action": "walk",
+    "fit": 0.9,
+    "raw": "output/imagegen/actor_actions/enemy_style_chibi_melee_walk_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_chibi_melee",
+    "action": "combat",
+    "fit": 0.9,
+    "raw": "output/imagegen/actor_actions/enemy_style_chibi_melee_combat_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_chibi_ranged",
+    "action": "idle",
+    "fit": 0.9,
+    "raw": "output/imagegen/actor_actions/enemy_style_chibi_ranged_idle_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_chibi_ranged",
+    "action": "walk",
+    "fit": 0.9,
+    "raw": "output/imagegen/actor_actions/enemy_style_chibi_ranged_walk_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_chibi_ranged",
+    "action": "combat",
+    "fit": 0.9,
+    "raw": "output/imagegen/actor_actions/enemy_style_chibi_ranged_combat_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_chibi_elite",
+    "action": "idle",
+    "fit": 0.86,
+    "raw": "output/imagegen/actor_actions/enemy_style_chibi_elite_idle_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_chibi_elite",
+    "action": "walk",
+    "fit": 0.86,
+    "raw": "output/imagegen/actor_actions/enemy_style_chibi_elite_walk_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_style_chibi_elite",
+    "action": "combat",
+    "fit": 0.86,
+    "raw": "output/imagegen/actor_actions/enemy_style_chibi_elite_combat_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_training_dummy",
+    "action": "idle",
+    "fit": 0.88,
+    "raw": "output/imagegen/actor_actions/enemy_training_dummy_idle_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_training_dummy",
+    "action": "walk",
+    "fit": 0.88,
+    "raw": "output/imagegen/actor_actions/enemy_training_dummy_walk_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "enemy_training_dummy",
+    "action": "combat",
+    "fit": 0.88,
+    "raw": "output/imagegen/actor_actions/enemy_training_dummy_combat_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "pet_huo_ying",
+    "action": "idle",
+    "fit": 0.86,
+    "raw": "output/imagegen/actor_actions/pet_huo_ying_idle_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "pet_huo_ying",
+    "action": "walk",
+    "fit": 0.86,
+    "raw": "output/imagegen/actor_actions/pet_huo_ying_walk_2x2_raw.png"
+  },
+  {
+    "runtime_slug": "pet_huo_ying",
+    "action": "combat",
+    "fit": 0.86,
+    "raw": "output/imagegen/actor_actions/pet_huo_ying_combat_2x2_raw.png"
+  }
+]

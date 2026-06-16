@@ -64,4 +64,6 @@ static func _element_key(element_id: int) -> String:
 		3: return "thunder"
 		4: return "wood"
 		5: return "earth"
+		6: return "chaos"
+		7: return "soul"
 	return ""

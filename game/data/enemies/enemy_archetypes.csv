@@ -4,5 +4,6 @@ ranged,1.0,melee|projectile
 sniper,0.92,melee|sniper_shot
 berserker,1.25,ground_slam|dash_fast
 shaman,0.95,projectile|fan_volley
+skirmisher,1.18,blade_dash|blade_arc
 elite,1.15,melee_elite|dash
 boss,0.85,melee_boss|burst

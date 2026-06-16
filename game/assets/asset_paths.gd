@@ -5,6 +5,7 @@ extends RefCounted
 
 const UI_ROOT := "res://assets/ui/"
 const SPRITE_ROOT := "res://assets/sprites/"
+const SPRITE_FRAME_ROOT := SPRITE_ROOT + "frames/"
 
 # --- 全局面板与背景 (Global panels / backdrops) ---
 const MENU_BACKDROP := UI_ROOT + "bg_jade_palace_hall.png"
@@ -61,6 +62,7 @@ const ELEMENT_ICONS := {
 	"wood": UI_ROOT + "elem_wood_32.png",
 	"earth": UI_ROOT + "elem_earth_32.png",
 	"chaos": UI_ROOT + "elem_chaos_32.png",
+	"soul": UI_ROOT + "elem_chaos_32.png",
 	"none": UI_ROOT + "elem_chaos_32.png",
 }
 
@@ -183,6 +185,43 @@ const PROJECTILE_WATER := SPRITE_ROOT + "projectile_water_16.png"
 const PROJECTILE_GENERIC := SPRITE_ROOT + "projectile_generic_16.png"
 const PROJECTILE_CHAOS := SPRITE_ROOT + "projectile_chaos_16.png"
 
+const STYLE_NORMAL := "normal"
+const STYLE_CHIBI := "chibi"
+const DEFAULT_SPRITE_STYLE := STYLE_NORMAL
+
+const PLAYER_STYLE_PATHS := {
+	STYLE_NORMAL: SPRITE_ROOT + "player_style_normal_64.png",
+	STYLE_CHIBI: SPRITE_ROOT + "player_style_chibi_64.png",
+}
+
+const PLAYER_STYLE_PATHS_128 := {
+	STYLE_NORMAL: SPRITE_ROOT + "player_style_normal_128.png",
+	STYLE_CHIBI: SPRITE_ROOT + "player_style_chibi_128.png",
+}
+
+const ENEMY_STYLE_PATHS := {
+	"normal": {
+		"normal": SPRITE_ROOT + "enemy_training_dummy_64.png",
+		"ranged": SPRITE_ROOT + "enemy_style_normal_ranged_64.png",
+		"sniper": SPRITE_ROOT + "enemy_style_normal_ranged_64.png",
+		"berserker": SPRITE_ROOT + "enemy_style_normal_melee_64.png",
+		"skirmisher": SPRITE_ROOT + "enemy_style_normal_melee_64.png",
+		"shaman": SPRITE_ROOT + "enemy_style_normal_ranged_64.png",
+		"elite": SPRITE_ROOT + "enemy_style_normal_elite_64.png",
+		"boss": SPRITE_ROOT + "enemy_style_normal_elite_64.png",
+	},
+	"chibi": {
+		"normal": SPRITE_ROOT + "enemy_training_dummy_64.png",
+		"ranged": SPRITE_ROOT + "enemy_style_chibi_ranged_64.png",
+		"sniper": SPRITE_ROOT + "enemy_style_chibi_ranged_64.png",
+		"berserker": SPRITE_ROOT + "enemy_style_chibi_melee_64.png",
+		"skirmisher": SPRITE_ROOT + "enemy_style_chibi_melee_64.png",
+		"shaman": SPRITE_ROOT + "enemy_style_chibi_ranged_64.png",
+		"elite": SPRITE_ROOT + "enemy_style_chibi_elite_64.png",
+		"boss": SPRITE_ROOT + "enemy_style_chibi_elite_64.png",
+	},
+}
+
 
 # ============================================================================
 # 工具方法 (Utility functions)
@@ -196,6 +235,7 @@ static func elem_icon(element_id: int) -> String:
 		4: return ELEMENT_ICONS["wood"]
 		5: return ELEMENT_ICONS["earth"]
 		6: return ELEMENT_ICONS["chaos"]
+		7: return ELEMENT_ICONS["soul"]
 		_: return ELEMENT_ICONS["none"]
 
 
@@ -224,6 +264,35 @@ static func karma_icon(karma_key: String) -> String:
 
 
 static func enemy_sprite(archetype: String, is_boss: bool = false) -> String:
+	return enemy_sprite_for_style(archetype, is_boss, DEFAULT_SPRITE_STYLE)
+
+
+static func sprite_style(style: String) -> String:
+	var normalized: String = style.strip_edges().to_lower()
+	if normalized == STYLE_CHIBI:
+		return STYLE_CHIBI
+	return STYLE_NORMAL
+
+
+static func player_sprite(style: String = DEFAULT_SPRITE_STYLE, size: int = 64) -> String:
+	var resolved_style: String = sprite_style(style)
+	var path: String = str(PLAYER_STYLE_PATHS.get(resolved_style, PLAYER))
+	if size >= 128:
+		path = str(PLAYER_STYLE_PATHS_128.get(resolved_style, path))
+	if ResourceLoader.exists(path):
+		return path
+	return PLAYER
+
+
+static func enemy_sprite_for_style(archetype: String, is_boss: bool = false, style: String = DEFAULT_SPRITE_STYLE) -> String:
+	var resolved_style: String = sprite_style(style)
+	var style_map: Dictionary = ENEMY_STYLE_PATHS.get(resolved_style, {})
+	var key: String = "boss" if is_boss else archetype
+	var path: String = str(style_map.get(key, ""))
+	if path.is_empty():
+		path = str(style_map.get("normal", ENEMY_TRAINING))
+	if ResourceLoader.exists(path):
+		return path
 	if is_boss:
 		return ENEMY_BERSERKER
 	match archetype:
@@ -264,3 +333,64 @@ static func load_texture(path: String) -> Texture2D:
 		return null
 	var res: Resource = load(path)
 	return res as Texture2D
+
+
+static func animation_dir_for_texture(path: String) -> String:
+	var slug := _sprite_slug(path)
+	if slug.is_empty():
+		return ""
+	return SPRITE_FRAME_ROOT + slug
+
+
+static func animation_prefix_for_texture(path: String) -> String:
+	var slug := _sprite_slug(path)
+	if slug.begins_with("projectile_"):
+		return "fly"
+	if slug.begins_with("impact_"):
+		return "impact"
+	return "idle"
+
+
+static func animation_frame_paths_for_texture(path: String, prefix: String = "") -> Array[String]:
+	var dir_path := animation_dir_for_texture(path)
+	if dir_path.is_empty():
+		return []
+	var resolved_prefix := prefix if not prefix.is_empty() else animation_prefix_for_texture(path)
+	return animation_frame_paths(dir_path, resolved_prefix)
+
+
+static func impact_frame_paths_for_color(color: Color) -> Array[String]:
+	var projectile_slug := _sprite_slug(projectile_for_color(color))
+	if projectile_slug.is_empty():
+		return []
+	var impact_slug := projectile_slug.replace("projectile_", "impact_")
+	return animation_frame_paths(SPRITE_FRAME_ROOT + impact_slug, "impact")
+
+
+static func animation_frame_paths(dir_path: String, prefix: String = "") -> Array[String]:
+	var result: Array[String] = []
+	var dir := DirAccess.open(dir_path)
+	if dir == null:
+		return result
+	var files := dir.get_files()
+	files.sort()
+	for file_name in files:
+		if not file_name.ends_with(".png"):
+			continue
+		if not prefix.is_empty() and not file_name.begins_with(prefix + "_"):
+			continue
+		result.append(dir_path.path_join(file_name))
+	return result
+
+
+static func _sprite_slug(path: String) -> String:
+	if path.is_empty():
+		return ""
+	var slug := path.get_file().get_basename()
+	var last_underscore := slug.rfind("_")
+	if last_underscore <= 0:
+		return slug
+	var suffix := slug.substr(last_underscore + 1)
+	if suffix.is_valid_int():
+		return slug.substr(0, last_underscore)
+	return slug

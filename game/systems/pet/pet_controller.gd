@@ -3,12 +3,20 @@ extends Node2D
 const CsvLoader = preload("res://systems/affix/csv_loader.gd")
 const GameConstants = preload("res://core/constants/game_constants.gd")
 
+@onready var body_visual: Sprite2D = get_node_or_null("BodyVisual") as Sprite2D
+
 var _pet_def: Dictionary = {}
 var _passive_cd := 0.0
 var _coord_cd := 0.0
 var _pulse := 0.0
+var _combat_anim := 0.0
 var owner_player: CharacterBody2D
 var _use_sprite := false
+var _anim_state := "idle"
+var _visual_facing := Vector2.RIGHT
+var _coord_hit_window := 0.0
+var _coord_hit_enemies: Dictionary = {}
+var _coord_momentum_awarded := false
 
 
 func _ready() -> void:
@@ -18,8 +26,10 @@ func _ready() -> void:
 			break
 	add_to_group("pet")
 	visible = false
-	_use_sprite = has_node("BodyVisual") and get_node("BodyVisual").texture != null
+	_use_sprite = body_visual != null and body_visual.texture != null
+	_update_animation_state()
 	EventBus.pet_acquired.connect(_on_pet_acquired)
+	EventBus.pet_coord_hit.connect(_on_pet_coord_hit)
 
 
 func _on_pet_acquired(_pet_id: String) -> void:
@@ -45,7 +55,12 @@ func try_coordinated_skill(direction: Vector2) -> bool:
 	_coord_cd = float(_pet_def.get("coord_cooldown", 8.0))
 	var dir := direction.normalized() if direction.length_squared() > 0.01 else Vector2.RIGHT
 	_fire_coord_burst(dir)
+	_coord_hit_window = 1.2
+	_coord_hit_enemies.clear()
+	_coord_momentum_awarded = false
 	_pulse = 0.35
+	_combat_anim = 0.45
+	_update_animation_state()
 	EventBus.pet_coord_feedback.emit("火萤协同爆发!")
 	return true
 
@@ -56,9 +71,14 @@ func _physics_process(delta: float) -> void:
 	global_position = owner_player.global_position + Vector2(-28, -8)
 	_passive_cd = maxf(_passive_cd - delta, 0.0)
 	_coord_cd = maxf(_coord_cd - delta, 0.0)
+	_coord_hit_window = maxf(_coord_hit_window - delta, 0.0)
 	_pulse = maxf(_pulse - delta, 0.0)
+	_combat_anim = maxf(_combat_anim - delta, 0.0)
 	if _passive_cd <= 0.0:
 		_passive_attack()
+	elif owner_player.velocity.length_squared() > 1.0:
+		_update_visual_facing(owner_player.velocity)
+	_update_animation_state()
 	queue_redraw()
 
 
@@ -68,18 +88,21 @@ func _passive_attack() -> void:
 		_passive_cd = 0.5
 		return
 	var dir := (target.global_position - global_position).normalized()
-	_spawn_projectile(dir, float(_pet_def.get("passive_attack", 6.0)), 4.0)
+	_update_visual_facing(dir)
+	_spawn_projectile(dir, float(_pet_def.get("passive_attack", 6.0)), 4.0, "pet_passive")
 	_passive_cd = 2.5
+	_combat_anim = 0.35
 
 
 func _fire_coord_burst(direction: Vector2) -> void:
-	var damage := float(_pet_def.get("coord_damage", 18.0))
+	var damage: float = float(_pet_def.get("coord_damage", 18.0))
+	_update_visual_facing(direction)
 	for i in 5:
 		var spread := deg_to_rad(-30.0 + i * 15.0)
-		_spawn_projectile(direction.rotated(spread), damage, 7.0)
+		_spawn_projectile(direction.rotated(spread), damage, 7.0, "pet_coord")
 
 
-func _spawn_projectile(direction: Vector2, damage: float, radius: float) -> void:
+func _spawn_projectile(direction: Vector2, damage: float, radius: float, source_tag: String = "pet") -> void:
 	EventBus.spawn_player_projectile_requested.emit({
 		"scene_root": get_tree().current_scene,
 		"position": global_position + direction * 10.0,
@@ -88,7 +111,20 @@ func _spawn_projectile(direction: Vector2, damage: float, radius: float) -> void
 		"owner": owner_player,
 		"speed": -1.0,
 		"radius": radius,
+		"source_tag": source_tag,
 	})
+
+
+func _on_pet_coord_hit(enemy: Node) -> void:
+	if _coord_hit_window <= 0.0 or _coord_momentum_awarded:
+		return
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	_coord_hit_enemies[enemy.get_instance_id()] = true
+	if _coord_hit_enemies.size() >= 3:
+		_coord_momentum_awarded = true
+		RunContext.add_dao_momentum(10.0, "pet_coord_multi_hit")
+		EventBus.pet_coord_feedback.emit("灵宠协同贯穿三敌 · 道势 +10")
 
 
 func _find_nearest_enemy() -> Node2D:
@@ -106,6 +142,33 @@ func _find_nearest_enemy() -> Node2D:
 
 func get_mult_c() -> float:
 	return 1.08 if RunContext.pet_acquired else 1.0
+
+
+func _update_animation_state() -> void:
+	if body_visual == null or not body_visual.has_method("set_animation_prefix_name"):
+		return
+	var next_state: String = "idle"
+	if _combat_anim > 0.0:
+		next_state = "combat"
+	elif owner_player != null and owner_player.velocity.length() > 25.0:
+		next_state = "walk"
+	if next_state == _anim_state:
+		return
+	_anim_state = next_state
+	body_visual.set_animation_prefix_name(_anim_state)
+
+
+func _update_visual_facing(direction: Vector2) -> void:
+	if absf(direction.x) < 0.05:
+		return
+	_visual_facing = direction.normalized()
+	_apply_visual_facing()
+
+
+func _apply_visual_facing() -> void:
+	if body_visual == null or absf(_visual_facing.x) < 0.05:
+		return
+	body_visual.flip_h = _visual_facing.x < 0.0
 
 
 func _draw() -> void:

@@ -14,6 +14,7 @@ func _on_combo_updated(count: int) -> void:
 		if count >= milestone and _last_milestone < milestone:
 			_last_milestone = milestone
 			EventBus.combo_milestone.emit(milestone)
+			RunContext.add_dao_momentum(_momentum_for_milestone(milestone), "combo_%d" % milestone)
 			_play_moment(milestone)
 	if count == 0:
 		_last_milestone = 0
@@ -21,13 +22,23 @@ func _on_combo_updated(count: int) -> void:
 
 func _play_moment(count: int) -> void:
 	var duration := 0.2
-	var label := "连击!"
+	var label := "灵机初动"
 	if count >= 100:
 		duration = 0.5
-		label = "万法归一!"
-	elif count >= 50:
+		label = "万法将成"
+	elif count >= 60:
 		duration = 0.3
-		label = "天机!"
+		label = "道韵奔流"
 	elif count >= 30:
-		label = "连击!"
+		label = "势如破竹"
 	EventBus.crit_moment_requested.emit(label, duration)
+
+
+func _momentum_for_milestone(count: int) -> float:
+	if count >= 100:
+		return 22.0
+	if count >= 60:
+		return 14.0
+	if count >= 30:
+		return 8.0
+	return 4.0

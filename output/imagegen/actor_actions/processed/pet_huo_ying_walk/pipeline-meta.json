@@ -1,0 +1,175 @@
+{
+  "target": "creature",
+  "mode": "walk",
+  "prompt": "",
+  "role": "",
+  "input": "output\\imagegen\\actor_actions\\pet_huo_ying_walk_2x2_raw.png",
+  "threshold": 100,
+  "edge_threshold": 150,
+  "duration": 100,
+  "rows": 2,
+  "cols": 2,
+  "cell_size": 32,
+  "fit_scale": 0.78,
+  "trim_border": 16,
+  "edge_clean_depth": 8,
+  "align": "feet",
+  "shared_scale": true,
+  "component_mode": "largest",
+  "component_padding": 0,
+  "min_component_area": 16,
+  "edge_touch_margin": 0,
+  "frame_labels": [
+    "walk-1",
+    "walk-2",
+    "walk-3",
+    "walk-4"
+  ],
+  "frames": [
+    {
+      "grid": [
+        0,
+        0
+      ],
+      "source_box": [
+        0,
+        0,
+        512,
+        512
+      ],
+      "component_mode": "largest",
+      "component_count": 8,
+      "selected_component_area": 56219,
+      "selected_component_bbox": [
+        79,
+        81,
+        381,
+        420
+      ],
+      "crop_bbox": [
+        79,
+        81,
+        381,
+        420
+      ],
+      "edge_touch": false,
+      "output_size": [
+        21,
+        24
+      ],
+      "paste_position": [
+        5,
+        5
+      ]
+    },
+    {
+      "grid": [
+        0,
+        1
+      ],
+      "source_box": [
+        512,
+        0,
+        1024,
+        512
+      ],
+      "component_mode": "largest",
+      "component_count": 6,
+      "selected_component_area": 58893,
+      "selected_component_bbox": [
+        46,
+        75,
+        375,
+        419
+      ],
+      "crop_bbox": [
+        46,
+        75,
+        375,
+        419
+      ],
+      "edge_touch": false,
+      "output_size": [
+        23,
+        24
+      ],
+      "paste_position": [
+        4,
+        5
+      ]
+    },
+    {
+      "grid": [
+        1,
+        0
+      ],
+      "source_box": [
+        0,
+        512,
+        512,
+        1024
+      ],
+      "component_mode": "largest",
+      "component_count": 8,
+      "selected_component_area": 58216,
+      "selected_component_bbox": [
+        65,
+        62,
+        387,
+        403
+      ],
+      "crop_bbox": [
+        65,
+        62,
+        387,
+        403
+      ],
+      "edge_touch": false,
+      "output_size": [
+        23,
+        24
+      ],
+      "paste_position": [
+        4,
+        5
+      ]
+    },
+    {
+      "grid": [
+        1,
+        1
+      ],
+      "source_box": [
+        512,
+        512,
+        1024,
+        1024
+      ],
+      "component_mode": "largest",
+      "component_count": 8,
+      "selected_component_area": 56159,
+      "selected_component_bbox": [
+        51,
+        71,
+        370,
+        406
+      ],
+      "crop_bbox": [
+        51,
+        71,
+        370,
+        406
+      ],
+      "edge_touch": false,
+      "output_size": [
+        23,
+        24
+      ],
+      "paste_position": [
+        4,
+        5
+      ]
+    }
+  ],
+  "edge_touch_frames": []
+}

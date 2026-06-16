@@ -40,7 +40,7 @@ func set_legacy_affix(affix_id: String) -> void:
 
 
 func consume_legacy_affix() -> String:
-	var id := str(profile.get("legacy_affix_id", ""))
+	var id: String = str(profile.get("legacy_affix_id", ""))
 	if not id.is_empty():
 		profile["legacy_affix_id"] = ""
 		save_profile()
@@ -52,8 +52,16 @@ func has_legacy_pending() -> bool:
 
 
 func get_display_setting(key: String) -> bool:
-	var defaults := _default_profile()
+	var defaults: Dictionary = _default_profile()
 	return VariantUtils.as_bool(profile.get(key, defaults.get(key, false)))
+
+
+func get_sprite_style() -> String:
+	var defaults: Dictionary = _default_profile()
+	var style: String = str(profile.get("sprite_style", defaults.get("sprite_style", "normal"))).strip_edges().to_lower()
+	if style != "chibi":
+		return "normal"
+	return style
 
 
 func _migrate_legacy_auto_target_once() -> void:
@@ -70,7 +78,7 @@ func _migrate_legacy_auto_target_once() -> void:
 		if changed:
 			save_profile()
 		return
-	var legacy := VariantUtils.as_bool(profile.get("auto_target", false))
+	var legacy: bool = VariantUtils.as_bool(profile.get("auto_target", false))
 	if not profile.has("auto_aim"):
 		profile["auto_aim"] = legacy
 		changed = true
@@ -83,6 +91,17 @@ func _migrate_legacy_auto_target_once() -> void:
 
 func set_display_setting(key: String, value: bool) -> void:
 	profile[key] = value
+	save_profile()
+	EventBus.display_settings_changed.emit()
+
+
+func set_sprite_style(style: String) -> void:
+	var normalized: String = str(style).strip_edges().to_lower()
+	if normalized != "chibi":
+		normalized = "normal"
+	if get_sprite_style() == normalized:
+		return
+	profile["sprite_style"] = normalized
 	save_profile()
 	EventBus.display_settings_changed.emit()
 
@@ -181,6 +200,7 @@ func _default_profile() -> Dictionary:
 		"reduce_motion": false,
 		"auto_aim": false,
 		"auto_attack": false,
+		"sprite_style": "normal",
 		"heart_demon_shards": 0,
 		"awakened_dao_traditions": [],
 		"terrain_demos_seen": {},

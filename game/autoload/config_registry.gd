@@ -8,7 +8,7 @@ const DEFAULT_PLAYER_STATS := {
 	"hp": 100.0,
 	"attack": GameConstants.PLAYER_ATTACK,
 	"defense": 5.0,
-	"move_speed": 300.0,
+	"move_speed": 255.0,
 	"crit_rate": 0.05,
 	"crit_mult": 1.5,
 	"dodge_cooldown": 1.0,

@@ -34,7 +34,10 @@ var _discovered_combos: Dictionary = {}
 func _ready() -> void:
 	if player_body == null:
 		player_body = get_parent() as CharacterBody2D
-	EventBus.realm_changed.connect(func(_lvl, _slots): changed.emit())
+	EventBus.realm_changed.connect(func(_lvl, _slots):
+		refresh_stats()
+		changed.emit()
+	)
 	EventBus.pet_acquired.connect(func(_id): EntityCache.invalidate_pet())
 
 
@@ -105,6 +108,10 @@ func apply_skill_effect(dsl: String) -> void:
 		skill_passives.append(effect)
 	for effect in dummy.on_hit:
 		skill_passives.append(effect)
+	_recompute()
+
+
+func refresh_stats() -> void:
 	_recompute()
 
 
@@ -192,9 +199,15 @@ func proc_on_hit(target: Node) -> float:
 	for tag in equipped:
 		for effect in tag.on_hit:
 			_try_status_effect(target, effect)
+			_try_heal_on_hit(effect)
+			_try_lifesteal_attack(effect)
 	for effect in skill_passives:
 		if effect.get("kind") == "on_hit_status":
 			_try_status_effect(target, effect)
+		elif effect.get("kind") == "heal_on_hit":
+			_try_heal_on_hit(effect)
+		elif effect.get("kind") == "lifesteal_attack":
+			_try_lifesteal_attack(effect)
 	if target.has_method("get_burn_stacks") and target.get_burn_stacks() >= 5 and has_combo_tag("combust"):
 		if target.has_method("detonate_burn"):
 			bonus_explosion = target.detonate_burn(flat_attack + (player_body.attack_power if player_body else 10.0))
@@ -210,6 +223,44 @@ func _try_status_effect(target: Node, effect: Dictionary) -> void:
 		return
 	if target.has_method("apply_status"):
 		target.apply_status(status_name, float(effect.get("duration", 1.0)))
+
+
+func _try_heal_on_hit(effect: Dictionary) -> void:
+	if effect.get("kind") != "heal_on_hit":
+		return
+	if player_body == null or not player_body.has_node("HealthComponent"):
+		return
+	var chance := float(effect.get("chance", 0.0))
+	if not CombatRngService.roll_chance("heal_on_hit", chance):
+		return
+	var health: Node = player_body.get_node("HealthComponent")
+	var healed := 0.0
+	if health.has_method("heal"):
+		healed = health.heal(float(effect.get("value", 0.0)))
+	if healed <= 0.0:
+		return
+	VfxManager.spawn_world(player_body.global_position, "heal", Color(0.45, 1.0, 0.55))
+
+
+func _try_lifesteal_attack(effect: Dictionary) -> void:
+	if effect.get("kind") != "lifesteal_attack":
+		return
+	if player_body == null or not player_body.has_node("HealthComponent"):
+		return
+	var chance := float(effect.get("chance", 0.0))
+	if not CombatRngService.roll_chance("lifesteal_attack", chance):
+		return
+	var attack_value := float(player_body.attack_power) + flat_attack
+	var heal_amount := attack_value * float(effect.get("ratio", 0.0))
+	if heal_amount <= 0.0:
+		return
+	var health: Node = player_body.get_node("HealthComponent")
+	var healed := 0.0
+	if health.has_method("heal"):
+		healed = health.heal(heal_amount)
+	if healed <= 0.0:
+		return
+	VfxManager.spawn_world(player_body.global_position, "heal", Color(0.45, 1.0, 0.55))
 
 
 func _recompute() -> void:
@@ -326,9 +377,12 @@ func _has_affix(id: String) -> bool:
 func _apply_to_player() -> void:
 	if player_body == null:
 		return
-	var stats := ConfigRegistry.get_default_player_stats()
+	var stats := RunContext.apply_realm_growth_to_stats(ConfigRegistry.get_default_player_stats())
 	# flat_attack 仅在伤害流水线中加算，避免与 build_damage_context 重复叠加
 	player_body.attack_power = stats.attack
+	player_body.defense = stats.defense
+	player_body.move_speed = stats.move_speed
+	player_body.dodge_cooldown = stats.dodge_cooldown
 	player_body.crit_rate = clampf(stats.crit_rate + bonus_crit_rate, 0.0, 0.95)
 	player_body.crit_mult = stats.crit_mult + bonus_crit_mult
 	if player_body.has_node("HealthComponent"):
@@ -357,4 +411,6 @@ func _element_key(element_id: int) -> String:
 		3: return "thunder"
 		4: return "wood"
 		5: return "earth"
+		6: return "chaos"
+		7: return "soul"
 	return ""

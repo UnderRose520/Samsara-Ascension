@@ -1,0 +1,16 @@
+Asset: Samsara Ascension jade cultivator simplified HD character concept via gpt-image-2
+
+Generation prompt:
+Use case: stylized-concept
+Asset type: simplified clean HD 2D game character concept for a cultivation roguelite
+Primary request: create a simpler, more game-readable version of a female xianxia cultivator for Samsara Ascension. Use the image just shown as a style reference only. Keep the premium hand-painted xianxia feeling, but reduce accessory density, pattern density, and fabric layering so the silhouette reads faster in-game.
+Scene/backdrop: perfectly flat solid #FF00FF chroma-key background only, one uniform color, no shadows, no gradients, no texture, no floor plane, no lighting variation
+Subject: elegant young female cultivator, wood and sword spirit-root feeling, long dark hair, one jade-and-gold hair ornament, small forehead gem, white and pale-jade robes, a few translucent teal ribbons, light gold trim, one slim jade sword held close to the body, faint qi aura only
+Style/medium: clean HD hand-painted 2D game character concept, polished fantasy RPG asset, crisp silhouette, simplified fine details, reduced ornament complexity, reduced textile pattern density, not photorealistic, not 3D, not pixel art
+Composition/framing: full body visible, three-quarter RPG view, neutral hero pose, centered, generous padding, clear feet anchor, character occupies about 65 percent of the canvas
+Lighting/mood: soft celestial glow, calm and refined, readable edge lighting
+Color palette: white, pale jade, teal, warm gold, dark ink hair; avoid magenta in the character
+Materials/textures: silk robe surfaces with limited decoration, polished jade accent, simple metal sword fittings
+Constraints: single character only; no background scene; no UI; no text; no watermark; no extra characters; no large spell effects; no dense jewelry; no overly layered skirt pieces; maintain strong silhouette readability for gameplay
+Avoid: extreme costume detail, excessive ribbons, heavy embroidery, hyperreal skin texture, extra weapons, cropped feet, giant aura, cluttered silhouette
+

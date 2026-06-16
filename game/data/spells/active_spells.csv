@@ -1,6 +1,11 @@
 id,name,slot,cooldown,windup,damage,speed,radius,pierce,extra,description
 lie_yan_bolt,烈焰弹,q,3.5,0.22,42,360,7,1,,朝鼠标发射一枚高伤火劲弹幕
+yu_jian_thrust,御剑突刺,q,3.2,0.16,36,620,5,3,,青锋剑催出一道高速剑芒，适合穿线补刀
+qi_fu,起符,q,3.8,0.20,30,300,8,0,count:2,掷出两道符箓，为后续符阵玩法预留节奏
+summon_soul,魂火引,q,4.0,0.24,34,280,9,1,,放出一团魂火，后续可接残魂与诅咒
 lei_chi_strike,雷击印,e,5.0,0.15,32,480,5,2,,快雷击直线穿透
 lei_chi_chain,连环雷,e,4.0,0.12,26,520,4,3,,快雷三连穿透
 xuan_bing_fan,玄冰扇,r,7.0,0.35,22,320,5,0,count:3,三向扇形冰劲
 xuan_bing_lance,玄冰枪,r,6.0,0.28,52,400,9,1,,单发高伤冰枪
+
+hui_chun_jue,回春诀,e,9.0,0.25,0,0,0,0,heal_pct:0.28,调息回春，恢复28%真元

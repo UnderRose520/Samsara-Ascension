@@ -1,0 +1,16 @@
+Asset: Samsara Ascension jade cultivator chibi HD character concept via gpt-image-2
+
+Generation prompt:
+Use case: stylized-concept
+Asset type: chibi clean HD 2D game character concept for a cultivation roguelite
+Primary request: create a cuter, more chibi-like version of the female xianxia cultivator for Samsara Ascension. Keep the same jade-white cultivation identity and hand-painted fantasy quality, but increase head size, simplify outfit layers, round the silhouette slightly, and make the character read better at very small in-game sizes.
+Scene/backdrop: perfectly flat solid #FF00FF chroma-key background only, one uniform color, no shadows, no gradients, no texture, no floor plane, no lighting variation
+Subject: cute young female cultivator, chibi proportions around two-and-a-half to three heads tall, long dark hair, one simple jade hair ornament, small forehead gem, white and pale-jade robes, a few soft teal ribbons, light gold trim, short jade sword held close to the body, tiny restrained qi aura
+Style/medium: clean HD hand-painted 2D game character concept, chibi fantasy RPG asset, crisp silhouette, simplified details, soft facial features, slightly rounded forms, not photorealistic, not 3D, not pixel art
+Composition/framing: full body visible, three-quarter RPG view, neutral cute hero pose, centered, generous padding, clear feet anchor, character occupies about 58 percent of the canvas
+Lighting/mood: soft celestial glow, warm and elegant, readable edge lighting
+Color palette: white, pale jade, teal, warm gold, dark ink hair; avoid magenta in the character
+Materials/textures: smooth silk robe surfaces with minimal decoration, polished jade accessory, simple sword details
+Constraints: single character only; no background scene; no UI; no text; no watermark; no extra characters; no giant aura; no cluttered cloth layers; strong cute silhouette for gameplay readability
+Avoid: realistic anatomy, tall fashion proportions, dense embroidery, heavy jewelry, giant ribbons, dark horror tone, messy silhouette
+

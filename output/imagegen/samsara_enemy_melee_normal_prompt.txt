@@ -1,0 +1,16 @@
+Asset: Samsara Ascension melee enemy normal HD concept via gpt-image-2
+
+Generation prompt:
+Use case: stylized-concept
+Asset type: clean HD 2D melee enemy concept for a cultivation roguelite
+Primary request: create a standard non-chibi melee enemy for Samsara Ascension that works as a common close-range combat unit. It should match the existing simplified normal-style direction and read clearly in small in-game combat sizes.
+Scene/backdrop: perfectly flat solid #FF00FF chroma-key background only, one uniform color, no shadows, no gradients, no texture, no floor plane, no lighting variation
+Subject: demonic armored foot soldier, compact but normal proportions, dark armor, clawed gauntlets or short blade, one or two clear blue lightning cracks, short torn cloth tabard, hostile combat stance
+Style/medium: clean HD hand-painted 2D game enemy concept, polished fantasy RPG asset, crisp silhouette, simplified details, reduced ornament complexity, readable hostile proportions, not photorealistic, not 3D, not pixel art
+Composition/framing: full body visible, three-quarter RPG combat view, compact idle pose, centered, generous padding, clear feet anchor, subject occupies about 62 percent of the canvas
+Lighting/mood: cool rim light, restrained electric glow, readable contrast
+Color palette: charcoal black, muted steel, electric blue highlights; avoid magenta in the subject
+Materials/textures: forged armor, worn cloth, controlled energy cracks
+Constraints: single enemy only; no background scene; no UI; no text; no watermark; no giant VFX; no huge cape; keep a compact hostile silhouette suitable for repeated melee encounters
+Avoid: boss-scale crown, many floating ornaments, gore, comedy mood, cluttered silhouette
+

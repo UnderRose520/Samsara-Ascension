@@ -16,15 +16,17 @@ const UiTokens = preload("res://ui/theme/ui_tokens.gd")
 var _dock := false
 var _ready_state := true
 var _unlocked := true
+var _cd_text: Label
 
 
 func _ready() -> void:
-	pass
+	_ensure_cd_text()
 
 
 func set_dock(enabled: bool) -> void:
 	if not enabled:
 		return
+	_ensure_cd_text()
 	_dock = true
 	custom_minimum_size = Vector2(56, 56)
 	info_box.visible = false
@@ -61,27 +63,30 @@ func set_dock(enabled: bool) -> void:
 		key_bg.content_margin_bottom = 0
 		key_label.add_theme_stylebox_override("normal", key_bg)
 	icon_wrap.custom_minimum_size = Vector2(44, 44)
+	_cd_text.visible = false
 
 
 func apply_state(slot: String, spell_name: String, unlocked: bool, cd_remaining: float, cd_total: float, casting: bool) -> void:
 	key_label.text = slot.to_upper()
 	if not _dock:
 		name_label.text = spell_name
-	var icon_key := slot if unlocked else "%s_locked" % slot
+	var icon_key: String = slot if unlocked else "%s_locked" % slot
 	var icon_path: String = AssetPaths.SPELL_ICONS.get(icon_key, AssetPaths.SPELL_ICONS["q_locked"])
 	icon.texture = AssetPaths.load_texture(icon_path)
-	var ready := unlocked and not casting and cd_remaining <= 0.05
-	var ratio := 0.0
+	var ready: bool = unlocked and not casting and cd_remaining <= 0.05
+	var ratio: float = 0.0
 	if unlocked and cd_total > 0.01 and cd_remaining > 0.05:
 		ratio = cd_remaining / cd_total
 	cd_ring.set_cooldown(ratio, ready)
 	_ready_state = ready
 	_unlocked = unlocked
 	if _dock:
+		_update_cd_text(cd_remaining, casting)
 		add_theme_stylebox_override("panel", HudStyles.spell_dock_slot(ready, unlocked))
 		tooltip_text = spell_name if unlocked else "未解锁"
 		modulate = Color(0.5, 0.5, 0.52) if not unlocked else Color.WHITE
 		return
+	_update_cd_text(0.0, false)
 	if not unlocked:
 		state_label.text = "未解锁"
 		modulate = Color(0.55, 0.55, 0.58)
@@ -97,3 +102,31 @@ func apply_state(slot: String, spell_name: String, unlocked: bool, cd_remaining:
 		state_label.text = "就绪"
 		state_label.add_theme_color_override("font_color", UiTokens.STATE_BUFF)
 		modulate = Color.WHITE
+
+
+func _ensure_cd_text() -> void:
+	if _cd_text != null:
+		return
+	_cd_text = Label.new()
+	_cd_text.name = "CdText"
+	_cd_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_cd_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_cd_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_cd_text.add_theme_font_size_override("font_size", 13)
+	_cd_text.add_theme_color_override("font_color", Color.WHITE)
+	_cd_text.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
+	_cd_text.add_theme_constant_override("shadow_offset_x", 1)
+	_cd_text.add_theme_constant_override("shadow_offset_y", 1)
+	_cd_text.set_anchors_preset(Control.PRESET_FULL_RECT)
+	icon_wrap.add_child(_cd_text)
+	_cd_text.visible = false
+
+
+func _update_cd_text(cd_remaining: float, casting: bool) -> void:
+	if _cd_text == null:
+		return
+	if not _dock or not _unlocked or casting or cd_remaining <= 0.05:
+		_cd_text.visible = false
+		return
+	_cd_text.text = "%.1f" % cd_remaining if cd_remaining < 10.0 else "%d" % ceili(cd_remaining)
+	_cd_text.visible = true

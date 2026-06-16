@@ -1,6 +1,6 @@
 stage_index,enemy_ids
 1,wild_wolf|sky_bat|mud_serpent
-2,mud_serpent|sky_bat|wild_wolf
-3,wild_wolf|furnace_golem|sky_bat|mud_serpent
-4,furnace_golem|mud_serpent|wild_wolf|sky_bat
-5,furnace_golem|sky_bat|mud_serpent|wild_wolf
+2,mud_serpent|sky_bat|wild_wolf|wind_mantis
+3,wild_wolf|furnace_golem|sky_bat|mud_serpent|wind_mantis
+4,furnace_golem|mud_serpent|wind_mantis|wild_wolf|sky_bat
+5,furnace_golem|wind_mantis|sky_bat|mud_serpent|wild_wolf

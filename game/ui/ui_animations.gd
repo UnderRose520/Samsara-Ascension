@@ -39,10 +39,10 @@ static func reset_modal(node: Control) -> void:
 static func _apply_modal_open(node: Control, dimmer: CanvasItem) -> void:
 	node.pivot_offset = node.size * 0.5
 	node.modulate.a = 0.0
-	node.scale = Vector2(0.92, 0.92)
+	node.scale = Vector2.ONE
 	var tw := node.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tw.tween_property(node, "modulate:a", 1.0, MODAL_IN)
-	tw.tween_property(node, "scale", Vector2.ONE, MODAL_IN)
 	if dimmer:
 		dimmer.modulate.a = 0.0
 		tw.tween_property(dimmer, "modulate:a", 1.0, MODAL_IN)
@@ -51,8 +51,8 @@ static func _apply_modal_open(node: Control, dimmer: CanvasItem) -> void:
 static func _apply_modal_close(node: Control, dimmer: CanvasItem, on_finished: Callable) -> void:
 	node.pivot_offset = node.size * 0.5
 	var tw := node.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tw.tween_property(node, "modulate:a", 0.0, MODAL_OUT)
-	tw.tween_property(node, "scale", Vector2(0.94, 0.94), MODAL_OUT)
 	if dimmer:
 		tw.tween_property(dimmer, "modulate:a", 0.0, MODAL_OUT)
 	tw.chain().tween_callback(func() -> void:

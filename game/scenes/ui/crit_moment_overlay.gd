@@ -13,6 +13,7 @@ var _end_ms := 0
 var _banner_tween: Tween
 var _unity_tween: Tween
 var _freeze_timer: SceneTreeTimer
+var _freeze_token := 0
 var _time_scale_modified := false
 var _pause_modified := false
 var _was_paused_before_freeze := false
@@ -193,16 +194,22 @@ func _set_desaturate_strength(value: float) -> void:
 
 func _freeze_game(duration: float) -> void:
 	_restore_pause()
+	_freeze_token += 1
+	var token := _freeze_token
 	_was_paused_before_freeze = get_tree().paused
 	get_tree().paused = true
 	_pause_modified = not _was_paused_before_freeze
 	_freeze_timer = get_tree().create_timer(duration, true, false, true)
-	_freeze_timer.timeout.connect(_restore_pause, CONNECT_ONE_SHOT)
+	_freeze_timer.timeout.connect(func() -> void:
+		if token == _freeze_token:
+			_restore_pause()
+	, CONNECT_ONE_SHOT)
 
 
 func _restore_pause() -> void:
 	if not _pause_modified:
 		return
+	_freeze_token += 1
 	_pause_modified = false
 	if get_tree():
 		get_tree().paused = false

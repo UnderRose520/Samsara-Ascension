@@ -12,6 +12,10 @@ const UiTokens = preload("res://ui/theme/ui_tokens.gd")
 @onready var list_box: VBoxContainer = $Panel/Margin/VBox/List
 @onready var close_button: Button = $Panel/Margin/VBox/CloseButton
 
+var _was_paused_before_open := false
+var _was_ui_blocking_before_open := false
+var _closing := false
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -20,13 +24,30 @@ func _ready() -> void:
 	UiHelpers.apply_panel_polish(panel)
 	UiHelpers.decorate_modal_header($Panel/Margin/VBox, title_label)
 	close_button.pressed.connect(_on_close_pressed)
+	dimmer.gui_input.connect(_on_dimmer_gui_input)
 
 
 func open_panel() -> void:
+	if panel.visible:
+		_refresh()
+		return
+	_closing = false
+	_was_paused_before_open = get_tree().paused
+	_was_ui_blocking_before_open = RunContext.ui_blocking
+	RunContext.ui_blocking = true
+	get_tree().paused = true
 	_refresh()
 	panel.visible = true
 	dimmer.visible = true
 	UiAnimations.modal_open(panel, dimmer)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not panel.visible or _closing:
+		return
+	if event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_close()
 
 
 func _refresh() -> void:
@@ -79,7 +100,22 @@ func _on_upgrade_pressed(id: String) -> void:
 
 
 func _on_close_pressed() -> void:
+	_close()
+
+
+func _on_dimmer_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		_close()
+
+
+func _close() -> void:
+	if _closing or not panel.visible:
+		return
+	_closing = true
 	UiAnimations.modal_close(panel, dimmer, func() -> void:
 		panel.visible = false
 		dimmer.visible = false
+		RunContext.ui_blocking = _was_ui_blocking_before_open
+		get_tree().paused = _was_paused_before_open
+		_closing = false
 	)

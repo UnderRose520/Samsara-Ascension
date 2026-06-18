@@ -10,6 +10,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 60
 	EventBus.damage_dealt.connect(_on_damage_dealt)
+	EventBus.weather_kill.connect(_on_weather_kill)
+	EventBus.pet_guardian_triggered.connect(_on_pet_guardian_triggered)
 
 
 func _exit_tree() -> void:
@@ -26,6 +28,24 @@ func _on_damage_dealt(result: Dictionary) -> void:
 	if SaveManager.get_display_setting("show_damage_numbers"):
 		_spawn_floater(world_pos, result)
 		VfxManager.spawn_damage(result)
+
+
+func _on_weather_kill(enemy: Node, weather_id: String, _payload: Dictionary) -> void:
+	if not SaveManager.get_display_setting("show_damage_numbers"):
+		return
+	var body := enemy as Node2D
+	if body == null or not is_instance_valid(body):
+		return
+	_spawn_text(body.global_position, "%s天象击杀" % _weather_label(weather_id), UiTokens.ACCENT_GOLD, 19)
+
+
+func _on_pet_guardian_triggered(enemy: Node, player: Node) -> void:
+	var body := player as Node2D
+	if body == null or not is_instance_valid(body):
+		body = enemy as Node2D
+	if body == null or not is_instance_valid(body):
+		return
+	_spawn_text(body.global_position, "灵兽护主", Color(1.0, 0.82, 0.28), 22)
 
 
 func _spawn_floater(world_pos: Vector2, result: Dictionary) -> void:
@@ -93,3 +113,41 @@ func _spawn_floater(world_pos: Vector2, result: Dictionary) -> void:
 	tween.tween_property(root, "position:y", root.position.y - 48.0, 0.72).set_ease(Tween.EASE_OUT)
 	tween.tween_property(root, "modulate:a", 0.0, 0.72).set_delay(0.18)
 	tween.finished.connect(root.queue_free)
+
+
+func _spawn_text(world_pos: Vector2, text: String, color: Color, font_size: int) -> void:
+	var root := Control.new()
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var label := Label.new()
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.text = text
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_constant_override("outline_size", 3)
+	label.add_theme_color_override("font_outline_color", Color(0.18, 0.11, 0.0, 0.8))
+	root.add_child(label)
+	add_child(root)
+	var screen_pos: Vector2 = get_viewport().get_canvas_transform() * world_pos
+	root.position = screen_pos + Vector2(-56.0, -72.0)
+	root.scale = Vector2(0.75, 0.75)
+	root.modulate.a = 0.0
+	var tween := create_tween()
+	_active_tweens.append(tween)
+	tween.finished.connect(_active_tweens.erase.bind(tween))
+	tween.set_parallel(true)
+	tween.tween_property(root, "modulate:a", 1.0, 0.08)
+	tween.tween_property(root, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(root, "position:y", root.position.y - 42.0, 0.8)
+	tween.tween_property(root, "modulate:a", 0.0, 0.8).set_delay(0.22)
+	tween.finished.connect(root.queue_free)
+
+
+func _weather_label(weather_id: String) -> String:
+	match weather_id:
+		"thunder": return "雷"
+		"rain": return "雨"
+		"fire": return "烈阳"
+		"wind": return "妖风"
+		"snow": return "霜雪"
+		"sand": return "沙暴"
+	return "天"

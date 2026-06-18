@@ -9,6 +9,7 @@ const UiHelpers = preload("res://ui/ui_helpers.gd")
 const DAO_HEART_CARD := preload("res://ui/components/dao_heart_card.tscn")
 
 @onready var panel: PanelContainer = $Panel
+@onready var backdrop: TextureRect = $Backdrop
 @onready var dimmer: ColorRect = $Dimmer
 @onready var start_button: Button = $Panel/Margin/Scroll/VBox/StartButton
 @onready var title_label: Label = $Panel/Margin/Scroll/VBox/Title
@@ -29,6 +30,7 @@ var _heart_cards: Array[DaoHeartCard] = []
 var _path_buttons: Dictionary = {}
 var _path_detail_label: Label
 var _paths_box: HBoxContainer
+var _couplet_labels: Array[Label] = []
 
 const HEART_DEFS := [
 	{
@@ -57,6 +59,8 @@ const HEART_DEFS := [
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dimmer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_fit_panel_to_viewport()
 	get_viewport().size_changed.connect(_fit_panel_to_viewport)
 	UiHelpers.apply_panel_polish(panel, false)
@@ -78,18 +82,25 @@ func _fit_panel_to_viewport() -> void:
 	if panel == null:
 		return
 	var viewport_size := get_viewport().get_visible_rect().size
-	var safe_margin := 48.0
-	var panel_width := minf(720.0, maxf(viewport_size.x - safe_margin * 2.0, 560.0))
-	var panel_height := minf(680.0, maxf(viewport_size.y - safe_margin * 2.0, 520.0))
+	var short_side := minf(viewport_size.x, viewport_size.y)
+	var safe_margin := clampf(short_side * 0.06, 24.0, 72.0)
+	var available_width := maxf(viewport_size.x - safe_margin * 2.0, 360.0)
+	var available_height := maxf(viewport_size.y - safe_margin * 2.0, 420.0)
+	var max_panel_width := minf(920.0, viewport_size.x * 0.72)
+	var max_panel_height := minf(680.0, viewport_size.y * 0.94)
+	var panel_width := minf(max_panel_width, available_width)
+	var panel_height := minf(max_panel_height, available_height)
 	panel.offset_left = -panel_width * 0.5
 	panel.offset_right = panel_width * 0.5
 	panel.offset_top = -panel_height * 0.5
 	panel.offset_bottom = panel_height * 0.5
+	_layout_couplets(viewport_size, panel_width)
 
 
 func _add_couplets() -> void:
 	_make_couplet("大道无形", -480.0)
 	_make_couplet("仙途无尽", 480.0)
+	_layout_couplets(get_viewport().get_visible_rect().size, panel.size.x)
 
 
 func _make_couplet(text: String, x_offset: float) -> void:
@@ -119,6 +130,30 @@ func _make_couplet(text: String, x_offset: float) -> void:
 	lbl.offset_bottom = 130.0
 	add_child(lbl)
 	move_child(lbl, 2)
+	_couplet_labels.append(lbl)
+
+
+func _layout_couplets(viewport_size: Vector2, panel_width: float) -> void:
+	if _couplet_labels.is_empty():
+		return
+	var side_space := maxf((viewport_size.x - panel_width) * 0.5, 0.0)
+	var show := side_space >= 92.0 and viewport_size.y >= 560.0
+	var label_half_width := 24.0
+	var label_height := minf(240.0, maxf(viewport_size.y * 0.36, 170.0))
+	var x_gap := clampf(side_space * 0.45, 42.0, 92.0)
+	for i in _couplet_labels.size():
+		var lbl := _couplet_labels[i]
+		if lbl == null:
+			continue
+		lbl.visible = show
+		if not show:
+			continue
+		var sign := -1.0 if i == 0 else 1.0
+		var center_x := sign * (panel_width * 0.5 + x_gap)
+		lbl.offset_left = center_x - label_half_width
+		lbl.offset_right = center_x + label_half_width
+		lbl.offset_top = -label_height * 0.5
+		lbl.offset_bottom = label_height * 0.5
 
 
 func _spawn_heart_cards() -> void:
@@ -290,9 +325,15 @@ func _on_random_seed_pressed() -> void:
 
 func _on_start_pressed() -> void:
 	UiAnimations.modal_close(panel, dimmer, func() -> void:
-		panel.visible = false
-		visible = false
+		_hide_setup_layer()
 		var use_boost := heart_demon_check.visible and heart_demon_check.button_pressed
 		RunContext.begin_run(_selected, _parse_seed_override(), use_boost, false, _selected_path)
 		EventBus.run_setup_confirmed.emit()
 	)
+
+
+func _hide_setup_layer() -> void:
+	for child in get_children():
+		if child is CanvasItem:
+			(child as CanvasItem).visible = false
+	visible = false

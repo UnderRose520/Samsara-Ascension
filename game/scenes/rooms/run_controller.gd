@@ -121,7 +121,7 @@ func _enter_current_room() -> void:
 	if room.is_empty():
 		EventBus.run_completed.emit(true)
 		return
-	WeatherSystem.set_weather(str(stage.get("weather_id", "clear")))
+	var weather_id := str(stage.get("weather_id", "clear"))
 	var stage_idx := int(stage.get("stage_index", RunContext.current_stage + 1))
 	if get_combat_floor() and get_combat_floor().has_method("apply_theme"):
 		get_combat_floor().apply_theme(stage_idx)
@@ -136,10 +136,18 @@ func _enter_current_room() -> void:
 		var temptation_penalty := RunContext.consume_temptation_penalty()
 		if not temptation_penalty.is_empty():
 			_apply_temptation_penalty_to_room(room, temptation_penalty)
-	if is_combat_room:
+		var weather_opportunity := RunContext.consume_weather_opportunity()
+		if not weather_opportunity.is_empty():
+			weather_id = str(weather_opportunity.get("weather_id", weather_id))
+			var opportunity_layout := str(weather_opportunity.get("layout_id", ""))
+			if not opportunity_layout.is_empty():
+				room["layout_id"] = opportunity_layout
+			room["weather_opportunity_boost"] = true
 		_apply_first_minutes_path_opportunity(room)
-		_apply_room_layout(room, stage_idx, str(stage.get("weather_id", "clear")))
+		WeatherSystem.set_weather(weather_id)
+		_apply_room_layout(room, stage_idx, weather_id)
 	else:
+		WeatherSystem.set_weather(weather_id)
 		_reset_room_layout()
 	EventBus.room_entered.emit(room, stage)
 

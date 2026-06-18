@@ -79,6 +79,7 @@ var dao_tradition_awakened_this_run := ""
 
 var next_affix_bias := ""
 var pending_temptation_penalty: Dictionary = {}
+var pending_weather_opportunity: Dictionary = {}
 
 var peak_dao_momentum := 0.0
 
@@ -119,10 +120,10 @@ const REALM_SLOT_AFTER := {1: 7, 2: 8, 3: 10, 4: 11, 5: 11}
 
 const REALM_STAT_GROWTH := {
 	1: {"hp": 1.0, "mana": 1.0, "attack": 1.0, "defense": 1.0, "move_speed": 1.0, "dodge_cooldown": 1.0, "spell_cooldown": 1.0, "crit_rate": 0.0, "crit_mult": 0.0},
-	2: {"hp": 1.45, "mana": 1.35, "attack": 1.22, "defense": 1.25, "move_speed": 1.08, "dodge_cooldown": 0.94, "spell_cooldown": 0.94, "crit_rate": 0.03, "crit_mult": 0.08},
-	3: {"hp": 2.05, "mana": 1.85, "attack": 1.55, "defense": 1.65, "move_speed": 1.16, "dodge_cooldown": 0.88, "spell_cooldown": 0.88, "crit_rate": 0.06, "crit_mult": 0.16},
-	4: {"hp": 2.85, "mana": 2.45, "attack": 1.95, "defense": 2.15, "move_speed": 1.24, "dodge_cooldown": 0.82, "spell_cooldown": 0.82, "crit_rate": 0.09, "crit_mult": 0.26},
-	5: {"hp": 3.8, "mana": 3.2, "attack": 2.45, "defense": 2.8, "move_speed": 1.32, "dodge_cooldown": 0.76, "spell_cooldown": 0.76, "crit_rate": 0.12, "crit_mult": 0.38},
+	2: {"hp": 1.6, "mana": 1.48, "attack": 1.35, "defense": 1.45, "move_speed": 1.05, "dodge_cooldown": 0.92, "spell_cooldown": 0.92, "crit_rate": 0.04, "crit_mult": 0.10},
+	3: {"hp": 2.55, "mana": 2.25, "attack": 2.0, "defense": 2.25, "move_speed": 1.10, "dodge_cooldown": 0.84, "spell_cooldown": 0.84, "crit_rate": 0.08, "crit_mult": 0.22},
+	4: {"hp": 4.0, "mana": 3.45, "attack": 3.05, "defense": 3.45, "move_speed": 1.15, "dodge_cooldown": 0.76, "spell_cooldown": 0.76, "crit_rate": 0.12, "crit_mult": 0.38},
+	5: {"hp": 6.1, "mana": 5.25, "attack": 4.55, "defense": 5.2, "move_speed": 1.20, "dodge_cooldown": 0.68, "spell_cooldown": 0.68, "crit_rate": 0.16, "crit_mult": 0.58},
 }
 
 const PATH_STAT_BIAS := {
@@ -531,6 +532,22 @@ func set_temptation_penalty(penalty_id: String, label: String, params: Dictionar
 func consume_temptation_penalty() -> Dictionary:
 	var out := pending_temptation_penalty.duplicate(true)
 	pending_temptation_penalty.clear()
+	return out
+
+
+func set_weather_opportunity(weather_id: String, layout_id: String, label: String = "道心微动") -> void:
+	if weather_id.is_empty():
+		return
+	pending_weather_opportunity = {
+		"weather_id": weather_id,
+		"layout_id": layout_id,
+		"label": label,
+	}
+
+
+func consume_weather_opportunity() -> Dictionary:
+	var out := pending_weather_opportunity.duplicate(true)
+	pending_weather_opportunity.clear()
 	return out
 
 

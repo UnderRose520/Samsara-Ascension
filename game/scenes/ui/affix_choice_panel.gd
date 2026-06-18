@@ -86,6 +86,9 @@ func _refresh_ui() -> void:
 	var director_hint := str(_context.get("director_reason", _context.get("director_hint", "")))
 	if not director_hint.is_empty():
 		title_label.text += "\n%s" % director_hint
+	var build_hint := str(_context.get("build_archetype_hint", ""))
+	if not build_hint.is_empty():
+		title_label.text += "\n流派牵引 · %s" % build_hint
 
 	gold_label.text = "灵石 %d" % gold
 	var opening := not panel.visible

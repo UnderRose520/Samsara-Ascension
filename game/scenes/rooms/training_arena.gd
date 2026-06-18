@@ -187,6 +187,8 @@ func _present_offers() -> void:
 		"build_archetypes": build_archetypes,
 		"gold": gold,
 	}
+	# Training keeps rewards deterministic enough for quick testing; formal run-only
+	# systems such as RunDirector rescue, next_affix_bias, and quality shifts stay out.
 	var offers := AffixOfferSelector.roll_offers(
 		ConfigRegistry.get_all_affixes(),
 		3,

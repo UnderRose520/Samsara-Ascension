@@ -39,14 +39,13 @@ func _animate_path_cards(cards: Array) -> void:
 		var card: Control = cards[i]
 		if not is_instance_valid(card):
 			continue
-		card.pivot_offset = card.size * 0.5
 		card.modulate.a = 0.0
-		card.scale = Vector2(0.9, 0.9)
+		card.scale = Vector2.ONE
 		var tw := card.create_tween()
+		tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 		tw.tween_interval(float(i) * UiAnimations.CARD_STAGGER)
 		tw.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		tw.tween_property(card, "modulate:a", 1.0, 0.25)
-		tw.parallel().tween_property(card, "scale", Vector2.ONE, 0.28)
 
 
 func _make_path_card(branch: Dictionary) -> PanelContainer:
@@ -91,7 +90,6 @@ func _make_path_card(branch: Dictionary) -> PanelContainer:
 	var choice_id := str(branch.get("id", ""))
 	btn.pressed.connect(_on_branch_pressed.bind(choice_id))
 	vbox.add_child(btn)
-	UiAnimations.bind_hover_lift(card)
 	return card
 
 

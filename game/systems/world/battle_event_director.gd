@@ -35,7 +35,7 @@ func _on_room_entered(room: Dictionary, _stage: Dictionary) -> void:
 	if _dao_heart_stir_used or RunContext.rooms_without_weather_kill < 2:
 		return
 	_dao_heart_stir_used = true
-	_strengthen_weather_opportunity(room)
+	_queue_weather_opportunity()
 
 
 func _on_enemy_killed(enemy: Node) -> void:
@@ -71,13 +71,11 @@ func _on_pet_coord_hit(enemy: Node) -> void:
 		VfxManager.spawn_world((enemy as Node2D).global_position, "cast", Color(1.0, 0.6, 0.22))
 
 
-func _strengthen_weather_opportunity(room: Dictionary) -> void:
+func _queue_weather_opportunity() -> void:
 	var weather_id := WeatherSystem.current_weather_id
 	if weather_id == "clear":
 		weather_id = _weather_for_path()
-		WeatherSystem.set_weather(weather_id)
-	room["weather_opportunity_boost"] = true
-	room["layout_id"] = _layout_for_weather(weather_id)
+	RunContext.set_weather_opportunity(weather_id, _layout_for_weather(weather_id), "道心微动")
 	EventBus.pet_coord_feedback.emit("道心微动：下一房天象与地脉更易借力")
 	RunContext.record_run_highlight("dao_heart_stir_%d" % RunContext.rooms_cleared, "道心微动", "连续未借天象破敌后，天地给出了一次更明显的机会。", 45)
 

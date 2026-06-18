@@ -16,6 +16,8 @@ const EVENT_PROFILES := {
 	"dao_clarity": {"freq": 523.25, "duration": 0.22, "volume": -15.0},
 	"unity": {"freq": 220.0, "duration": 0.42, "volume": -14.0, "style": "unity"},
 	"dao_awaken": {"freq": 329.63, "duration": 0.5, "volume": -13.0, "style": "dao_awaken"},
+	"weather_kill": {"freq": 760.0, "duration": 0.16, "volume": -16.0, "style": "combo_peak"},
+	"pet_guardian": {"freq": 880.0, "duration": 0.22, "volume": -15.0, "style": "perfect_dodge"},
 	"death_regret": {"freq": 146.83, "duration": 0.35, "volume": -16.0},
 	"legacy_pick": {"freq": 440.0, "duration": 0.18, "volume": -17.0},
 }
@@ -46,6 +48,8 @@ func _ready() -> void:
 	EventBus.dao_tradition_awakened.connect(func(_tradition: Dictionary) -> void: play_sfx("dao_awaken"))
 	EventBus.dao_clarity_started.connect(func(_duration: float, _source: String) -> void: play_sfx("dao_clarity"))
 	EventBus.unity_burst_requested.connect(func(_payload: Dictionary) -> void: play_sfx("unity"))
+	EventBus.weather_kill.connect(func(_enemy: Node, _weather_id: String, _payload: Dictionary) -> void: play_sfx("weather_kill"))
+	EventBus.pet_guardian_triggered.connect(func(_enemy: Node, _player: Node) -> void: play_sfx("pet_guardian"))
 	EventBus.learn_feedback.connect(func(_text: String, _accent: String) -> void: play_sfx("ui_toast"))
 	EventBus.legacy_choice_closed.connect(_on_legacy_choice_closed)
 	EventBus.run_completed.connect(func(victory: bool) -> void:

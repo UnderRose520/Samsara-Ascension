@@ -73,7 +73,7 @@
 
 ### 0.5 资产类型 → 代码拉伸模式速查
 
-| 资产示例 | 推荐 `stretch_mode` / 用法 | 分辨率敏感? |
+| 资产示例 | 推荐 `stretch_mode` / 用法 | 分辨率敏感？ |
 |----------|---------------------------|-------------|
 | `bg_jade_palace_hall.png` | `KEEP_ASPECT_COVERED` | **高** — 需安全区 |
 | `panel_ninepatch_256.png` | `StyleBoxTexture` 九宫格 | 低 — 边距 32px 固定 |

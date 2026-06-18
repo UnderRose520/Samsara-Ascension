@@ -1,0 +1,7 @@
+path_id,name,weapon_id,attack_range,starter_q,first_room_goal,second_room_synergy,third_room_choice,midgame_goal,longterm_goal,fail_desire,unlock_condition,core_tags,batch
+sword,剑修,qing_feng_sword,near_mid,yu_jian_thrust,三段斩切开妖狼；第三段有轻震屏,剑芒经过烈阳裂地引爆,回风|破竹|藏锋,雷剑|血剑|飞剑驻留,剑魂觉醒,剑道将成而身先陨,default,sword|melee|counter,0
+caster,法修,starter_orb,mid_long,lie_yan_bolt,属性弹安全点杀；保持距离,火弹点燃烈阳裂地或雷弹接入积水导电,火法|雷法|冰法,法宝共鸣|元素混法,元素连锁,差一层悟法意,default,spell|element|ranged,0
+talisman,符修,san_cai_flag,mid_long,qi_fu,投符落地延爆；一次炸三只,雷符落入积水形成导电符阵,起符|成阵|连符,多符齐发|符阵机关,符阵机关流,差一张符成阵,unlock_after_2_runs,talisman|trap|control,0
+body,体修,iron_gauntlet,near,beng_shan_jin,贴脸震地击退一圈怪,雷暴中完美闪避触发反击雷,金身|反震|燃血,霸体连打|反震不死,不倒身,差一次反杀,unlock_after_sword_clear,body|melee|armor,1
+alchemy,丹修,alchemy_furnace,mid,lian_dan_fire,药气波和毒丸持续融怪,灵雨把毒雾扩散为药雾,毒丹|回春|爆丹,炉魂|药爆回收,资源转化流,差一炉成丹,unlock_after_event_herb,alchemy|poison|heal,1
+soul,邪修,soul_banner,mid_long,summon_soul,魂火击杀留下残魂咬怪,阴风把残魂吹向怪群,召魂|献祭|交易,幡灵|心魔共生,代价换强度,百魂将起而人先灭,unlock_after_heart_demon,soul|curse|summon,1

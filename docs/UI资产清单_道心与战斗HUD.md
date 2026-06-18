@@ -345,7 +345,7 @@
 
 ### 10.3 层级与位置（当前实现）
 
-| 节点 | 类型 | 锚点/位置 | 尺寸 | 资产? |
+| 节点 | 类型 | 锚点/位置 | 尺寸 | 资产？ |
 |------|------|-----------|------|-------|
 | `Backdrop` | TextureRect（代码 `_apply_weak_backdrop`） | 全屏 | — | **是** `MENU_BACKDROP` @ 22% |
 | `Dimmer` | ColorRect | 全屏 | — | **否** `#0D051E` @ 65% |
@@ -362,7 +362,7 @@
 
 ### 10.4 天赋卡片（TalentCard）资产槽位
 
-| 槽位 ID | 当前文件 | AssetPaths 常量 | 推荐规格 | 资产? | 说明 |
+| 槽位 ID | 当前文件 | AssetPaths 常量 | 推荐规格 | 资产？ | 说明 |
 |---------|----------|-----------------|----------|-------|------|
 | TALENT_CARD_FRAME | `talent_scroll_210x200.png` | `TALENT_SCROLL` | **210×200** | **是** | 卷轴竖版外框；hover 时 `modulate` 暖色高亮 |
 | TALENT_REALM_ICON | 占位 `elem_*_32.png` | `talent_realm_icon(realm)` | **48×48** | **是（待专图）** | 优先 `talent_icon_realm_{1~5}.png`；回退见 `TALENT_REALM_ICON_FALLBACK` |
@@ -388,7 +388,7 @@
 
 ### 10.5 突破 Modal 级资产槽位
 
-| 槽位 ID | 当前文件 | AssetPaths 常量 | 推荐规格 | 资产? |
+| 槽位 ID | 当前文件 | AssetPaths 常量 | 推荐规格 | 资产？ |
 |---------|----------|-----------------|----------|-------|
 | BT_MODAL_PANEL | `panel_ninepatch_256.png` | `PANEL_NINEPATCH` | 256 九宫格 | **是** |
 | BT_TITLE_BAR | `modal_title_bar_720x52.png` | `MODAL_TITLE_BAR` | **720×52** | **是（已接入）** |

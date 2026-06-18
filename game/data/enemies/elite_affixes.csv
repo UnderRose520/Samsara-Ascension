@@ -1,4 +1,4 @@
 affix_id,label,move_speed_mult,hp_mult,contact_damage_mult
-affix_speed,疾速,1.3,1.0,1.0
-affix_armor,厚甲,1.0,1.45,1.0
-affix_fury,狂怒,1.08,1.0,1.3
+affix_speed,疾行,1.16,1.18,1.12
+affix_armor,厚甲,0.96,1.85,1.08
+affix_fury,狂怒,1.04,1.22,1.55

@@ -1,0 +1,11 @@
+enemy_id,name,weapon_id,archetype,threat_type,telegraph,counter,drop_pool,batch
+wild_wolf,妖狼,claw,berserker,贴脸冲刺,低身蓄力后直线扑击,侧闪后反击,wolf_fang|minor_material,0
+sky_bat,腐翼妖蝠,poison_spit,ranged,飞行骚扰,短暂停空后吐毒,远程点杀或引到裂地,poison_dust|wood_affix,0
+mud_serpent,泥泽游蛇,mud_bow,sniper,长线狙击,身体盘起出现直线预警,利用障碍或诱导误伤,wet_scale|water_affix,0
+wind_mantis,风刃螳螂,wind_blade,skirmisher,高速切入,双臂发亮后折线突进,完美闪避反打,wind_chitin|dodge_affix,1
+furnace_golem,火纹傀儡,furnace_core,shaman,范围火场,炉心亮起后地面出现红圈,拉出火场后集火,furnace_ash|fire_material,0
+crossbow_cultivator,弩修,cloud_crossbow,sniper,远程穿透,举弩蓄力并出现长线预警,横向走位或引其误伤,cloud_string|pierce_affix,0
+shield_guard,护阵者,xuanwu_shield,guard,群体护盾,举盾时连线附近小怪,优先击杀或等护盾反噬,shield_fragment|earth_affix,0
+self_bomber,自爆魔,blood_core,bomber,爆炸威胁,低血膨胀并发红,引入怪群后击杀,blood_core|fire_affix,0
+evil_banner_cultivator,魂幡邪修,soul_banner,shaman,召魂诅咒,摇幡后地面出现魂影圈,打断施法或清魂影,soul_crystal|curse_page,1
+mirror_demon,镜魔,time_mirror,elite,分身反射,镜面闪光后复制投影,先打真身或等反射窗口结束,mirror_shard|space_affix,2

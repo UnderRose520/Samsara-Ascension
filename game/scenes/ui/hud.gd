@@ -198,17 +198,21 @@ func _on_dao_momentum_changed(current: float, maximum: float, state: String, _st
 		"clarity":
 			state_label = " / 通明"
 			label_color = UiTokens.ACCENT_GOLD
+		"dao_extreme":
+			state_label = " / 道之极致"
+			label_color = Color(1.0, 0.92, 0.42)
 	character_panel.combo_track_label.text = "道韵 %d%%%s" % [pct, state_label]
 	character_panel.combo_track_label.add_theme_color_override("font_color", label_color)
 	character_panel.combo_track_bar.value = current / maxf(maximum, 1.0)
-	var mana_current := maximum if state == "clarity" else current
+	var mana_current := maximum if state == "clarity" or state == "dao_extreme" else current
 	character_panel.mana_bar.set_values(mana_current, maximum)
 
 
-func _on_dao_clarity_started(_duration: float, _source: String) -> void:
+func _on_dao_clarity_started(_duration: float, source: String) -> void:
 	character_panel.combo_track_label.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD)
 	if not VfxManager.should_reduce_motion():
-		VfxManager.spawn_screen(self, character_panel.combo_track_bar.global_position + character_panel.combo_track_bar.size * 0.5, "dao", UiTokens.ACCENT_GOLD)
+		var color := Color(1.0, 0.92, 0.42) if source == "combo_200" else UiTokens.ACCENT_GOLD
+		VfxManager.spawn_screen(self, character_panel.combo_track_bar.global_position + character_panel.combo_track_bar.size * 0.5, "dao", color)
 
 
 func _on_dao_clarity_ended() -> void:
@@ -504,7 +508,15 @@ func _refresh_affixes() -> void:
 		return
 	var holder: Node = player.get_node("AffixHolder")
 	var lines: PackedStringArray = holder.get_summary_lines()
-	var slot_text := "%d/%d" % [holder.equipped.size(), holder.get_max_affixes()]
+	var summary: Dictionary = holder.get_slot_summary()
+	var slot_text := "核心%d/%d 临时%d/%d 封印%d/%d" % [
+		int(summary.get("core_used", 0)),
+		int(summary.get("core_max", 0)),
+		int(summary.get("temporary_used", 0)),
+		int(summary.get("temporary_max", 0)),
+		int(summary.get("sealed_used", 0)),
+		int(summary.get("sealed_max", 0)),
+	]
 	if lines.is_empty():
 		character_panel.affix_label.text = "词条 %s / 未装备" % slot_text
 	else:

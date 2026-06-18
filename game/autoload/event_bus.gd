@@ -5,6 +5,8 @@ signal player_hp_changed(current: float, maximum: float)
 signal combo_updated(count: int)
 signal enemy_killed(enemy: Node)
 signal player_died
+signal death_moment_requested(summary: Dictionary)
+signal death_moment_finished
 signal run_started(seed_value: int)
 signal affix_acquired(affix_id: String)
 signal affix_choice_requested(offers: Array, context: Dictionary)
@@ -12,15 +14,18 @@ signal affix_choice_closed
 signal all_enemies_cleared(wave: int)
 signal combo_milestone(count: int)
 signal combo_discovered(combo_id: String)
+signal hidden_chain_discovered(chain_id: String, display_name: String, payload: Dictionary)
 signal skill_layer_unlocked(skill_id: String, layer: int)
 signal gold_changed(amount: int)
 signal crit_moment_requested(text: String, duration: float)
+signal perfect_dodge_triggered(world_position: Vector2)
 signal affix_reroll_requested
 signal affix_skip_requested
 signal wave_changed(wave: int)
 signal horde_updated(kills: int, quota: int, time_left: float, wave: int, next_wave_in: float)
 signal horde_ended(kills: int, quota: int, reason: String)
 signal weather_changed(weather_id: String, weather_name: String)
+signal weather_kill(enemy: Node, weather_id: String, payload: Dictionary)
 signal path_choice_requested(branches: Array)
 signal path_choice_closed(choice_id: String)
 signal room_entered(room: Dictionary, stage: Dictionary)
@@ -28,6 +33,7 @@ signal run_completed(victory: bool)
 signal pet_acquired(pet_id: String)
 signal pet_coord_feedback(text: String)
 signal pet_coord_hit(enemy: Node)
+signal pet_guardian_triggered(enemy: Node, player: Node)
 signal weapon_changed(weapon: Dictionary)
 signal weapon_mod_choice_requested(offers: Array, context: Dictionary)
 signal weapon_mod_choice_closed(mod_id: String)
@@ -35,6 +41,7 @@ signal dao_momentum_changed(current: float, maximum: float, state: String, state
 signal dao_clarity_started(duration: float, source: String)
 signal dao_clarity_ended
 signal unity_burst_requested(payload: Dictionary)
+signal unity_burst_visual_requested(payload: Dictionary)
 signal run_setup_confirmed
 signal breakthrough_requested(offers: Array, context: Dictionary)
 signal breakthrough_closed(talent_id: String)

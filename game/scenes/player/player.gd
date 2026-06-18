@@ -38,6 +38,10 @@ var _weapon: Dictionary = {}
 var _weapon_id := ""
 var debug_weapon_shape := ""
 var _dao_visual_time := 0.0
+var _perfect_counter_time := 0.0
+var _perfect_counter_flash := 0.0
+var _perfect_counter_bonus_ready := false
+var _guardian_invuln := 0.0
 
 const COMBAT_ANIMATION_HOLD_SEC := 0.5
 const ANIMATION_FPS := {
@@ -77,9 +81,14 @@ func _physics_process(delta: float) -> void:
 	_dodge_cd = maxf(_dodge_cd - delta, 0.0)
 	_iframe = maxf(_iframe - delta, 0.0)
 	_hit_invuln = maxf(_hit_invuln - delta, 0.0)
+	_guardian_invuln = maxf(_guardian_invuln - delta, 0.0)
 	_attack_cd = maxf(_attack_cd - delta, 0.0)
 	_combat_anim_time = maxf(_combat_anim_time - delta, 0.0)
 	_dodge_trail_cd = maxf(_dodge_trail_cd - delta, 0.0)
+	_perfect_counter_time = maxf(_perfect_counter_time - delta, 0.0)
+	_perfect_counter_flash = maxf(_perfect_counter_flash - delta, 0.0)
+	if _perfect_counter_time <= 0.0:
+		_perfect_counter_bonus_ready = false
 	_dao_visual_time += delta
 	status.tick(self, delta)
 	TerrainSystem.apply_body_effects(self, delta)
@@ -116,6 +125,8 @@ func _physics_process(delta: float) -> void:
 	if body_visual:
 		if _dodge_time > 0.0:
 			body_visual.modulate = Color(1.25, 1.25, 1.35, 0.82)
+		elif RunContext.dao_momentum_state == "dao_extreme":
+			body_visual.modulate = Color(1.55, 1.46, 0.82, 1.0)
 		elif RunContext.dao_momentum_state == "clarity":
 			body_visual.modulate = Color(1.35, 1.22, 0.72, 1.0)
 		elif RunContext.dao_momentum_state == "full":
@@ -191,6 +202,8 @@ func apply_status(status_name: String, duration: float) -> void:
 func receive_terrain_damage(amount: float, _terrain_type: String = "") -> void:
 	if get_tree().paused:
 		return
+	if _guardian_invuln > 0.0:
+		return
 	_apply_player_damage(amount)
 
 
@@ -250,7 +263,9 @@ func _on_unity_burst_requested(payload: Dictionary) -> void:
 	element_hint = _unity_element_for_style(style, element_hint)
 	if style == "default" and not str(weapon_mods.get("element_override", "")).is_empty():
 		element_hint = str(weapon_mods.get("element_override", element_hint))
+	var unity_color := _unity_color_for_style(style)
 	var hit_count := 0
+	var unity_hit_index := 0
 	for enemy in get_tree().get_nodes_in_group("enemy"):
 		if enemy == null or not is_instance_valid(enemy) or not enemy is Node2D:
 			continue
@@ -261,8 +276,16 @@ func _on_unity_burst_requested(payload: Dictionary) -> void:
 			_apply_unity_status(enemy, style)
 			_apply_weapon_mod_status(enemy, weapon_mods)
 			hit_count += 1
-	var unity_color := _unity_color_for_style(style)
+			unity_hit_index += 1
+			_emit_unity_hit_floater(enemy, attack_power * damage_mult * float(weapon_mods.get("damage_mult", 1.0)), unity_color, unity_hit_index)
 	VfxManager.spawn_world(global_position, "dao", unity_color)
+	EventBus.unity_burst_visual_requested.emit({
+		"world_position": global_position,
+		"element_key": element_hint,
+		"style": style,
+		"color": unity_color,
+		"hit_count": hit_count,
+	})
 	if hit_count > 0:
 		EventBus.crit_moment_requested.emit("%s · %d击" % [_unity_label_for_style(style), hit_count], 0.45)
 	else:
@@ -425,7 +448,7 @@ func _fire_projectile_attack(dir: Vector2) -> void:
 	projectile.global_position = global_position + dir * 16.0
 	var weapon_mods := RunContext.get_weapon_mod_effects()
 	var speed := float(_weapon.get("projectile_speed", GameConstants.PROJECTILE_SPEED))
-	var damage_mult := float(_weapon.get("damage_mult", 1.0)) * float(weapon_mods.get("damage_mult", 1.0)) * RunContext.get_dao_clarity_attack_mult()
+	var damage_mult := float(_weapon.get("damage_mult", 1.0)) * float(weapon_mods.get("damage_mult", 1.0)) * RunContext.get_dao_clarity_attack_mult() * _consume_perfect_counter_mult()
 	var element_hint := str(_weapon.get("element_hint", "fire"))
 	if not str(weapon_mods.get("element_override", "")).is_empty():
 		element_hint = str(weapon_mods.get("element_override", element_hint))
@@ -454,7 +477,7 @@ func _fire_short_arc_attack(dir: Vector2) -> void:
 	var weapon_mods := RunContext.get_weapon_mod_effects()
 	var attack_range := float(_weapon.get("attack_range", 72.0)) * float(weapon_mods.get("range_mult", 1.0))
 	var arc_deg := float(_weapon.get("attack_arc_deg", 92.0))
-	var damage_mult := float(_weapon.get("damage_mult", 1.0)) * float(weapon_mods.get("damage_mult", 1.0)) * RunContext.get_dao_clarity_attack_mult()
+	var damage_mult := float(_weapon.get("damage_mult", 1.0)) * float(weapon_mods.get("damage_mult", 1.0)) * RunContext.get_dao_clarity_attack_mult() * _consume_perfect_counter_mult()
 	var element_hint := str(_weapon.get("element_hint", "physical"))
 	if not str(weapon_mods.get("element_override", "")).is_empty():
 		element_hint = str(weapon_mods.get("element_override", element_hint))
@@ -561,13 +584,56 @@ func _on_died() -> void:
 
 
 func receive_contact_damage(amount: float) -> void:
-	if _iframe > 0.0 or _hit_invuln > 0.0 or get_tree().paused:
+	if get_tree().paused:
+		return
+	if _guardian_invuln > 0.0:
+		return
+	if _iframe > 0.0:
+		_trigger_perfect_dodge()
+		return
+	if _hit_invuln > 0.0:
 		return
 	_apply_player_damage(amount)
 
 
 func receive_enemy_projectile(amount: float) -> void:
 	receive_contact_damage(amount)
+
+
+func _trigger_perfect_dodge() -> void:
+	if _perfect_counter_time > 0.68:
+		return
+	_perfect_counter_time = 0.8
+	_perfect_counter_flash = 0.8
+	_perfect_counter_bonus_ready = true
+	RunContext.add_dao_momentum(8.0, "perfect_dodge")
+	EventBus.perfect_dodge_triggered.emit(global_position)
+	EventBus.crit_moment_requested.emit("完美闪避", 0.1)
+	VfxManager.spawn_world(global_position, "gold", Color(1.0, 0.95, 0.72))
+
+
+func _consume_perfect_counter_mult() -> float:
+	if _perfect_counter_bonus_ready and _perfect_counter_time > 0.0:
+		_perfect_counter_bonus_ready = false
+		_perfect_counter_time = 0.0
+		EventBus.pet_coord_feedback.emit("完美反击 · 伤害x1.5")
+		return 1.5
+	return 1.0
+
+
+func _emit_unity_hit_floater(enemy: Node, estimated_damage: float, color: Color, hit_index: int) -> void:
+	if not enemy is Node2D:
+		return
+	EventBus.damage_dealt.emit({
+		"final_damage": estimated_damage,
+		"world_position": (enemy as Node2D).global_position,
+		"target_is_player": false,
+		"is_crit": false,
+		"is_combo": false,
+		"is_unity": true,
+		"unity_hit_index": hit_index,
+		"color": color,
+	})
 
 
 func _apply_player_damage(amount: float) -> void:
@@ -589,11 +655,23 @@ func _apply_player_damage(amount: float) -> void:
 	})
 
 
+func grant_guardian_invuln(duration: float) -> void:
+	_guardian_invuln = maxf(_guardian_invuln, duration)
+	_hit_invuln = maxf(_hit_invuln, duration)
+	_perfect_counter_flash = maxf(_perfect_counter_flash, duration)
+	if body_visual:
+		VfxManager.flash_control(body_visual, Color(1.4, 1.25, 0.5), 0.22)
+
+
 func _draw() -> void:
 	_draw_dao_momentum_aura()
 	if body_visual and body_visual.texture != null:
 		if _iframe > 0.0:
 			draw_circle(Vector2.ZERO, 14.0, Color(1, 1, 1, 0.25))
+		if _perfect_counter_flash > 0.0:
+			var pulse := 0.5 + 0.5 * sin(_dao_visual_time * 18.0)
+			draw_circle(Vector2.ZERO, 22.0 + pulse * 5.0, Color(1.0, 0.9, 0.35, 0.22))
+			draw_arc(Vector2.ZERO, 28.0 + pulse * 6.0, 0.0, TAU, 42, Color(1.0, 0.86, 0.28, 0.65), 3.5)
 		if spell_caster and spell_caster.has_method("is_casting") and spell_caster.is_casting():
 			var cast_color := Color(1.0, 0.45, 0.15, 0.85)
 			if spell_caster.has_method("get_casting_color"):
@@ -605,6 +683,10 @@ func _draw() -> void:
 	if _iframe > 0.0:
 		color = color.lightened(0.35)
 	draw_circle(Vector2.ZERO, 12.0, color)
+	if _perfect_counter_flash > 0.0:
+		var pulse := 0.5 + 0.5 * sin(_dao_visual_time * 18.0)
+		draw_circle(Vector2.ZERO, 22.0 + pulse * 5.0, Color(1.0, 0.9, 0.35, 0.22))
+		draw_arc(Vector2.ZERO, 28.0 + pulse * 6.0, 0.0, TAU, 42, Color(1.0, 0.86, 0.28, 0.65), 3.5)
 	if spell_caster and spell_caster.has_method("is_casting") and spell_caster.is_casting():
 		var cast_color := Color(1.0, 0.45, 0.15, 0.85)
 		if spell_caster.has_method("get_casting_color"):
@@ -616,8 +698,10 @@ func _draw() -> void:
 func _draw_dao_momentum_aura() -> void:
 	if RunContext.dao_momentum_state == "idle" and RunContext.dao_momentum <= 0.0:
 		return
-	var pct := 1.0 if RunContext.dao_momentum_state == "clarity" else clampf(RunContext.dao_momentum / maxf(RunContext.dao_momentum_max, 1.0), 0.0, 1.0)
-	var pulse := 0.5 + 0.5 * sin(_dao_visual_time * (8.0 if RunContext.dao_momentum_state == "full" else 5.0))
+	var charged_state := RunContext.dao_momentum_state == "clarity" or RunContext.dao_momentum_state == "dao_extreme"
+	var pct := 1.0 if charged_state else clampf(RunContext.dao_momentum / maxf(RunContext.dao_momentum_max, 1.0), 0.0, 1.0)
+	var pulse_speed := 10.0 if RunContext.dao_momentum_state == "dao_extreme" else (8.0 if RunContext.dao_momentum_state == "full" else 5.0)
+	var pulse := 0.5 + 0.5 * sin(_dao_visual_time * pulse_speed)
 	var color := Color(1.0, 0.82, 0.22, 0.22 + pulse * 0.2)
 	var radius := lerpf(18.0, 28.0, pct)
 	var width := 2.0
@@ -629,6 +713,11 @@ func _draw_dao_momentum_aura() -> void:
 		color = Color(1.0, 0.76, 0.18, 0.5 + pulse * 0.18)
 		radius = 34.0 + pulse * 5.0
 		width = 3.5
+	elif RunContext.dao_momentum_state == "dao_extreme":
+		color = Color(1.0, 0.95, 0.36, 0.62 + pulse * 0.28)
+		radius = 42.0 + pulse * 7.0
+		width = 5.0
 	draw_arc(Vector2.ZERO, radius, 0.0, TAU * pct, 40, color, width, true)
-	if RunContext.dao_momentum_state == "clarity":
-		draw_circle(Vector2.ZERO, 18.0 + pulse * 3.0, Color(1.0, 0.72, 0.18, 0.12))
+	if charged_state:
+		var fill_alpha := 0.2 if RunContext.dao_momentum_state == "dao_extreme" else 0.12
+		draw_circle(Vector2.ZERO, 18.0 + pulse * 3.0, Color(1.0, 0.72, 0.18, fill_alpha))

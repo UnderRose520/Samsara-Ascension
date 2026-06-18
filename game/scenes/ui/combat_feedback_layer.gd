@@ -36,6 +36,7 @@ func _spawn_floater(world_pos: Vector2, result: Dictionary) -> void:
 		return
 	var is_crit: bool = VariantUtils.as_bool(result.get("is_crit", false))
 	var is_combo: bool = VariantUtils.as_bool(result.get("is_combo", false))
+	var is_unity: bool = VariantUtils.as_bool(result.get("is_unity", false))
 	var to_player: bool = VariantUtils.as_bool(result.get("target_is_player", false))
 
 	var root := Control.new()
@@ -47,7 +48,13 @@ func _spawn_floater(world_pos: Vector2, result: Dictionary) -> void:
 	var font_size := 15
 	var text_color := UiTokens.TEXT_PRIMARY
 	var outline := Color(0, 0, 0, 0.55)
-	if is_combo:
+	if is_unity:
+		var hit_index := clampi(int(result.get("unity_hit_index", 1)), 1, 9)
+		label.text = "归一 %.0f" % amount
+		text_color = result.get("color", UiTokens.ACCENT_GOLD)
+		font_size = 20 + hit_index * 2
+		outline = Color(0.2, 0.12, 0.0, 0.9)
+	elif is_combo:
 		label.text = "爆燃 %.0f!" % amount
 		text_color = UiTokens.ELEM_FIRE
 		font_size = 22
@@ -72,7 +79,7 @@ func _spawn_floater(world_pos: Vector2, result: Dictionary) -> void:
 	add_child(root)
 	var screen_pos: Vector2 = get_viewport().get_canvas_transform() * world_pos
 	root.position = screen_pos + Vector2(-32.0, -56.0)
-	var pop_scale := 1.25 if is_crit else (1.15 if is_combo else 0.85)
+	var pop_scale := 1.35 if is_unity else (1.25 if is_crit else (1.15 if is_combo else 0.85))
 	root.scale = Vector2(pop_scale, pop_scale) * 0.65
 	root.modulate.a = 0.0
 	root.pivot_offset = Vector2(32, 16)

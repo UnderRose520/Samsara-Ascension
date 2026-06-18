@@ -1,0 +1,13 @@
+reward_id,name,type,source,cost,effect,timing,preview,lock_condition,tags,batch
+hui_feng,回风剑势,stable_upgrade,清场灵机,none,闪避后下一剑范围扩大,early_mid,贴脸闪开后回身一剑切开追兵,path:sword,sword|dodge|counter,0
+po_zhu,破竹剑势,build_push,剑修残影,none,第三段剑斩穿透并推怪,early_mid,一条剑线穿过怪群,path:sword,sword|pierce,0
+lei_ji_mu_mingwen,雷击木铭纹,inscription,雷暴天击败符师,none,本命器第三段可导电,mid,剑芒接入积水后连锁电弧,weather:thunder,thunder|weapon|terrain,0
+yin_jie_ru_jian,引劫入剑,temptation,天雷劈开器胚,next_room_thunder_chase,本命器立刻获得天雷附着,mid_late,剑芒引雷清屏；下一房天雷追身,path:sword|weather:thunder,thunder|risk|sword,0
+can_lei_ru_gu,残雷入骨,legacy,死亡遗泽,reduce_other_element_weight,下局前2关雷系奖励权重提高,post_death,上一世未尽雷意入骨,death_tag:thunder,legacy|thunder,0
+san_fu_cheng_zhen,三符成阵,build_push,符师残卷,need_talisman_on_field,三张落地符形成阵眼并同时引爆,early_mid,怪群踩入符阵后一齐炸开,path:talisman,talisman|trap|burst,0
+tian_lei_zhu_fragment,天雷珠碎片,artifact_fragment,雷系Boss或雷暴节点,need_3_fragments,集齐后合成天雷珠,mid_late,法宝自动蓄雷并劈向高威胁敌人,none,artifact|thunder,0
+qi_ling_xiansuo_sword,剑魂线索,spirit_clue,完美闪避后斩杀,need_repeated_behavior,加速青锋剑通灵,all_run,剑身浮出淡淡剑魂轮廓,path:sword,spirit|sword|dodge,0
+blood_bone_mingwen,血骨铭纹,temptation,邪修或血骨事件,max_hp_down,击杀回血但心魔权重提高,mid,剑刃泛红；斩杀后血气回涌,none,blood|risk|heal,1
+cold_jade_mingwen,寒玉铭纹,inscription,霜雪精英或寒玉矿脉,none,本命器附带减速或冻结,mid,剑芒或法弹结霜拖尾,weather:snow,ice|control,1
+soul_crystal,魂晶,material,魂幡邪修,karma_evil_up,用于魂幡或毒丹路线祭炼,mid,残魂晶体在掌心低语,none,soul|material|risk,1
+jing_zhong_yi_qi,镜中异器,event_reward,镜中异器事件,next_elite_mirror_clone,临时获得副本命器一房,late,角色身后出现镜像武器,none,mirror|space|risk,2

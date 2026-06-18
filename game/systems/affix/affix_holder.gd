@@ -5,6 +5,7 @@ const CombatContextBuilder = preload("res://systems/combat/combat_context_builde
 const ComboGraph = preload("res://systems/affix/combo_graph.gd")
 const AffixCompiler = preload("res://systems/affix/affix_compiler.gd")
 const ActiveSpellRegistry = preload("res://systems/combat/active_spell_registry.gd")
+const ElementUtils = preload("res://core/utils/element_utils.gd")
 
 signal changed
 
@@ -12,6 +13,7 @@ const MAX_AFFIXES := 5  # fallback; use get_max_affixes()
 
 var player_body: CharacterBody2D
 var equipped: Array = []
+var sealed_affixes: Array = []
 var skill_passives: Array = []
 var talent_passives: Array = []
 var recent_elements: Array = []
@@ -45,8 +47,39 @@ func get_max_affixes() -> int:
 	return RunContext.affix_slot_max()
 
 
+func get_core_slot_max() -> int:
+	return RunContext.affix_core_slot_max()
+
+
+func get_temporary_slot_max() -> int:
+	return RunContext.affix_temporary_slot_max()
+
+
+func get_sealed_slot_max() -> int:
+	return RunContext.affix_sealed_slot_max()
+
+
 func can_equip() -> bool:
 	return equipped.size() < get_max_affixes()
+
+
+func can_seal() -> bool:
+	return sealed_affixes.size() < get_sealed_slot_max()
+
+
+func get_slot_summary() -> Dictionary:
+	var core_used := mini(equipped.size(), get_core_slot_max())
+	var temp_used := maxi(equipped.size() - get_core_slot_max(), 0)
+	return {
+		"core_used": core_used,
+		"core_max": get_core_slot_max(),
+		"temporary_used": temp_used,
+		"temporary_max": get_temporary_slot_max(),
+		"active_used": equipped.size(),
+		"active_max": get_max_affixes(),
+		"sealed_used": sealed_affixes.size(),
+		"sealed_max": get_sealed_slot_max(),
+	}
 
 
 func add_affix(tag) -> bool:
@@ -65,6 +98,52 @@ func add_affix(tag) -> bool:
 	changed.emit()
 	_try_dao_tradition_awaken()
 	return true
+
+
+func replace_affix(index: int, tag) -> bool:
+	if tag == null or index < 0 or index >= equipped.size():
+		return false
+	if _has_affix_except(tag.id, index):
+		return false
+	equipped[index] = tag
+	recent_elements.append(tag.element)
+	if recent_elements.size() > 3:
+		recent_elements.pop_front()
+	_recompute_after_affix_change(tag)
+	return true
+
+
+func seal_affix(tag) -> bool:
+	if tag == null or not can_seal():
+		return false
+	if _has_affix(tag.id) or _has_sealed_affix(tag.id):
+		return false
+	sealed_affixes.append(tag)
+	changed.emit()
+	return true
+
+
+func dissolve_value(tag) -> int:
+	if tag == null:
+		return 6
+	var quality := int(tag.quality)
+	return 8 + quality * 5
+
+
+func get_affix_label(index: int) -> String:
+	if index < 0 or index >= equipped.size():
+		return ""
+	var tag = equipped[index]
+	return "%s %s" % [str(tag.name), _quality_label(tag.quality)]
+
+
+func _recompute_after_affix_change(tag) -> void:
+	_recompute()
+	_check_combo_discovery()
+	EventBus.affix_acquired.emit(tag.id)
+	_notify_affix_spell_unlock(tag)
+	changed.emit()
+	_try_dao_tradition_awaken()
 
 
 func apply_dao_tradition(tradition: Dictionary) -> void:
@@ -147,7 +226,7 @@ func get_element_bias() -> String:
 	for e in recent_elements:
 		if e != first:
 			return ""
-	return _element_key(first)
+	return ElementUtils.key(first)
 
 
 func get_owned_ids() -> Array:
@@ -374,6 +453,23 @@ func _has_affix(id: String) -> bool:
 	return false
 
 
+func _has_affix_except(id: String, except_index: int) -> bool:
+	for i in equipped.size():
+		if i == except_index:
+			continue
+		var tag = equipped[i]
+		if tag.id == id:
+			return true
+	return false
+
+
+func _has_sealed_affix(id: String) -> bool:
+	for tag in sealed_affixes:
+		if tag.id == id:
+			return true
+	return false
+
+
 func _apply_to_player() -> void:
 	if player_body == null:
 		return
@@ -402,15 +498,3 @@ func _quality_label(quality) -> String:
 		3: return "天"
 		4: return "道"
 	return "凡"
-
-
-func _element_key(element_id: int) -> String:
-	match element_id:
-		1: return "fire"
-		2: return "water"
-		3: return "thunder"
-		4: return "wood"
-		5: return "earth"
-		6: return "chaos"
-		7: return "soul"
-	return ""

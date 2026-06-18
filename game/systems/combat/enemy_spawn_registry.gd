@@ -6,6 +6,7 @@ const VariantUtils = preload("res://core/utils/variant_utils.gd")
 static var _enemies_by_id: Dictionary = {}
 static var _enemies_by_name: Dictionary = {}
 static var _stage_pools: Dictionary = {}
+static var _realms: Array = []
 static var _loaded := false
 
 
@@ -25,6 +26,55 @@ static func get_stat_mults(enemy_id: String) -> Dictionary:
 	return {
 		"hp": float(row.get("hp_mult", 1.0)),
 		"atk": float(row.get("atk_mult", 1.0)),
+		"def": float(row.get("def_mult", 1.0)),
+		"speed": float(row.get("speed_mult", 1.0)),
+	}
+
+
+static func get_weapon_id(enemy_id: String, display_name: String = "") -> String:
+	_ensure_loaded()
+	var row := get_enemy_row(enemy_id)
+	if row.is_empty() and not display_name.is_empty():
+		row = (_enemies_by_name.get(display_name, {}) as Dictionary).duplicate()
+	var weapon_id := str(row.get("weapon_id", ""))
+	return weapon_id if not weapon_id.is_empty() else "claw"
+
+
+static func roll_instance_stats(enemy_id: String, stage_index: int, rng: RandomNumberGenerator, is_boss: bool = false) -> Dictionary:
+	_ensure_loaded()
+	var base := get_stat_mults(enemy_id)
+	var realm := _realm_for_stage(stage_index)
+	var realm_level := int(realm.get("realm_level", maxi(stage_index, 1)))
+	var promoted := false
+	var hp_roll := _range_roll(rng, realm, "hp")
+	var atk_roll := _range_roll(rng, realm, "atk")
+	var def_roll := _range_roll(rng, realm, "def")
+	var speed_roll := _range_roll(rng, realm, "speed")
+	if not is_boss and rng.randf() < float(realm.get("overroll_chance", 0.0)):
+		var over := float(realm.get("overroll_mult", 1.0))
+		hp_roll *= over
+		atk_roll *= over
+		def_roll *= over
+	var score := hp_roll + atk_roll + def_roll
+	if not is_boss and score >= float(realm.get("promote_score", INF)):
+		var next_realm := _realm_by_level(realm_level + 1)
+		if not next_realm.is_empty():
+			realm = next_realm
+			realm_level = int(realm.get("realm_level", realm_level + 1))
+			promoted = true
+			hp_roll = maxf(hp_roll, float(realm.get("hp_min", hp_roll)))
+			atk_roll = maxf(atk_roll, float(realm.get("atk_min", atk_roll)))
+			def_roll = maxf(def_roll, float(realm.get("def_min", def_roll)))
+			speed_roll = maxf(speed_roll, float(realm.get("speed_min", speed_roll)))
+	return {
+		"hp": float(base.get("hp", 1.0)) * hp_roll,
+		"atk": float(base.get("atk", 1.0)) * atk_roll,
+		"def": float(base.get("def", 1.0)) * def_roll,
+		"speed": float(base.get("speed", 1.0)) * speed_roll,
+		"realm_level": realm_level,
+		"realm_name": str(realm.get("realm_name", "")),
+		"prefix": str(realm.get("prefix", "")),
+		"promoted": promoted,
 	}
 
 
@@ -107,4 +157,37 @@ static func _ensure_loaded() -> void:
 			if not id.is_empty():
 				pool.append(id)
 		_stage_pools[stage_index] = pool
+	for row in CsvLoader.load_rows("res://data/enemies/enemy_realms.csv"):
+		row["realm_level"] = int(row.get("realm_level", 1))
+		row["min_stage"] = int(row.get("min_stage", 1))
+		row["max_stage"] = int(row.get("max_stage", 99))
+		_realms.append(row)
 	_loaded = true
+
+
+static func _range_roll(rng: RandomNumberGenerator, realm: Dictionary, key: String) -> float:
+	var low := float(realm.get("%s_min" % key, 1.0))
+	var high := float(realm.get("%s_max" % key, low))
+	if not is_finite(low):
+		low = 1.0
+	if not is_finite(high):
+		high = low
+	if low > high:
+		var tmp := low
+		low = high
+		high = tmp
+	return rng.randf_range(low, high)
+
+
+static func _realm_for_stage(stage_index: int) -> Dictionary:
+	for realm in _realms:
+		if stage_index >= int(realm.get("min_stage", 1)) and stage_index <= int(realm.get("max_stage", 99)):
+			return (realm as Dictionary).duplicate()
+	return _realm_by_level(clampi(stage_index, 1, 5))
+
+
+static func _realm_by_level(level: int) -> Dictionary:
+	for realm in _realms:
+		if int((realm as Dictionary).get("realm_level", 0)) == level:
+			return (realm as Dictionary).duplicate()
+	return {}

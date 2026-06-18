@@ -1,6 +1,7 @@
 extends ArenaBase
 
 const AffixOfferSelector = preload("res://systems/affix/affix_offer_selector.gd")
+const BuildArchetypeRegistry = preload("res://systems/affix/build_archetype_registry.gd")
 const RunRng = preload("res://core/utils/run_rng.gd")
 const RoomLayoutGenerator = preload("res://systems/world/room_layout_generator.gd")
 const PLAYER_SCENE = preload("res://scenes/player/player.tscn")
@@ -167,13 +168,23 @@ func _present_offers() -> void:
 	var player := get_tree().get_first_node_in_group("player")
 	var owned: Array = []
 	var element_bias := ""
+	var desired_combo_tags: Array = []
 	if player and player.has_node("AffixHolder"):
 		var holder: Node = player.get_node("AffixHolder")
 		owned = holder.get_owned_ids()
 		element_bias = holder.get_element_bias()
+		desired_combo_tags = _collect_desired_combo_tags(holder)
+	var build_archetypes := BuildArchetypeRegistry.get_active_archetypes(
+		RunContext.cultivation_path_id,
+		desired_combo_tags,
+		element_bias,
+		RunRng.training("build_archetype_%d_%d" % [wave, _affix_roll_seq])
+	)
 	_offer_context = {
 		"elite": wave >= 3,
 		"element_bias": element_bias,
+		"desired_combo_tags": desired_combo_tags,
+		"build_archetypes": build_archetypes,
 		"gold": gold,
 	}
 	var offers := AffixOfferSelector.roll_offers(
@@ -185,6 +196,20 @@ func _present_offers() -> void:
 	)
 	_affix_roll_seq += 1
 	EventBus.affix_choice_requested.emit(offers, _offer_context)
+
+
+func _collect_desired_combo_tags(holder: Node) -> Array:
+	var counts := {}
+	for tag in holder.equipped:
+		if tag == null:
+			continue
+		for combo_tag in tag.combo_tags:
+			var key := str(combo_tag)
+			counts[key] = int(counts.get(key, 0)) + 1
+	var desired: Array = []
+	for key in counts.keys():
+		desired.append(str(key))
+	return desired
 
 
 func _on_affix_reroll() -> void:

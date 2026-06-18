@@ -1,0 +1,11 @@
+build_id,name,path_id,core_weapon,core_rewards,weather_hooks,enemy_hooks,first_power_spike,late_power_spike,risk,player_story,batch
+sword_thunder,雷剑导电流,sword,qing_feng_sword,雷击木铭纹|引劫入剑|天雷珠碎片,雷暴|灵雨,弩修|符师|雷系Boss,第三段剑芒可导电,天雷珠自动引雷；万法归一变雷罚,天雷追身和水面误伤,这把我把天劫吞进剑里了,0
+sword_blood,血剑燃命流,sword,qing_feng_sword,血骨铭纹|回风剑势|魂晶,烈阳|迷雾,邪修|自爆魔|心魔,击杀回血但生命上限降低,低血反杀触发血剑清场,心魔权重提高,我越接近死越强,1
+caster_fire_thunder,火雷法修,caster,starter_orb,火法残卷|雷击木铭纹|法宝共鸣,烈阳|雷暴,弩修|自爆魔,火弹点燃裂地或雷弹接入积水导电,火雷双属性万法归一清屏,需要判断地形和属性时机,我不是丢法球；我是借天象引爆战场,0
+caster_ice_control,玄冰控场流,caster,starter_orb,寒玉铭纹|玄冰扇|蒸汽迷目,霜雪|灵雨,火甲精英|护阵者,冻结第一个精英形成冰爆,全场减速后万法归一冻裂,伤害启动慢,整片战场都慢下来然后碎掉,1
+talisman_thunder_array,雷雨符阵流,talisman,san_cai_flag,三符成阵|雷击木铭纹|万符齐发,雷暴|灵雨,护阵者|弩修,雷符落入积水形成导电符阵,五符齐发后雷电沿符阵跳跃,布阵需要提前量,我把战场画成了符,0
+talisman_trap_fire,爆燃符阵流,talisman,san_cai_flag,起符|爆燃|烈阳裂地,烈阳|沙暴,护阵者|自爆魔,符落在裂地后连爆,护盾反噬接符阵清屏,需要控怪位置,怪不是被我打死的；是走进阵里死的,0
+body_counter,金身反震流,body,iron_gauntlet,金身|反震|玄武甲碎片,雷暴|霜雪,贴脸怪|Boss,完美闪避后反击雷,护盾破裂反震一圈怪,上手风险高,你打我一下；整群怪都飞了,1
+alchemy_poison_rain,灵雨毒丹流,alchemy,alchemy_furnace,毒丹|魂晶|药爆回收,灵雨|霜雪,群怪|召唤怪,灵雨扩散毒雾,毒雾遇雷或冰形成二次连锁,前期击杀慢,我不追怪；怪自己融掉了,1
+soul_banner_swarm,百魂夜行流,soul,soul_banner,魂晶|召魂|幡灵线索,妖风|迷雾,召唤怪|心魔,击杀后残魂追咬,百魂夜行覆盖半屏,恶业和心魔压力高,我带着一群前世怨魂打过去,1
+mirror_dual_weapon,镜中双器流,any,time_mirror,镜中异器|时空镜碎片|完美闪避,迷雾|晴空,镜魔|精英,临时副本命器一房,镜像复制核心技能,下一精英生成镜像分身,这把我有两条道,2

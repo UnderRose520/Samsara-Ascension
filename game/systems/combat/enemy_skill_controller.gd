@@ -75,11 +75,10 @@ func get_action_label() -> String:
 	if _dash_time > 0.0:
 		return "猛扑"
 	if _windup > 0.0:
-		return str(_windup_skill.get("name", "蓄力")) + "·蓄力"
+		return str(_windup_skill.get("name", "蓄力")) + " · 蓄力"
 	if _using_phases and not _phase_name.is_empty():
 		return _phase_name
 	return ""
-
 
 func get_windup_progress() -> float:
 	if _windup <= 0.0 or _windup_skill.is_empty():
@@ -141,7 +140,6 @@ func _apply_boss_phase(index: int) -> void:
 		if owner_body.has_method("get_display_name"):
 			boss_name = owner_body.get_display_name()
 		EventBus.pet_coord_feedback.emit("%s · %s" % [boss_name, _phase_name])
-
 
 func _reset_cooldowns() -> void:
 	_cooldowns.clear()

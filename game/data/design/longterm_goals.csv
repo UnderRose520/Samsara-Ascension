@@ -1,0 +1,9 @@
+goal_id,name,type,unlock_condition,progress_metric,reward,why_it_keeps_players,batch
+chain_codex,连锁札记,discovery,触发任意隐藏连锁,发现连锁数量,显示条件线索和称号,玩家想补全未知问号,0
+past_life碑,前世记录碑,memory,完成或死亡1局,记录局数和名场面,自动生成轮回编年史,玩家会回看自己的故事,0
+weapon_codex,器冢图鉴,collection,获得任意铭纹或法宝碎片,已见武器/铭纹/法宝数量,解锁开局外观或线索,玩家想看还有什么器,1
+spirit_awaken_log,器灵觉醒谱,growth,获得任意器灵线索,器灵线索与觉醒数量,解锁F技能或语音文本,玩家想把器物养醒,1
+dao_lineage_record,道统飞升录,challenge,首次觉醒任意道统,每个道统最高境界和通关记录,道统称号和开局遗泽,玩家想每条道都走到头,1
+high_risk_oath,逆命誓约,challenge,通关一次或击败金丹Boss,携带代价通关次数,高风险开局选项,玩家想证明自己能赌赢,2
+famous_scene_archive,名场面录,memory,触发任意关键反馈锚点,最高连击/最大清屏/濒死反杀,结算回放和分享文本,玩家想打出更夸张的一局,1
+boss_inheritance,守关传承册,collection,击败任意Boss,Boss传承收集数量,解锁相关法宝碎片权重,玩家想刷不同Boss路线,1

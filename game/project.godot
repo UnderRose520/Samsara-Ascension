@@ -31,13 +31,20 @@ CombatSpawner="*res://autoload/combat_spawner.gd"
 WeatherSystem="*res://systems/world/weather_system.gd"
 TerrainSystem="*res://systems/world/terrain_system.gd"
 VfxManager="*res://autoload/vfx_manager.gd"
+AudioManager="*res://autoload/audio_manager.gd"
+RunDirector="*res://systems/world/run_director.gd"
+HiddenChainDetector="*res://systems/world/hidden_chain_detector.gd"
+BattleEventDirector="*res://systems/world/battle_event_director.gd"
 
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/size/window_width_override=1920
+window/size/window_height_override=1080
 window/stretch/mode="canvas_items"
-window/stretch/scale_mode="integer"
+window/stretch/aspect="expand"
+window/stretch/scale_mode="fractional"
 
 [editor_plugins]
 

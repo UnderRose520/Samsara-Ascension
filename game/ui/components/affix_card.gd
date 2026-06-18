@@ -16,6 +16,7 @@ const AssetPaths = preload("res://assets/asset_paths.gd")
 @onready var select_button: Button = $Margin/VBox/SelectButton
 
 var _tag = null
+var _offer = null
 var _hover_bound := false
 var _quality_glow: QualityGlow = null
 
@@ -30,25 +31,43 @@ func get_offer():
 	return _tag
 
 
-func bind_offer(tag, disabled: bool = false) -> void:
+func get_offer_payload():
+	return _offer
+
+
+func bind_offer(offer, disabled: bool = false) -> void:
+	_offer = offer
+	var tag = offer.get("tag") if typeof(offer) == TYPE_DICTIONARY else offer
+	var display_tag = offer.get("preview_tag", tag) if typeof(offer) == TYPE_DICTIONARY else tag
 	_tag = tag
 	if tag == null:
 		visible = false
 		return
+	var locked := typeof(offer) == TYPE_DICTIONARY and bool(offer.get("locked", false))
 	visible = true
 	scale = Vector2.ONE
-	name_label.text = tag.name
-	quality_label.text = "%s · %s" % [UiHelpers.quality_name(tag.quality), UiHelpers.category_name(tag.category)]
-	quality_label.add_theme_color_override("font_color", UiTokens.quality_color(tag.quality))
-	desc_label.text = tag.description
-	var combo_text := " · ".join(tag.combo_tags) if tag.combo_tags.size() > 0 else "—"
+	var badge := str(offer.get("badge", "")) if typeof(offer) == TYPE_DICTIONARY else ""
+	name_label.text = ("%s · %s" % [badge, display_tag.name]) if not badge.is_empty() else display_tag.name
+	quality_label.text = "%s · %s" % [UiHelpers.quality_name(display_tag.quality), UiHelpers.category_name(display_tag.category)]
+	quality_label.add_theme_color_override("font_color", UiTokens.quality_color(display_tag.quality))
+	var extra := ""
+	if typeof(offer) == TYPE_DICTIONARY:
+		if locked:
+			extra = "\n%s\n%s" % [str(offer.get("lock_reason", "")), str(offer.get("preview_text", ""))]
+		elif str(offer.get("offer_type", "")) == "temptation":
+			var benefit_text := str(offer.get("benefit_text", ""))
+			var cost_text := str(offer.get("cost_text", ""))
+			extra = "\n%s\n%s" % [benefit_text, cost_text] if not benefit_text.is_empty() else "\n%s" % cost_text
+	desc_label.text = "%s%s" % [display_tag.description, extra]
+	var combo_text := " · ".join(display_tag.combo_tags) if display_tag.combo_tags.size() > 0 else "—"
 	combo_label.text = "Combo %s" % combo_text
-	UiHelpers.set_icon(icon, AssetPaths.elem_icon(tag.element))
-	UiHelpers.apply_quality_frame(frame_bg, tag.quality)
-	_apply_quality_glow(tag.quality)
-	select_button.disabled = disabled
-	modulate = Color(0.72, 0.72, 0.72) if disabled else Color.WHITE
-	if not disabled and not _hover_bound:
+	UiHelpers.set_icon(icon, AssetPaths.elem_icon(display_tag.element))
+	UiHelpers.apply_quality_frame(frame_bg, display_tag.quality)
+	_apply_quality_glow(display_tag.quality)
+	select_button.disabled = disabled or locked
+	select_button.text = "条件不足" if locked else "选择"
+	modulate = Color(0.56, 0.56, 0.6) if locked else (Color(0.72, 0.72, 0.72) if disabled else Color.WHITE)
+	if not select_button.disabled and not _hover_bound:
 		UiAnimations.bind_hover_lift(self)
 		_hover_bound = true
 

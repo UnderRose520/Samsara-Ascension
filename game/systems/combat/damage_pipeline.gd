@@ -48,4 +48,7 @@ static func compute_pve(ctx: Dictionary) -> Dictionary:
 		"is_crit": is_crit,
 		"element_key": str(ctx.get("element_key", "")),
 		"trigger_on_hit": VariantUtils.as_bool(ctx.get("trigger_on_hit", true)),
+		"weather_synergy": VariantUtils.as_bool(ctx.get("weather_synergy", false)),
+		"terrain_synergy": VariantUtils.as_bool(ctx.get("terrain_synergy", false)),
+		"weather_id": str(ctx.get("weather_id", "")),
 	}

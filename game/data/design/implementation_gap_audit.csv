@@ -1,0 +1,13 @@
+gap_id,area,current_state,risk,design_target,priority,mapping_status,runtime_owner,acceptance_check,next_action
+G01,stage_weather,stages.csv每关固定weather_id,天象会变成固定关卡皮肤而非肉鸽变量,房间级天象抽取并带路线预告,P0,partial,StageGenerator,每局至少2次房间级天气变化且UI能提前看到下一房气候,让StageGenerator支持每房weather_id或weather_hint
+G02,room_structure,每关固定combat+event+boss结构,路线选择和局中节奏变化不足,加入分支路线和不同房间权重,P1,partial,RoomGraphGenerator,一局内至少出现1次非线性路线或房型分支,新增route_playbook或room_choice生成规则
+G03,boss_identity,boss_phases.csv只有通用boss阶段和技能池,Boss像血厚精英怪,每个Boss有武器轮廓/阶段/传承,P0,partial,BossSystem,击败后玩家能说出Boss武器和拿到的传承,把boss_playbook映射到boss_phases和技能池
+G04,reward_source,affixes.csv以数值词条和标签为主,奖励像系统发牌,奖励卡显示来源/代价/下一房后果,P1,partial,RewardUI,奖励卡上至少有来源和代价两项可读信息,把reward_sources字段映射到奖励UI和权重
+G05,build_depth,当前运行层偏火雷冰基础词条,10局后流派疲劳,至少10条可复述流派,P1,not_started,RewardWeights,10局内至少能说出3条不同流派的打法变化,用build_archetypes生成奖励权重和道统目标
+G06,feedback_density,Vfx有命中和奖励粒子但缺统一反馈锚点,爽点可能被系统复杂度稀释,每个关键动作有视觉/音效/暂停帧标准,P0,partial,VfxManager,重击/连锁/道统觉醒/万法归一都能单独说出反馈,按feedback_moments接入命中/重击/连锁/道统觉醒
+G07,death_loop,meta_upgrades偏HP/灵石/重随折扣,死亡执念难以改变下局体验,死亡遗憾->遗泽->下局权重可见,P0,partial,SaveManager,死亡后能在下局开局看见遗泽变化,实现死亡遗憾镜头和遗泽权重
+G08,longterm_goals,局外成长目标较轻,20局后缺明确追求,连锁札记/器冢图鉴/前世记录碑,P2,partial,CodexUI,玩家能翻阅连锁/记录/图鉴并主动追求未见内容,先做连锁札记和前世记录碑
+G09,path_runtime,design有体修丹修但运行paths未接入,道途差异短期不足,批次0三道途先跑通再扩批次1,P0,partial,PathSystem,剑修/法修/符修在前3分钟打法完全不同,先完善剑修法修符修反馈；再加body/alchemy
+G10,enemy_readability,enemies.csv无weapon_id字段,怪物威胁轮廓不直观,敌人读招主要靠武器和抬手,P0,partial,EnemySystem,玩家能在1秒内看懂敌人用什么打人,给敌人运行表增加weapon_id或映射表读取
+G11,dynamic_director,当前生成较固定,可能连续无爽点或无构筑,动态保底但不硬喂,P1,partial,RunDirector,连续30秒无高价值反馈时下一房会提高机会但不强触发,实现30秒无爽点/两次无构筑/低血机会三条规则
+G12,gray_options,奖励选择未体现看得到拿不到,下局执念少一层,灰色选项完整展示效果和缺失条件,P1,partial,RewardUI,灰色选项必须展示效果、缺失条件和下局目标,奖励UI支持lock_condition展示

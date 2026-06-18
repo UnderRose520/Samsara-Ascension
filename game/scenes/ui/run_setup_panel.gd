@@ -10,17 +10,17 @@ const DAO_HEART_CARD := preload("res://ui/components/dao_heart_card.tscn")
 
 @onready var panel: PanelContainer = $Panel
 @onready var dimmer: ColorRect = $Dimmer
-@onready var start_button: Button = $Panel/Margin/VBox/StartButton
-@onready var title_label: Label = $Panel/Margin/VBox/Title
-@onready var detail_label: Label = $Panel/Margin/VBox/Detail
-@onready var shard_label: Label = $Panel/Margin/VBox/ShardLabel
-@onready var heart_demon_check: CheckButton = $Panel/Margin/VBox/HeartDemonCheck
-@onready var points_label: Label = $Panel/Margin/VBox/PointsLabel
-@onready var seed_input: LineEdit = $Panel/Margin/VBox/SeedRow/SeedInput
-@onready var random_seed_button: Button = $Panel/Margin/VBox/SeedRow/RandomSeedButton
-@onready var meta_button: Button = $Panel/Margin/VBox/MetaButton
-@onready var hearts_box: HBoxContainer = $Panel/Margin/VBox/Hearts
-@onready var vbox: VBoxContainer = $Panel/Margin/VBox
+@onready var start_button: Button = $Panel/Margin/Scroll/VBox/StartButton
+@onready var title_label: Label = $Panel/Margin/Scroll/VBox/Title
+@onready var detail_label: Label = $Panel/Margin/Scroll/VBox/Detail
+@onready var shard_label: Label = $Panel/Margin/Scroll/VBox/ShardLabel
+@onready var heart_demon_check: CheckButton = $Panel/Margin/Scroll/VBox/HeartDemonCheck
+@onready var points_label: Label = $Panel/Margin/Scroll/VBox/PointsLabel
+@onready var seed_input: LineEdit = $Panel/Margin/Scroll/VBox/SeedRow/SeedInput
+@onready var random_seed_button: Button = $Panel/Margin/Scroll/VBox/SeedRow/RandomSeedButton
+@onready var meta_button: Button = $Panel/Margin/Scroll/VBox/MetaButton
+@onready var hearts_box: HBoxContainer = $Panel/Margin/Scroll/VBox/Hearts
+@onready var vbox: VBoxContainer = $Panel/Margin/Scroll/VBox
 
 var _selected: int = DaoHeartConfig.DaoHeart.ENLIGHTEN
 var _selected_path := CultivationPathRegistry.DEFAULT_PATH_ID
@@ -57,8 +57,10 @@ const HEART_DEFS := [
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_fit_panel_to_viewport()
+	get_viewport().size_changed.connect(_fit_panel_to_viewport)
 	UiHelpers.apply_panel_polish(panel, false)
-	UiHelpers.decorate_modal_header($Panel/Margin/VBox, title_label)
+	UiHelpers.decorate_modal_header($Panel/Margin/Scroll/VBox, title_label)
 	start_button.pressed.connect(_on_start_pressed)
 	meta_button.pressed.connect(_on_meta_pressed)
 	random_seed_button.pressed.connect(_on_random_seed_pressed)
@@ -70,6 +72,19 @@ func _ready() -> void:
 	_select(DaoHeartConfig.DaoHeart.ENLIGHTEN)
 	_select_path(CultivationPathRegistry.DEFAULT_PATH_ID)
 	call_deferred("_play_open")
+
+
+func _fit_panel_to_viewport() -> void:
+	if panel == null:
+		return
+	var viewport_size := get_viewport().get_visible_rect().size
+	var safe_margin := 48.0
+	var panel_width := minf(720.0, maxf(viewport_size.x - safe_margin * 2.0, 560.0))
+	var panel_height := minf(680.0, maxf(viewport_size.y - safe_margin * 2.0, 520.0))
+	panel.offset_left = -panel_width * 0.5
+	panel.offset_right = panel_width * 0.5
+	panel.offset_top = -panel_height * 0.5
+	panel.offset_bottom = panel_height * 0.5
 
 
 func _add_couplets() -> void:

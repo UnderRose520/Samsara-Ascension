@@ -39,6 +39,21 @@ func set_legacy_affix(affix_id: String) -> void:
 	save_profile()
 
 
+func get_recent_death_line_ids() -> Array:
+	return profile.get("recent_death_line_ids", [])
+
+
+func record_death_line(line_id: String) -> void:
+	if line_id.is_empty():
+		return
+	var recent := get_recent_death_line_ids()
+	recent.append(line_id)
+	while recent.size() > 3:
+		recent.pop_front()
+	profile["recent_death_line_ids"] = recent
+	save_profile()
+
+
 func consume_legacy_affix() -> String:
 	var id: String = str(profile.get("legacy_affix_id", ""))
 	if not id.is_empty():
@@ -116,6 +131,26 @@ func mark_terrain_demo(demo_key: String) -> void:
 	seen[demo_key] = true
 	profile["terrain_demos_seen"] = seen
 	save_profile()
+
+
+func get_discovered_hidden_chains() -> Array:
+	return profile.get("hidden_chains_discovered", [])
+
+
+func has_discovered_hidden_chain(chain_id: String) -> bool:
+	return chain_id in get_discovered_hidden_chains()
+
+
+func record_hidden_chain(chain_id: String) -> bool:
+	if chain_id.is_empty():
+		return false
+	var discovered := get_discovered_hidden_chains()
+	if chain_id in discovered:
+		return false
+	discovered.append(chain_id)
+	profile["hidden_chains_discovered"] = discovered
+	save_profile()
+	return true
 
 
 func get_heart_demon_shards() -> int:
@@ -204,6 +239,7 @@ func _default_profile() -> Dictionary:
 		"heart_demon_shards": 0,
 		"awakened_dao_traditions": [],
 		"terrain_demos_seen": {},
+		"hidden_chains_discovered": [],
 		"last_run_seed": 0,
 	}
 

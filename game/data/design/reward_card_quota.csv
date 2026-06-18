@@ -1,0 +1,11 @@
+quota_id,phase,card_type,min_count,target_ratio,example_ids,quality_rule,play_change_required,risk_level_required,visual_fantasy_required,acceptance,batch
+Q0_STABLE,batch0,stable_upgrade,6,35%,hui_feng|po_zhu|spirit_stone_body,必须清楚稳定收益但不抢走构筑牌的兴奋度,轻微改变节奏或增强核心动作,0,有可读图标和来源说明,玩家能看懂这是稳妥增强但不兴奋,0
+Q0_BUILD,batch0,build_push,8,45%,lei_ji_mu_mingwen|san_fu_cheng_zhen|fire_thunder_seed,必须把玩家推向一个可复述流派,改变攻击形状或战场策略,0,选择后应能想象打法变化,选择后30秒内能看到打法变化,0
+Q0_TEMPT,batch0,temptation,4,20%,yin_jie_ru_jian|blood_bone_mingwen|risky_thunder_oath,好处和下一房代价必须同时可见,必须改变输出形态或资源节奏,2,必须有危险画面如雷追身或血骨开裂,每张都有明确好处和下一房代价；至少2张恐惧度>=2,0
+Q0_GRAY,batch0,gray_locked,4,appears_conditionally,high_combo_insight|first_forge_locked|blood_sacrifice,灰掉也要完整展示效果和缺失条件,必须让玩家产生下局目标,1,必须能看到诱人效果预览,玩家看到效果但知道自己缺什么,0
+Q1_STABLE,batch1,stable_upgrade,12,30%,body_guard|alchemy_recover|soul_defense,覆盖新道途的稳定生存和循环,轻微改变站位或资源管理,0,来源和道途身份清楚,不同道途都有稳牌,1
+Q1_BUILD,batch1,build_push,16,45%,cold_jade_mingwen|soul_crystal|poison_rain_seed,每条新流派至少有2张推进牌,必须改变攻击形状/召唤/场控/资源转化之一,0,能看出流派未来形态,至少支撑6条流派路线,1
+Q1_TEMPT,batch1,temptation,10,25%,mirror_subweapon|heart_demon_trade|blood_bone_mingwen,后期诱惑要强到让玩家愿意赌一房,必须改写一房或一条路线的打法,2,必须有强烈代价画面如镜像追杀或心魔低语,后期破格比例明显提高,1
+Q1_GRAY,batch1,gray_locked,8,appears_conditionally,dao_power_burst|spirit_awaken|artifact_forge,灰色选项要成为长期追求,必须指向可追踪条件,1,灰色预览要像未打开的宝箱,灰色选项成为下局目标,1
+LAUNCH_TOTAL,launch,total_cards,45,mixed,all,首发总卡池要能支撑10局不疲劳,至少60%卡牌改变打法而非纯数值,mixed,每张高价值卡都有独立画面锚点,10局内三选一卡不应频繁重复,2
+LAUNCH_TEMPT,launch,temptation,15,25-35%,all_temptation,破格诱惑要成为讨论点而不是普通升级,每张都要改变本房/下一房/本路线之一,2,代价和收益都要一眼有画面,破格诱惑足够支撑后期赌博感,2

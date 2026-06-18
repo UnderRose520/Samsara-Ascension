@@ -1,0 +1,11 @@
+weapon_id,name,family,role,attack_shape,playstyle,growth_stage,source,awakening_condition,synergy_tags,sweet_spot,no_go,batch
+qing_feng_sword,青锋剑,sword,birth_weapon,short_arc,近中连段；完美闪避后反斩,器胚|淬炼|铭纹|通灵,剑修开局,完美闪避后斩杀30次,sword|fire|thunder|counter,第三段剑芒接天象引爆,不要只做远程剑波,0
+starter_orb,素玉法珠,orb,birth_weapon,projectile,中远属性弹；稳定控距,器胚|铭纹|法宝共鸣,法修开局,三种元素各触发一次连锁,spell|fire|thunder|ice,火弹点燃裂地或雷弹接入积水形成二次效果,不要当纯皮肤,0
+san_cai_flag,三才符旗,talisman,birth_weapon,projectile_trap,投符落地；延迟起爆；三符成阵,器胚|淬炼|成阵|通灵,符修开局,同场五符齐爆3次,talisman|thunder|terrain|control,怪群走进符阵后连爆或积水导电,不要没有落点反馈,0
+soul_banner,镇魂幡,banner,birth_weapon,projectile_summon,魂火击杀留魂；残魂追咬；献祭换强度,器胚|摄魂|铭魂|通灵,邪修开局或魂幡邪修掉落,召魂击杀50次,soul|curse|summon|heart_demon,残魂被阴风吹入怪群后爆开,不要变成普通法术换皮,1
+iron_gauntlet,玄铁臂甲,gauntlet,birth_weapon,melee_slam,贴脸拳掌；震地；短霸体,器胚|淬炼|金身|通灵,体修开局,濒死反杀精英5次,body|earth|armor|counter,硬吃小伤后反震清场,不要只有防御没有反击,1
+alchemy_furnace,丹炉,furnace,birth_weapon,area_cloud,药气波；毒雾；炼化妖丹,器胚|淬炼|炉火|通灵,丹修开局,炼化妖丹或毒爆击杀40次,alchemy|poison|heal|fire,毒雾遇灵雨扩散全场,不要只做治疗道具,1
+thunder_bead,天雷珠,bead,artifact,auto_lightning,蓄雷；导电；落雷处决,碎片|合成|觉醒,Boss或雷暴机缘,雷暴导电击杀20次,thunder|water|dao_power,积水区连锁落雷,不要只给雷伤加成,0
+time_mirror,时空镜,mirror,artifact,rewind_clone,短回溯；镜像；反射,碎片|合成|镜灵,心魔Boss或镜中异器事件,完美闪避或濒死回避10次,space|time|dodge,濒死回溯后反杀,不要无代价改写死亡,2
+xuanwu_shield,玄武甲,shield,artifact,guard_counter,护盾；反伤；护阵,碎片|合成|龟灵,机关傀儡或守关将,护盾吸收3000伤害,earth|water|armor,护盾破裂反震怪群,不要让玩家只站桩挂机,1
+cloud_crossbow,穿云弩,crossbow,enemy_weapon,line_snipe,长预警狙击；穿透,敌人武器,弩修敌携带,none,line|pierce|sniper,引导其误伤精英,不要全部做成普通弹幕,0

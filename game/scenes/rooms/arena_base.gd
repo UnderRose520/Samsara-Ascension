@@ -17,6 +17,7 @@ var _horde: HordeController
 var _player: CharacterBody2D
 var _pending_enemy_spawns := 0
 var _spawn_generation := 0
+var _horde_room_snapshot: Dictionary = {}
 
 
 func setup_combat_floor() -> Node2D:
@@ -68,6 +69,8 @@ func _enemy_kill_blocked() -> bool:
 
 
 func _get_horde_room_def() -> Dictionary:
+	if not _horde_room_snapshot.is_empty():
+		return _horde_room_snapshot.duplicate(true)
 	return RunContext.get_current_room_def()
 
 
@@ -89,6 +92,7 @@ func _horde_spawn_pos(index: int, total: int) -> Vector2:
 
 func _clear_enemies() -> void:
 	_spawn_generation += 1
+	_horde_room_snapshot.clear()
 	_pending_enemy_spawns = 0
 	for enemy in get_tree().get_nodes_in_group("enemy"):
 		if is_instance_valid(enemy):
@@ -202,6 +206,9 @@ func _on_horde_spawn_batch(count: int) -> void:
 	var room_type_id := _horde_room_type_id(room)
 	var hp_mult := float(room.get("hp_mult", 1.0))
 	var heart_hp := _get_horde_heart_hp(room, false)
+	var damage_mult := float(room.get("damage_mult", 1.0))
+	var speed_mult := float(room.get("speed_mult", 1.0))
+	var force_elite_pressure := bool(room.get("elite_pressure", false))
 	var rng := _arena_flow_rng("horde_%d_%d" % [_horde.stage_idx, _horde.wave])
 	var spawns: Array = WaveComposer.compose_horde_batch(
 		_horde.room_type,
@@ -215,6 +222,8 @@ func _on_horde_spawn_batch(count: int) -> void:
 		var enemy_id := str(spawn.get("enemy_id", "normal"))
 		var batch_count := int(spawn.get("count", 1))
 		var affixes: Array = spawn.get("affixes", [])
+		if force_elite_pressure and affixes.is_empty():
+			affixes = EliteAffixRegistry.roll_affixes(rng, 1)
 		if not announced_affix and affixes.size() > 0:
 			EventBus.pet_coord_feedback.emit("精英词缀 · %s" % EliteAffixRegistry.format_labels(affixes))
 			announced_affix = true
@@ -226,8 +235,11 @@ func _on_horde_spawn_batch(count: int) -> void:
 				"is_boss": false,
 				"hp_mult": hp_mult,
 				"heart_hp": heart_hp,
+				"damage_mult": damage_mult,
+				"speed_mult": speed_mult,
 				"affixes": affixes,
 				"room_type_id": room_type_id,
+				"room_stage_index": int(room.get("stage_index", RunContext.current_stage)),
 				"display_name_override": "",
 			}, room)
 			_horde.spawn_seq += 1
@@ -260,12 +272,20 @@ func _spawn_enemy_with_telegraph(spawn_def: Dictionary, room: Dictionary) -> voi
 
 
 func _finish_enemy_spawn(spawn_def: Dictionary, room: Dictionary, generation: int) -> void:
-	_pending_enemy_spawns = maxi(_pending_enemy_spawns - 1, 0)
-	if generation != _spawn_generation:
+	if generation != _spawn_generation or not RunContext.run_active or not is_inside_tree():
+		_pending_enemy_spawns = maxi(_pending_enemy_spawns - 1, 0)
 		return
 	if get_tree().paused or RunContext.ui_blocking:
-		_spawn_enemy_with_telegraph(spawn_def, room)
+		var tree := get_tree()
+		if tree == null:
+			_pending_enemy_spawns = maxi(_pending_enemy_spawns - 1, 0)
+			return
+		tree.create_timer(0.2, true).timeout.connect(func() -> void:
+			if is_instance_valid(self):
+				_finish_enemy_spawn(spawn_def, room, generation)
+		)
 		return
+	_pending_enemy_spawns = maxi(_pending_enemy_spawns - 1, 0)
 	_spawn_enemy_dummy(spawn_def, room)
 
 
@@ -287,13 +307,26 @@ func _spawn_enemy_dummy(spawn_def: Dictionary, room: Dictionary) -> void:
 		display_name = EnemySpawnRegistry.get_display_name(enemy_id)
 	if is_boss:
 		display_name = str(room.get("boss_name", display_name))
-	var enemy_stats := EnemySpawnRegistry.get_stat_mults(enemy_id)
+	var stat_rng := _arena_flow_rng("enemy_stats_%d_%d_%s" % [RunContext.current_stage, index, enemy_id])
+	var stage_index := int(spawn_def.get("room_stage_index", room.get("stage_index", RunContext.current_stage)))
+	var enemy_stats := EnemySpawnRegistry.roll_instance_stats(enemy_id, stage_index, stat_rng, is_boss)
+	var final_display_name := display_name
+	if bool(enemy_stats.get("promoted", false)) and not is_boss:
+		final_display_name = "%s%s" % [str(enemy_stats.get("prefix", "")), display_name]
 	if dummy.has_method("configure_enemy"):
 		dummy.configure_enemy(display_name, is_boss, room_type_id)
 	elif is_boss and dummy.has_method("configure_as_boss"):
 		dummy.configure_as_boss()
+	if final_display_name != display_name and dummy.has_method("set_display_name_override"):
+		dummy.set_display_name_override(final_display_name)
+	if dummy.has_method("set_enemy_weapon_id"):
+		dummy.set_enemy_weapon_id(EnemySpawnRegistry.get_weapon_id(enemy_id, display_name))
 	if dummy.has_method("scale_contact_damage"):
-		dummy.scale_contact_damage(float(enemy_stats.get("atk", 1.0)))
+		dummy.scale_contact_damage(float(enemy_stats.get("atk", 1.0)) * float(spawn_def.get("damage_mult", 1.0)))
+	if dummy.has_method("scale_move_speed"):
+		dummy.scale_move_speed(float(spawn_def.get("speed_mult", 1.0)))
+	if dummy.has_method("apply_instance_stats"):
+		dummy.apply_instance_stats(enemy_stats)
 	if dummy.has_method("init_combat_slot") and _player:
 		dummy.init_combat_slot(spawn_pos, _player.global_position, index, total, is_boss)
 	if dummy.has_node("HealthComponent"):

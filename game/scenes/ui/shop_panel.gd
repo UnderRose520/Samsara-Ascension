@@ -12,6 +12,7 @@ const UiHelpers = preload("res://ui/ui_helpers.gd")
 @onready var buttons_box: VBoxContainer = $Panel/Margin/VBox/Buttons
 
 var _offers: Array = []
+var _pending_affix_offer: Dictionary = {}
 
 
 func _ready() -> void:
@@ -26,6 +27,7 @@ func _ready() -> void:
 
 func _on_shop_requested(offers: Array, _context: Dictionary = {}) -> void:
 	_offers = offers
+	_pending_affix_offer.clear()
 	title_label.text = "坊市 · 灵石购机缘"
 	_refresh()
 
@@ -39,6 +41,10 @@ func _refresh() -> void:
 	gold_label.text = "灵石 %d" % RunContext.gold
 	for child in buttons_box.get_children():
 		child.queue_free()
+	if not _pending_affix_offer.is_empty():
+		_build_full_slot_actions(_pending_affix_offer)
+		_show_panel()
+		return
 	for offer in _offers:
 		buttons_box.add_child(_make_offer_row(offer))
 	var leave := Button.new()
@@ -47,6 +53,10 @@ func _refresh() -> void:
 	leave.text = "离开坊市"
 	leave.pressed.connect(_on_leave_pressed)
 	buttons_box.add_child(leave)
+	_show_panel()
+
+
+func _show_panel() -> void:
 	var opening := not panel.visible
 	panel.visible = true
 	dimmer.visible = true
@@ -113,10 +123,14 @@ func _on_buy_pressed(offer: Dictionary) -> void:
 			if not player.has_node("AffixHolder"):
 				return
 			var holder: Node = player.get_node("AffixHolder")
-			if not holder.can_equip():
-				title_label.text = "词条槽已满，无法购入"
-				return
 			var tag = offer.get("tag")
+			if tag == null:
+				return
+			if not holder.can_equip():
+				_pending_affix_offer = offer.duplicate(true)
+				title_label.text = "词条槽已满 · 选择处理方式"
+				_refresh()
+				return
 			if tag:
 				holder.add_affix(tag)
 		"heal":
@@ -130,6 +144,113 @@ func _on_buy_pressed(offer: Dictionary) -> void:
 	_close(true)
 
 
+func _build_full_slot_actions(offer: Dictionary) -> void:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null or not player.has_node("AffixHolder"):
+		_pending_affix_offer.clear()
+		return
+	var holder: Node = player.get_node("AffixHolder")
+	var tag = offer.get("tag")
+	var cost := int(offer.get("cost", 0))
+	var summary: Dictionary = holder.get_slot_summary()
+	gold_label.text = "灵石 %d · 核心 %d/%d · 临时 %d/%d · 封印 %d/%d" % [
+		RunContext.gold,
+		int(summary.get("core_used", 0)),
+		int(summary.get("core_max", 0)),
+		int(summary.get("temporary_used", 0)),
+		int(summary.get("temporary_max", 0)),
+		int(summary.get("sealed_used", 0)),
+		int(summary.get("sealed_max", 0)),
+	]
+	var hint := Label.new()
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.text = "想买 %s，但生效槽已满。可替换已有词条、封印留待之后，或分解换灵石。" % str(offer.get("label", tag.name if tag else "词条"))
+	hint.add_theme_color_override("font_color", UiTokens.TEXT_SECONDARY)
+	buttons_box.add_child(hint)
+	for i in holder.equipped.size():
+		var replace := Button.new()
+		replace.custom_minimum_size = Vector2(420, 40)
+		replace.theme_type_variation = &"Primary"
+		replace.text = "替换：%s" % holder.get_affix_label(i)
+		replace.disabled = RunContext.gold < cost
+		replace.pressed.connect(_on_replace_affix_pressed.bind(i, offer))
+		buttons_box.add_child(replace)
+	var seal := Button.new()
+	seal.custom_minimum_size = Vector2(420, 40)
+	seal.theme_type_variation = &"Secondary"
+	seal.text = "封印新词条（暂不生效）"
+	seal.disabled = RunContext.gold < cost or not holder.can_seal()
+	seal.pressed.connect(_on_seal_affix_pressed.bind(offer))
+	buttons_box.add_child(seal)
+	var dissolve := Button.new()
+	dissolve.custom_minimum_size = Vector2(420, 40)
+	dissolve.theme_type_variation = &"Secondary"
+	dissolve.text = "分解新词条（+%d 灵石）" % holder.dissolve_value(tag)
+	dissolve.pressed.connect(_on_dissolve_affix_pressed.bind(offer))
+	buttons_box.add_child(dissolve)
+	var back := Button.new()
+	back.custom_minimum_size = Vector2(420, 40)
+	back.theme_type_variation = &"Secondary"
+	back.text = "返回坊市"
+	back.pressed.connect(func() -> void:
+		_pending_affix_offer.clear()
+		title_label.text = "坊市 · 灵石购机缘"
+		_refresh()
+	)
+	buttons_box.add_child(back)
+
+
+func _on_replace_affix_pressed(index: int, offer: Dictionary) -> void:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null or not player.has_node("AffixHolder"):
+		return
+	var cost := int(offer.get("cost", 0))
+	if RunContext.gold < cost:
+		return
+	var holder: Node = player.get_node("AffixHolder")
+	var tag = offer.get("tag")
+	if not holder.replace_affix(index, tag):
+		title_label.text = "无法替换 · 已拥有或词条无效"
+		return
+	RunContext.gold -= cost
+	EventBus.gold_changed.emit(RunContext.gold)
+	EventBus.pet_coord_feedback.emit("词条替换 · -%d 灵石" % cost)
+	_close(true)
+
+
+func _on_seal_affix_pressed(offer: Dictionary) -> void:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null or not player.has_node("AffixHolder"):
+		return
+	var cost := int(offer.get("cost", 0))
+	if RunContext.gold < cost:
+		return
+	var holder: Node = player.get_node("AffixHolder")
+	var tag = offer.get("tag")
+	if not holder.seal_affix(tag):
+		title_label.text = "无法封印 · 封印槽已满或已拥有"
+		return
+	RunContext.gold -= cost
+	EventBus.gold_changed.emit(RunContext.gold)
+	EventBus.pet_coord_feedback.emit("词条封印 · -%d 灵石" % cost)
+	_close(true)
+
+
+func _on_dissolve_affix_pressed(offer: Dictionary) -> void:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null or not player.has_node("AffixHolder"):
+		return
+	var holder: Node = player.get_node("AffixHolder")
+	var tag = offer.get("tag")
+	var value: int = holder.dissolve_value(tag)
+	RunContext.gold += value
+	EventBus.gold_changed.emit(RunContext.gold)
+	EventBus.pet_coord_feedback.emit("分解词条 · +%d 灵石" % value)
+	_pending_affix_offer.clear()
+	title_label.text = "坊市 · 灵石购机缘"
+	_refresh()
+
+
 func _on_leave_pressed() -> void:
 	_close(false)
 
@@ -139,5 +260,6 @@ func _close(purchased: bool) -> void:
 		panel.visible = false
 		dimmer.visible = false
 		_offers.clear()
+		_pending_affix_offer.clear()
 		EventBus.shop_closed.emit(purchased)
 	)

@@ -9,6 +9,7 @@ const EventSelector = preload("res://systems/world/event_selector.gd")
 const RUNTIME_MANIFEST_PATH := "res://assets/maps/runtime_scene_manifest.json"
 const BASE_VIEWPORT_SIZE := Vector2(1280, 720)
 const BASE_WORLD_SIZE := Vector2(1280, 704)
+const MIN_VIEWPORT_SIZE := Vector2(960, 540)
 
 static var _stage_rows: Array = []
 static var _room_templates: Dictionary = {}
@@ -156,15 +157,20 @@ static func _build_room_runtime_map(
 	rng: RandomNumberGenerator,
 ) -> Dictionary:
 	var scale := _room_scale(stage_index, template_id, rng)
-	var world_size := _rounded_to_tile(Vector2(BASE_WORLD_SIZE.x * scale.x, BASE_WORLD_SIZE.y * scale.y))
-	var camera_size := _rounded_to_tile(Vector2(BASE_VIEWPORT_SIZE.x * scale.x, BASE_VIEWPORT_SIZE.y * scale.y))
+	var viewport_size := _runtime_viewport_size()
+	var base_expand := Vector2(
+		maxf(viewport_size.x / BASE_VIEWPORT_SIZE.x, 1.0),
+		maxf(viewport_size.y / BASE_VIEWPORT_SIZE.y, 1.0)
+	)
+	var world_size := _rounded_to_tile(Vector2(BASE_WORLD_SIZE.x * scale.x * base_expand.x, BASE_WORLD_SIZE.y * scale.y * base_expand.y))
+	var camera_size := _rounded_to_tile(Vector2(viewport_size.x * scale.x, viewport_size.y * scale.y))
 	var tile_size := int(_manifest_arena().get("tile_size", 32))
 	var tilemap_cells := [
 		int(round(world_size.x / float(tile_size))),
 		int(round(world_size.y / float(tile_size))),
 	]
 	var arena := {
-		"viewport_size": [int(BASE_VIEWPORT_SIZE.x), int(BASE_VIEWPORT_SIZE.y)],
+		"viewport_size": [int(viewport_size.x), int(viewport_size.y)],
 		"tile_size": tile_size,
 		"tilemap_cells": tilemap_cells,
 		"world_bounds": _bounds(Vector2(-world_size.x * 0.5, -world_size.y * 0.5), world_size),
@@ -207,6 +213,20 @@ static func _room_scale(stage_index: int, template_id: String, rng: RandomNumber
 
 static func _rounded_to_tile(size: Vector2) -> Vector2:
 	return Vector2(round(size.x / 32.0) * 32.0, round(size.y / 32.0) * 32.0)
+
+
+static func _runtime_viewport_size() -> Vector2:
+	var size := BASE_VIEWPORT_SIZE
+	var loop := Engine.get_main_loop()
+	if loop is SceneTree:
+		var tree := loop as SceneTree
+		if tree.root:
+			var visible_size := tree.root.get_visible_rect().size
+			if visible_size.x > 0.0 and visible_size.y > 0.0:
+				size = visible_size
+	size.x = maxf(size.x, MIN_VIEWPORT_SIZE.x)
+	size.y = maxf(size.y, MIN_VIEWPORT_SIZE.y)
+	return size
 
 
 static func _bounds(pos: Vector2, size: Vector2 = Vector2.ZERO) -> Dictionary:

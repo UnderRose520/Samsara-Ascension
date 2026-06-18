@@ -3,6 +3,7 @@ extends ArenaBase
 const VariantUtils = preload("res://core/utils/variant_utils.gd")
 const DaoHeartConfig = preload("res://systems/realm/dao_heart_config.gd")
 const AffixOfferSelector = preload("res://systems/affix/affix_offer_selector.gd")
+const BuildArchetypeRegistry = preload("res://systems/affix/build_archetype_registry.gd")
 const TalentSelector = preload("res://systems/realm/talent_selector.gd")
 const EventSelector = preload("res://systems/world/event_selector.gd")
 const EventResolver = preload("res://systems/world/event_resolver.gd")
@@ -19,7 +20,7 @@ const CLEAR_REWARD_PER_STAGE := 2
 const CLEAR_REWARD_HARD_BONUS := 5
 const CLEAR_REWARD_BOSS_BONUS := 15
 
-enum RoomPhase { COMBAT, EVENT, BREAKTHROUGH, AFFIX, PATH, REST, TRANSITION }
+enum RoomPhase { COMBAT, EVENT, BREAKTHROUGH, AFFIX, WEAPON_MOD, PATH, REST, TRANSITION }
 
 @onready var spawn_points: Node2D = $SpawnPoints
 @onready var dummy_spawns: Node2D = $SpawnPoints/DummySpawns
@@ -70,6 +71,7 @@ func _ready() -> void:
 	EventBus.shop_closed.connect(_on_shop_closed)
 	EventBus.weapon_mod_choice_closed.connect(_on_weapon_mod_choice_closed)
 	EventBus.player_died.connect(_on_player_died)
+	EventBus.death_moment_finished.connect(_on_death_moment_finished)
 
 	EventBus.gold_changed.emit(RunContext.gold)
 	call_deferred("_apply_run_start_bonuses")
@@ -119,7 +121,6 @@ func _enter_current_room() -> void:
 	if room.is_empty():
 		EventBus.run_completed.emit(true)
 		return
-
 	WeatherSystem.set_weather(str(stage.get("weather_id", "clear")))
 	var stage_idx := int(stage.get("stage_index", RunContext.current_stage + 1))
 	if get_combat_floor() and get_combat_floor().has_method("apply_theme"):
@@ -132,6 +133,11 @@ func _enter_current_room() -> void:
 	var room_type := _room_type(room)
 	var is_combat_room := GameEnums.is_combat_room_type(room_type) or GameEnums.is_boss_room_type(room_type)
 	if is_combat_room:
+		var temptation_penalty := RunContext.consume_temptation_penalty()
+		if not temptation_penalty.is_empty():
+			_apply_temptation_penalty_to_room(room, temptation_penalty)
+	if is_combat_room:
+		_apply_first_minutes_path_opportunity(room)
 		_apply_room_layout(room, stage_idx, str(stage.get("weather_id", "clear")))
 	else:
 		_reset_room_layout()
@@ -145,6 +151,31 @@ func _enter_current_room() -> void:
 		return
 
 	_spawn_room_enemies(room)
+
+
+func _apply_first_minutes_path_opportunity(room: Dictionary) -> void:
+	var room_number := RunContext.rooms_cleared + 1
+	if room_number > 3:
+		return
+	var goal := CultivationPathRegistry.get_first_minutes_goal(RunContext.cultivation_path_id, room_number)
+	if goal.is_empty():
+		return
+	if room_number == 2 and not bool(room.get("weather_opportunity_boost", false)):
+		room["layout_id"] = _starter_layout_for_path(RunContext.cultivation_path_id)
+	EventBus.pet_coord_feedback.emit("%s前奏：%s" % [RunContext.cultivation_path_name, goal])
+
+
+func _starter_layout_for_path(path_id: String) -> String:
+	match path_id:
+		"sword", "body":
+			return "lane_gates"
+		"caster", "talisman":
+			return "edge_pockets"
+		"alchemy":
+			return "broken_columns"
+		"soul":
+			return "corner_shrines"
+	return "open_scatter"
 
 
 func _apply_room_layout(room: Dictionary, stage_idx: int, weather_id: String) -> void:
@@ -201,6 +232,25 @@ func _reset_room_layout() -> void:
 	_apply_arena_bounds({})
 
 
+func _apply_temptation_penalty_to_room(room: Dictionary, penalty: Dictionary) -> void:
+	var penalty_id := str(penalty.get("id", ""))
+	var label := str(penalty.get("label", "破格代价"))
+	match penalty_id:
+		"enemy_hp":
+			room["hp_mult"] = float(room.get("hp_mult", 1.0)) * 1.28
+		"enemy_damage":
+			room["heart_hp_mult"] = float(room.get("heart_hp_mult", 1.0))
+			room["damage_mult"] = float(room.get("damage_mult", 1.0)) * 1.18
+		"enemy_speed":
+			room["speed_mult"] = float(room.get("speed_mult", 1.0)) * 1.14
+		"elite_pressure":
+			room["hp_mult"] = float(room.get("hp_mult", 1.0)) * 1.16
+			room["elite_pressure"] = true
+		_:
+			room["hp_mult"] = float(room.get("hp_mult", 1.0)) * 1.12
+	EventBus.pet_coord_feedback.emit("破格代价兑现：%s" % label)
+
+
 func _room_type(room: Dictionary) -> GameEnums.RoomType:
 	return GameEnums.parse_room_type(str(room.get("type", "")))
 
@@ -242,6 +292,7 @@ func _spawn_room_enemies(room: Dictionary) -> void:
 
 
 func _start_combat_horde(room: Dictionary) -> void:
+	_horde_room_snapshot = room.duplicate(true)
 	get_horde().start(room)
 
 
@@ -285,6 +336,8 @@ func _spawn_wave(wave_index: int) -> void:
 	var wave_def: Dictionary = _room_waves[wave_index]
 	var hp_mult: float = float(room.get("hp_mult", 1.0))
 	var heart_hp := RunContext.get_enemy_hp_mult(is_boss)
+	heart_hp *= float(room.get("heart_hp_mult", 1.0))
+	var force_elite_pressure := bool(room.get("elite_pressure", false))
 	var total_in_wave := _count_wave_enemies(wave_def)
 	var spawn_index := 0
 	var announced_affix := false
@@ -292,6 +345,8 @@ func _spawn_wave(wave_index: int) -> void:
 		var enemy_id := str(spawn.get("enemy_id", "normal"))
 		var count := int(spawn.get("count", 1))
 		var affixes: Array = spawn.get("affixes", [])
+		if force_elite_pressure and affixes.is_empty():
+			affixes = EliteAffixRegistry.roll_affixes(_flow_rng("elite_pressure_%d_%d" % [RunContext.rooms_cleared, wave_index]), 1)
 		if not announced_affix and affixes.size() > 0:
 			EventBus.pet_coord_feedback.emit("精英词缀 · %s" % EliteAffixRegistry.format_labels(affixes))
 			announced_affix = true
@@ -303,7 +358,10 @@ func _spawn_wave(wave_index: int) -> void:
 				"is_boss": is_boss,
 				"hp_mult": hp_mult,
 				"heart_hp": heart_hp,
+				"damage_mult": float(room.get("damage_mult", 1.0)),
+				"speed_mult": float(room.get("speed_mult", 1.0)),
 				"affixes": affixes,
+				"room_stage_index": int(room.get("stage_index", RunContext.current_stage)),
 			}, room, room_type)
 			spawn_index += 1
 	EventBus.wave_changed.emit.call_deferred(wave_index + 1)
@@ -373,6 +431,7 @@ func _advance_wave() -> void:
 
 
 func _on_room_cleared() -> void:
+	RunContext.finish_weather_kill_room()
 	var room: Dictionary = RunContext.get_current_room_def()
 	var stage: Dictionary = RunContext.get_current_stage_def()
 	var room_type := _room_type(room)
@@ -451,12 +510,12 @@ func _maybe_offer_weapon_mod(room_type: GameEnums.RoomType, stage_index: int) ->
 	if offers.is_empty():
 		return false
 	_waiting_for_weapon_mod = true
-	_phase = RoomPhase.AFFIX
+	_phase = RoomPhase.WEAPON_MOD
 	RunContext.ui_blocking = true
 	Engine.time_scale = 1.0
 	get_tree().paused = true
 	EventBus.weapon_mod_choice_requested.emit(offers, {
-		"source": "\u6e05\u573a\u796d\u70bc",
+		"source": "Boss传承 · 本命器祭炼" if room_type == GameEnums.RoomType.BOSS else "清场祭炼",
 		"stage_index": stage_index,
 		"room_type": GameEnums.room_type_id(room_type),
 		"path_hint": path_hint,
@@ -559,25 +618,41 @@ func _offer_affix() -> void:
 func _present_offers() -> void:
 	var owned: Array = []
 	var element_bias := ""
+	var desired_combo_tags: Array = []
 	if _player.has_node("AffixHolder"):
 		var holder: Node = _player.get_node("AffixHolder")
 		owned = holder.get_owned_ids()
 		element_bias = holder.get_element_bias()
+		desired_combo_tags = _collect_desired_combo_tags(holder)
 	if not RunContext.next_affix_bias.is_empty():
 		element_bias = RunContext.next_affix_bias
 		RunContext.next_affix_bias = ""
 	var room: Dictionary = RunContext.get_current_room_def()
 	var room_type := _room_type(room)
 	var from_event := room_type == GameEnums.RoomType.EVENT or _event_after_affix
+	var initial_offer := _affix_roll_seq == 0
+	var build_archetypes := BuildArchetypeRegistry.get_active_archetypes(
+		RunContext.cultivation_path_id,
+		desired_combo_tags,
+		element_bias,
+		_flow_rng("build_archetype_%d_%d" % [RunContext.rooms_cleared, _affix_roll_seq])
+	)
 	_offer_context = {
 		"elite": VariantUtils.as_bool(room.get("is_boss", false)) or RunContext.current_stage >= 1 or RunContext.heart_demon_trial_active,
 		"element_bias": element_bias,
+		"desired_combo_tags": desired_combo_tags,
+		"build_archetypes": build_archetypes,
+		"build_archetype_hint": BuildArchetypeRegistry.describe_active(build_archetypes),
 		"gold": RunContext.gold,
 		"pet_bonded": _pet_bonded_this_clear,
 		"pet_name": RunContext.pet_display_name,
 		"affix_slots": RunContext.affix_slot_max(),
 		"from_event": from_event,
+		"rooms_cleared": RunContext.rooms_cleared,
+		"owned_count": owned.size(),
 	}
+	if initial_offer:
+		_offer_context.merge(RunDirector.get_offer_context_bonus(), true)
 	var offers := AffixOfferSelector.roll_offers(
 		ConfigRegistry.get_all_affixes(),
 		3,
@@ -593,10 +668,34 @@ func _present_offers() -> void:
 		quality_shift += 1
 	if quality_shift > 0:
 		for i in offers.size():
-			var shifted = ConfigRegistry.compile_affix(offers[i].id, quality_shift)
+			var base_offer = AffixOfferSelector.unwrap_offer(offers[i])
+			var shifted = ConfigRegistry.compile_affix(base_offer.id, quality_shift)
 			if shifted:
-				offers[i] = shifted
+				if typeof(offers[i]) == TYPE_DICTIONARY:
+					offers[i]["tag"] = shifted
+				else:
+					offers[i] = shifted
+	if initial_offer:
+		RunDirector.record_reward_offer(offers, _offer_context)
+		var hint := str(_offer_context.get("director_hint", _offer_context.get("director_reason", "")))
+		if not hint.is_empty():
+			EventBus.pet_coord_feedback.emit(hint)
 	EventBus.affix_choice_requested.emit(offers, _offer_context)
+
+
+func _collect_desired_combo_tags(holder: Node) -> Array:
+	var counts := {}
+	for tag in holder.equipped:
+		if tag == null:
+			continue
+		for combo_tag in tag.combo_tags:
+			var key := str(combo_tag)
+			counts[key] = int(counts.get(key, 0)) + 1
+	var desired: Array = []
+	for key in counts.keys():
+		if int(counts[key]) >= 1:
+			desired.append(str(key))
+	return desired
 
 
 func _on_affix_reroll() -> void:
@@ -681,15 +780,26 @@ func _open_shop() -> void:
 func _build_shop_offers() -> Array:
 	var owned: Array = []
 	var element_bias := ""
+	var desired_combo_tags: Array = []
 	if _player.has_node("AffixHolder"):
 		var holder: Node = _player.get_node("AffixHolder")
 		owned = holder.get_owned_ids()
 		element_bias = holder.get_element_bias()
+		desired_combo_tags = _collect_desired_combo_tags(holder)
+	var build_archetypes := BuildArchetypeRegistry.get_active_archetypes(
+		RunContext.cultivation_path_id,
+		desired_combo_tags,
+		element_bias,
+		_flow_rng("shop_build_%d" % _shop_roll_seq)
+	)
 	var base_ctx := {
 		"elite": false,
 		"element_bias": element_bias,
+		"desired_combo_tags": desired_combo_tags,
+		"build_archetypes": build_archetypes,
 		"gold": RunContext.gold,
 		"affix_slots": RunContext.affix_slot_max(),
+		"from_shop": true,
 	}
 	var normal_offers := AffixOfferSelector.roll_offers(
 		ConfigRegistry.get_all_affixes(),
@@ -717,7 +827,7 @@ func _build_shop_offers() -> Array:
 		},
 	]
 	if not normal_offers.is_empty():
-		var tag = normal_offers[0]
+		var tag = AffixOfferSelector.unwrap_offer(normal_offers[0])
 		offers.append({
 			"kind": "affix",
 			"cost": GameConstants.SHOP_AFFIX_COST,
@@ -726,7 +836,7 @@ func _build_shop_offers() -> Array:
 			"tag": tag,
 		})
 	if not rare_offers.is_empty():
-		var rare = rare_offers[0]
+		var rare = AffixOfferSelector.unwrap_offer(rare_offers[0])
 		offers.append({
 			"kind": "rare_affix",
 			"cost": GameConstants.SHOP_RARE_COST,
@@ -753,7 +863,14 @@ func _on_player_died() -> void:
 	RunContext.run_active = false
 	Engine.time_scale = 1.0
 	get_tree().paused = true
+	EventBus.death_moment_requested.emit(RunContext.build_death_summary())
+
+
+func _on_death_moment_finished() -> void:
 	var legacy_affixes: Array = []
+	if _player == null:
+		EventBus.run_completed.emit(false)
+		return
 	if _player.has_node("AffixHolder"):
 		for tag in _player.get_node("AffixHolder").equipped:
 			legacy_affixes.append(tag)

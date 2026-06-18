@@ -1,0 +1,6 @@
+boss_id,name,stage,weapon_id,phase1,phase2,phase3,player_counter,signature_reward,death_regret,build_hook,batch
+fire_furnace_guard,火纹炉卫,筑基,furnace_core,慢速震地+火场,炉心过热召唤自爆火核,濒死全场裂地爆燃,打碎炉心或引自爆火核炸它,焚天炉碎片|火系残卷,炉火将熄；你却先倒下,火法|丹修|爆燃,0
+thunder_banner_lord,雷幡邪修,金丹,soul_banner,摇幡召雷魂,魂幡插地形成导电区,百魂引雷追身,打断摇幡或让落雷劈魂影,天雷珠碎片|魂晶,雷罚将成；魂幡仍在摇动,雷剑|魂幡|召魂,1
+xuanwu_gatekeeper,玄武守关将,金丹,xuanwu_shield,盾墙冲撞,护阵给小怪加盾,盾裂后全场反震,绕背或诱导其撞墙破盾,玄武甲碎片|反震道胚,他的盾已裂；你差一拳,体修|护盾|反震,1
+mirror_heart_demon,镜中心魔,元婴,time_mirror,复制玩家普攻,镜像复制上一个法术,濒死回溯一次并召双镜像,等镜面闪光后停手或打真身,时空镜碎片|心魔遗泽,镜中另一个你还站着,镜像|回溯|双器,2
+tribulation_avatar,天劫化身,渡劫,thunder_bead,天雷直线预警,雷池扩散+随机落雷,万雷归一最终审判,利用积水导电反击或躲进短暂安全眼,玄天雷痕|飞升记录,天劫已低头；你未能举剑,终局|雷罚|飞升,2

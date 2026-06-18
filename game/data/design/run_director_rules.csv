@@ -1,0 +1,9 @@
+rule_id,name,condition,action,delivery_mode,player_facing_explanation,limit,mutex_group,defer_rule,goal,batch
+no_feedback_30s,三十秒无爽点,30秒内无连锁/精英击杀/高价值反馈,下一房提高天象可利用地形或给构筑推进牌,opportunity,天地灵机渐盛,not_more_than_once_per_stage,tempo_help,若本房已有battle_gift则延后一房,避免空白期,0
+no_build_2_rewards,两次奖励无构筑,连续2次奖励没有满足当前标签,下一次三选一至少给1张构筑推进,opportunity,道韵向当前修行靠拢,once_per_stage,reward_fix,若下一次是剧情奖励则附加到再下一次三选一,保证Build成型感,0
+low_hp_weather_help,低血天象机会,生命低于35%且在天象房,生成可利用灵泉/雷光节点/裂地机会,opportunity,天地感应困境,once_per_run,survival_help,优先级低于battle_gift；已触发battle_gift则不再触发,给机会而不是直接救,0
+too_many_same_weather,天象疲劳,连续2房同天象且非剧情需要,下一房换不同天象或给混合天象预告,opportunity,天时流转,always,weather_variety,若当前构筑强依赖该天象则改为混合天象而非强换,避免重复疲劳,0
+new_player_chain_seed,新玩家连锁种子,前5局尚未触发隐藏连锁,安排批次0可用低/中难连锁机会如连环炮竹或护盾反噬,opportunity_only,天地暗藏玄机,once_per_account,chain_seed,只布置天气/敌人/地形/工具；不强制触发,让玩家知道有秘密,0
+overpowered_player,玩家过强,连续2房清场时间低于目标50%,下一精英带可读强变体或更高奖励风险,opportunity,劫气加重,not_more_than_once_per_stage,difficulty_spike,若玩家生命低于40%则延后,让强者也有刺激,1
+missed_gray_option,灰色选项执念,玩家看到灰色选项但未满足条件,后续2房提高相关条件资源权重,opportunity,执念未散,once_per_run,reward_fix,不覆盖Boss传承或剧情奖励,把遗憾变目标,1
+late_run_surprise,后期惊喜保底,第15分钟后无破格事件或法宝碎片,提高器冢/镜中异器/法宝碎片事件权重,opportunity,古器微鸣,once_per_run,late_temptation,若进入最终Boss流程则不再插入普通事件,避免后期只堆数值,1

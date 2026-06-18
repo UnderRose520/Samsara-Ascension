@@ -32,9 +32,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-	offset_left = -320.0
-offset_top = -330.0
-offset_right = 320.0
+offset_left = -360.0
+offset_top = -340.0
+offset_right = 360.0
 offset_bottom = 340.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -46,78 +46,84 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 20
 
-[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+[node name="Scroll" type="ScrollContainer" parent="Panel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 11
+horizontal_scroll_mode = 0
 
-[node name="Title" type="Label" parent="Panel/Margin/VBox"]
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 9
+
+[node name="Title" type="Label" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.843, 0, 1)
 theme_override_font_sizes/font_size = 26
 text = "选择道心 · 入轮回"
 horizontal_alignment = 1
 
-[node name="Hearts" type="HBoxContainer" parent="Panel/Margin/VBox"]
+[node name="Hearts" type="HBoxContainer" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="Detail" type="Label" parent="Panel/Margin/VBox"]
+[node name="Detail" type="Label" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.769, 0.714, 0.612, 1)
 autowrap_mode = 3
 text = "悟道：标准体验"
 horizontal_alignment = 1
 
-[node name="ShardLabel" type="Label" parent="Panel/Margin/VBox"]
+[node name="ShardLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.55, 0.75, 1)
 theme_override_font_sizes/font_size = 13
 text = "心魔碎片 0/3 · 已觉醒道统 0"
 horizontal_alignment = 1
 
-[node name="HeartDemonCheck" type="CheckButton" parent="Panel/Margin/VBox"]
+[node name="HeartDemonCheck" type="CheckButton" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 visible = false
 text = "心魔强化开局（消耗3碎片 · 仙品词条 · 敌人+10%）"
 
-[node name="PointsLabel" type="Label" parent="Panel/Margin/VBox"]
+[node name="PointsLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.68, 0.45, 1)
 theme_override_font_sizes/font_size = 12
 text = "轮回点 0"
 horizontal_alignment = 1
 
-[node name="SeedRow" type="HBoxContainer" parent="Panel/Margin/VBox"]
+[node name="SeedRow" type="HBoxContainer" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 8
 alignment = 1
 
-[node name="SeedLabel" type="Label" parent="Panel/Margin/VBox/SeedRow"]
+[node name="SeedLabel" type="Label" parent="Panel/Margin/Scroll/VBox/SeedRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.769, 0.714, 0.612, 1)
 theme_override_font_sizes/font_size = 13
 text = "局种子"
 
-[node name="SeedInput" type="LineEdit" parent="Panel/Margin/VBox/SeedRow"]
+[node name="SeedInput" type="LineEdit" parent="Panel/Margin/Scroll/VBox/SeedRow"]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "留空则随机生成"
 
-[node name="RandomSeedButton" type="Button" parent="Panel/Margin/VBox/SeedRow"]
+[node name="RandomSeedButton" type="Button" parent="Panel/Margin/Scroll/VBox/SeedRow"]
 layout_mode = 2
 theme_type_variation = &"Secondary"
 text = "随机"
 
-[node name="MetaButton" type="Button" parent="Panel/Margin/VBox"]
+[node name="MetaButton" type="Button" parent="Panel/Margin/Scroll/VBox"]
 custom_minimum_size = Vector2(180, 40)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_type_variation = &"Secondary"
 text = "轮回成长"
 
-[node name="StartButton" type="Button" parent="Panel/Margin/VBox"]
+[node name="StartButton" type="Button" parent="Panel/Margin/Scroll/VBox"]
 custom_minimum_size = Vector2(180, 48)
 layout_mode = 2
 size_flags_horizontal = 4

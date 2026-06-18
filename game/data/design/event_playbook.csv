@@ -1,0 +1,8 @@
+event_id,trigger,category,reward,risk,visual,frequency,cooldown,priority,mutex_group,defer_rule,fallback,batch
+battle_gift,天象房生命首次低于40%,support,按天象生成灵泉|灵矿|雷光节点|灵草,只触发一次；不直接杀敌,画面短亮；战场中心出现天地馈赠,1_per_run,none,100,survival_help,同房其他help或twist延后到下一房,若天象资源未实现则生成通用灵泉但不直接回血,0
+dao_heart_stir,连续2房无天象击杀,dynamic_help,下一房天象强化并增加可利用地形,敌人也能利用强化天象,进房时云层或地脉剧烈变化,1_per_run,none,80,tempo_help,若battle_gift同房满足则延后到下一房,若天气强化未实现则生成一处明显可利用地形和轻微视觉暗示,0
+enemy_mutation,精英房击杀第一个精英后3秒,twist,异变敌人5秒后自爆可伤敌我,玩家若站太近会受伤,敌人膨胀并出现属性倒计时,2_per_run,1_room,70,combat_twist,若同房已有support事件则延后或取消,若敌群远离AI未实现则让异变敌人向最近敌群移动,0
+past_shadow,第2关后精英房清场20%概率,inheritance,前代修士残影给道胚或残卷,奖励随机；不保证适配当前流派,半透明修士演示一招后化光,2_per_run,2_rooms,40,narrative_reward,若本房已有高优先事件则延后到下个精英清场,若残影演示未实现则用地面道痕和奖励来源文案替代,0
+pet_discovery,拥有灵宠时战斗后15%概率,companion,灵宠发现材料|残卷|灵露,需要玩家走过去拾取,灵宠跑向角落绕圈,2_per_run,1_room,30,companion_reward,若本房已有清场奖励事件则延后到下一普通房,若寻路未实现则在玩家附近生成灵宠提示点,1
+weapon_grave_crack,中期事件房或精英清场后10%概率,weapon_surprise,三选一本命器铭纹,可能附带下一房强敌追踪,地面裂开露出器冢灵光,1_per_run,2_rooms,60,weapon_reward,若同房已有inheritance事件则二选一保留更贴合当前构筑者,若器冢动画未实现则用铭纹光球和短震屏替代,1
+mirror_subweapon,后期镜类事件,temptation,临时获得副本命器一房,下一精英生成镜像分身,镜面倒影中出现另一把武器,1_per_run,none,90,late_temptation,若同房已有Boss或渡劫事件则不触发,若镜像分身未实现则生成强化复制敌并标记为镜债,2

@@ -61,6 +61,9 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dimmer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var setup_bg := AssetPaths.load_texture(AssetPaths.RUN_SETUP_BACKDROP)
+	if setup_bg:
+		backdrop.texture = setup_bg
 	_fit_panel_to_viewport()
 	get_viewport().size_changed.connect(_fit_panel_to_viewport)
 	UiHelpers.apply_panel_polish(panel, false)

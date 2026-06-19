@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+signal restart_run_requested
+
 const UiHelpers = preload("res://ui/ui_helpers.gd")
 const UiAnimations = preload("res://ui/ui_animations.gd")
 
@@ -14,6 +16,11 @@ const UiAnimations = preload("res://ui/ui_animations.gd")
 @onready var auto_aim_check: CheckButton = $Panel/Margin/VBox/AutoAimCheck
 @onready var auto_attack_check: CheckButton = $Panel/Margin/VBox/AutoAttackCheck
 @onready var sprite_style_option: OptionButton = $Panel/Margin/VBox/SpriteStyleRow/SpriteStyleOption
+@onready var end_run_button: Button = $Panel/Margin/VBox/EndRunButton
+@onready var confirm_box: VBoxContainer = $Panel/Margin/VBox/ConfirmBox
+@onready var confirm_label: Label = $Panel/Margin/VBox/ConfirmBox/ConfirmLabel
+@onready var confirm_restart_button: Button = $Panel/Margin/VBox/ConfirmBox/ConfirmRow/ConfirmRestartButton
+@onready var cancel_restart_button: Button = $Panel/Margin/VBox/ConfirmBox/ConfirmRow/CancelRestartButton
 
 var _shown := false
 var _sprite_style_labels := ["正常", "Q版"]
@@ -31,6 +38,9 @@ func _ready() -> void:
 	reduce_motion_check.toggled.connect(_on_reduce_motion_toggled)
 	auto_aim_check.toggled.connect(_on_auto_aim_toggled)
 	auto_attack_check.toggled.connect(_on_auto_attack_toggled)
+	end_run_button.pressed.connect(_on_end_run_pressed)
+	confirm_restart_button.pressed.connect(_on_confirm_restart_pressed)
+	cancel_restart_button.pressed.connect(_on_cancel_restart_pressed)
 	_setup_sprite_style_option()
 	_sync_from_save()
 
@@ -45,10 +55,12 @@ func set_visible_pause(show: bool) -> void:
 	visible = show
 	if show:
 		_sync_from_save()
+		_set_confirm_visible(false)
 		panel.modulate.a = 1.0
 		dimmer.modulate.a = 1.0
 		UiAnimations.modal_open(panel, dimmer)
 	else:
+		_set_confirm_visible(false)
 		UiAnimations.reset_modal(panel)
 
 
@@ -59,6 +71,7 @@ func _sync_from_save() -> void:
 	reduce_motion_check.button_pressed = SaveManager.get_display_setting("reduce_motion")
 	auto_aim_check.button_pressed = SaveManager.get_display_setting("auto_aim")
 	auto_attack_check.button_pressed = SaveManager.get_display_setting("auto_attack")
+	end_run_button.disabled = not RunContext.run_active
 	_sync_sprite_style_option()
 
 
@@ -133,3 +146,27 @@ func _on_copy_seed_pressed() -> void:
 			copy_seed_button.text = "复制种子"
 			copy_seed_button.disabled = false
 	, CONNECT_ONE_SHOT)
+
+
+func _on_end_run_pressed() -> void:
+	if not RunContext.run_active:
+		return
+	_set_confirm_visible(true)
+
+
+func _on_confirm_restart_pressed() -> void:
+	if not RunContext.run_active:
+		return
+	restart_run_requested.emit()
+
+
+func _on_cancel_restart_pressed() -> void:
+	_set_confirm_visible(false)
+
+
+func _set_confirm_visible(show: bool) -> void:
+	if confirm_box == null:
+		return
+	confirm_box.visible = show
+	if end_run_button:
+		end_run_button.visible = not show

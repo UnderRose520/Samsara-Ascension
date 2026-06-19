@@ -5,6 +5,7 @@ const UiHelpers = preload("res://ui/ui_helpers.gd")
 const UiTokens = preload("res://ui/theme/ui_tokens.gd")
 
 @onready var dimmer: ColorRect = $Dimmer
+@onready var backdrop: TextureRect = $Backdrop
 @onready var panel: PanelContainer = $Panel
 @onready var title_label: Label = $Panel/Margin/VBox/Title
 @onready var detail_label: Label = $Panel/Margin/VBox/Detail
@@ -15,6 +16,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	panel.visible = false
 	dimmer.visible = false
+	backdrop.visible = false
 	UiHelpers.apply_panel_polish(panel)
 	UiHelpers.decorate_modal_header($Panel/Margin/VBox, title_label)
 	restart_button.pressed.connect(_on_restart)
@@ -51,6 +53,7 @@ func _on_run_completed(victory: bool) -> void:
 
 	panel.visible = true
 	dimmer.visible = true
+	backdrop.visible = true
 	UiAnimations.modal_open(panel, dimmer)
 	if victory:
 		UiAnimations.pulse_gold(title_label, 2)
@@ -92,11 +95,11 @@ func _format_highlight_line(death_summary: Dictionary) -> String:
 		"dao_power_high":
 			return "道势将满——灵机已聚，只差一次万法归一。"
 		"combo_broken":
-			return "长连道韵——最高连击 %d，节奏曾经成形。" % int(death_summary.get("combo_peak", 0))
+			return "长连道势——最高连击 %d，节奏曾经成形。" % int(death_summary.get("combo_peak", 0))
 		"missed_room_momentum":
 			return "魔劫将破——最后一波只差几只就能脱身。"
 	if int(death_summary.get("combo_peak", 0)) >= 100:
-		return "百连道韵——这一世曾把攻势打到滚烫。"
+		return "百连道势——这一世曾把攻势打到滚烫。"
 	return "未竟之路——这一世留下了下一局要补上的缺口。"
 
 

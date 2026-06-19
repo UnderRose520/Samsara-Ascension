@@ -17,8 +17,14 @@ Thumbs.db
 
 # IDE
 .vscode/
+.obsidian/
 *.swp
 *~
 
 # Saves (local dev)
 user://
+
+# Local tools / generated workbench artifacts
+Godot_v*.exe
+tmp/
+output/

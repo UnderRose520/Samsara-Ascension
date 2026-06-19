@@ -109,7 +109,12 @@ static func _is_survival_offer(tag) -> bool:
 
 
 static func _decorate_special_offers(offers: Array, all_affixes: Array, owned_ids: Array, rng: RandomNumberGenerator, context: Dictionary) -> Array:
-	if offers.is_empty() or bool(context.get("from_event", false)) or bool(context.get("from_shop", false)):
+	if (
+		offers.is_empty()
+		or bool(context.get("from_event", false))
+		or bool(context.get("from_shop", false))
+		or bool(context.get("opening_choice", false))
+	):
 		return offers
 	var out := offers.duplicate()
 	var rooms_cleared := int(context.get("rooms_cleared", 0))

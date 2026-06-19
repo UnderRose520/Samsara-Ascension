@@ -1,7 +1,8 @@
-[gd_scene format=3 uid="uid://ds2xvgq7481wu"]
+[gd_scene load_steps=4 format=3 uid="uid://ds2xvgq7481wu"]
 
 [ext_resource type="Script" path="res://ui/components/hud_skill_dock.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://bspellslot001" path="res://ui/components/spell_slot.tscn" id="2"]
+[ext_resource type="Script" path="res://ui/components/hud_status_orbs.gd" id="3"]
 
 [node name="HudSkillDock" type="PanelContainer"]
 layout_mode = 1
@@ -10,10 +11,10 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -168.0
-offset_top = -96.0
-offset_right = 168.0
-offset_bottom = -22.0
+offset_left = -248.0
+offset_top = -140.0
+offset_right = 248.0
+offset_bottom = -54.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
@@ -33,6 +34,13 @@ layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
+[node name="LeftOrbs" type="Control" parent="Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(86, 52)
+layout_mode = 2
+script = ExtResource("3")
+seal_set = "left"
+
 [node name="SpellQ" parent="Margin/HBox" instance=ExtResource("2")]
 unique_name_in_owner = true
 layout_mode = 2
@@ -44,3 +52,10 @@ layout_mode = 2
 [node name="SpellR" parent="Margin/HBox" instance=ExtResource("2")]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="RightOrbs" type="Control" parent="Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(86, 52)
+layout_mode = 2
+script = ExtResource("3")
+seal_set = "right"

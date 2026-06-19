@@ -1,0 +1,11 @@
+Use case: game UI icon atlas.
+Asset type: clean HD 2D combat HUD spell icons for a xianxia roguelite.
+Primary request: create a 2x2 icon atlas on a perfectly flat solid #FF00FF chroma-key background, one centered spell icon per quadrant with generous padding.
+Icon 1 top-left: Q active spell, fiery talisman bolt, orange-red flame drop wrapped by a small gold rune stroke, readable at 48px.
+Icon 2 top-right: E active spell, jade sword array, three cold cyan sword lights crossing over a dark jade seal, sharp and elegant.
+Icon 3 bottom-left: R active spell, ultimate thunder-ice fan, blue-white thunder fan arc with a small violet core, decisive finisher feeling.
+Icon 4 bottom-right: locked spell slot, dim sealed jade ring with a small cracked lock talisman, low saturation but still readable.
+Style/medium: clean hand-painted HD game UI asset, dark ink jade, restrained cold gold, high contrast silhouettes, no pixel art, no beige parchment.
+Composition/framing: exact 2 by 2 grid; each icon centered in its quadrant; no borders, no guide lines, no square cards, no text, no letters, no watermark.
+Constraints: background must be perfectly uniform #FF00FF; do not use #FF00FF inside the icons; keep every icon fully inside its cell with visible magenta margin; no cast shadow outside the icon glow.
+Avoid: text, letters, Chinese characters, noisy texture, thick frames, sci-fi metal, purple-dominant palette, icons touching cell edges.

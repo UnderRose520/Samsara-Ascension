@@ -6,6 +6,7 @@ signal selected(mode_id: String)
 
 const UiTokens := preload("res://ui/theme/ui_tokens.gd")
 const UiAnimations := preload("res://ui/ui_animations.gd")
+const HudStyles := preload("res://ui/hud_styles.gd")
 
 @onready var _icon: TextureRect = %Icon
 @onready var _title: Label = %Title
@@ -39,28 +40,10 @@ func set_selected(on: bool) -> void:
 
 
 func _set_selected(on: bool) -> void:
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.094, 0.243, 0.196, 0.96) if on else Color(0.051, 0.137, 0.114, 0.85)
-	var bw := 2 if on else 1
-	sb.border_width_left = bw
-	sb.border_width_top = bw
-	sb.border_width_right = bw
-	sb.border_width_bottom = bw
-	# 选中：暖金细边 + 金色辉光；未选中：雅致软金描边（成框）
-	sb.border_color = Color(0.95, 0.84, 0.5, 0.92) if on else Color(0.85, 0.78, 0.55, 0.45)
-	sb.corner_radius_top_left = 10
-	sb.corner_radius_top_right = 10
-	sb.corner_radius_bottom_left = 10
-	sb.corner_radius_bottom_right = 10
-	if on:
-		sb.shadow_color = Color(1.0, 0.84, 0.4, 0.3)
-		sb.shadow_size = 16
-	else:
-		sb.shadow_color = Color(0.0, 0.0, 0.0, 0.2)
-		sb.shadow_size = 5
-	add_theme_stylebox_override("panel", sb)
+	var accent := UiTokens.ACCENT_GOLD if on else UiTokens.ACCENT_JADE
+	add_theme_stylebox_override("panel", HudStyles.decision_card(accent, on))
 	_glow.visible = on
-	_glow.color = Color(1.0, 0.85, 0.42, 0.1 if on else 0.0)
+	_glow.color = Color(1.0, 0.85, 0.42, 0.14 if on else 0.0)
 
 
 func _set_children_mouse_ignore(node: Node) -> void:

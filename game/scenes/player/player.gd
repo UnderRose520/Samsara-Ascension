@@ -38,12 +38,14 @@ var _weapon: Dictionary = {}
 var _weapon_id := ""
 var debug_weapon_shape := ""
 var _dao_visual_time := 0.0
+var _dao_redraw_timer := 0.0
 var _perfect_counter_time := 0.0
 var _perfect_counter_flash := 0.0
 var _perfect_counter_bonus_ready := false
 var _guardian_invuln := 0.0
 
 const COMBAT_ANIMATION_HOLD_SEC := 0.5
+const DAO_REDRAW_INTERVAL := 1.0 / 24.0
 const ANIMATION_FPS := {
 	"idle": 6.0,
 	"walk": 8.0,
@@ -85,6 +87,7 @@ func _physics_process(delta: float) -> void:
 	_attack_cd = maxf(_attack_cd - delta, 0.0)
 	_combat_anim_time = maxf(_combat_anim_time - delta, 0.0)
 	_dodge_trail_cd = maxf(_dodge_trail_cd - delta, 0.0)
+	_dao_redraw_timer = maxf(_dao_redraw_timer - delta, 0.0)
 	_perfect_counter_time = maxf(_perfect_counter_time - delta, 0.0)
 	_perfect_counter_flash = maxf(_perfect_counter_flash - delta, 0.0)
 	if _perfect_counter_time <= 0.0:
@@ -420,11 +423,16 @@ func _apply_visual_facing() -> void:
 func _needs_redraw() -> bool:
 	if body_visual == null or body_visual.texture == null:
 		return true
-	if RunContext.dao_momentum_state != "idle" or RunContext.dao_momentum > 0.0:
-		return true
 	if _iframe > 0.0:
 		return true
-	return spell_caster and spell_caster.has_method("is_casting") and spell_caster.is_casting()
+	if spell_caster and spell_caster.has_method("is_casting") and spell_caster.is_casting():
+		return true
+	if RunContext.dao_momentum_state != "idle" or RunContext.dao_momentum > 0.0:
+		if _dao_redraw_timer <= 0.0:
+			_dao_redraw_timer = DAO_REDRAW_INTERVAL
+			return true
+		return false
+	return false
 
 
 func _fire_basic_attack(move_hint: Vector2) -> void:

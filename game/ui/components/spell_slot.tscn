@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://ui/components/spell_slot.gd" id="1"]
 [ext_resource type="Script" path="res://ui/components/spell_icon_frame.gd" id="2"]
-[ext_resource type="Texture2D" path="res://assets/ui/spell_q_fire_40.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/spell_q_fire_talisman_96.png" id="3"]
 
 [node name="SpellSlot" type="PanelContainer"]
 custom_minimum_size = Vector2(168, 72)

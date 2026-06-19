@@ -30,6 +30,23 @@ func get_unlocks() -> Dictionary:
 	return slots_unlocked.duplicate()
 
 
+func get_slot_preview_states() -> Dictionary:
+	var out := {}
+	var bindings := get_default_bindings()
+	for slot in ["q", "e", "r"]:
+		var spell_id := str(bindings.get(slot, ""))
+		var spell := ActiveSpellRegistry.get_spell(spell_id)
+		var unlocked := VariantUtils.as_bool(slots_unlocked.get(slot, false))
+		out[slot] = {
+			"name": str(spell.get("name", slot.to_upper())),
+			"unlocked": unlocked,
+			"cd_remaining": 0.0,
+			"cd_total": 0.0,
+			"casting": false,
+		}
+	return out
+
+
 func unlock_slot(slot: String) -> bool:
 	if slot.is_empty() or VariantUtils.as_bool(slots_unlocked.get(slot, false)):
 		return false

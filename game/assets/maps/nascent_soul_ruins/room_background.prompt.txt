@@ -1,26 +1,16 @@
-SYSTEM ROLE
-You are a senior 2D environment art director for a shipped Godot 4 action roguelite. Create one production-ready map foundation asset only; obey the runtime layer separation contract exactly.
+Clean hand-painted HD 2D top-down Chinese xianxia cultivation fantasy combat arena background.
+Foundation-only ground layer for a survivors-like roguelite battle, 16:9 composition, readable at 1280x720.
+Theme: Nascent Soul Ruins: pale weathered ruin-stone floor, broken ancient formation traces, cold blue mist, residual gold linework embedded into worn ground.
+Color accents: moonlit blue-gray stone, aged gold formation lines, thin mist along edges.
 
-PROJECT CONTEXT
-Game: Samsara Ascension / 轮回仙途, Chinese xianxia cultivation roguelite, top-down survivors-like combat.
-Runtime: the PNG will be center-cropped and resized to 1280x720; collision, props, enemies, pickups, spawn zones, and camera bounds are loaded separately from runtime_scene_manifest.json.
-Realm/stage: 元婴遗迹 / 焚心秘境.
-Theme motif: ancient nascent-soul ruin with worn stone and scattered gold fragments.
+Gameplay composition:
+- center 60 percent is broad, quiet, low-noise playable space
+- darker atmospheric edges carry most story detail
+- embedded low terrain detail only: subtle cracks, qi veins, stains, low floor pattern
+- no collidable props, no tall objects, no trees, no pillars, no buildings, no walls, no doors, no gates, no chests
+- no characters, no enemies, no pets, no projectiles, no UI, no text, no labels, no symbols that read as interface marks
+- no ritual target circle or large readable gameplay marker baked into the center
+- no hard black outlines, no pixel art, no photorealism, no busy texture noise
 
-ART DIRECTION
-Style: clean hand-painted HD 2D game map, readable at 1280x720, dark Chinese cultivation fantasy, elegant but functional, not retro pixel art, not noisy AI texture.
-Camera: top-down with a slight 3/4 painterly material read; flat enough for a TileMap overlay and enemy silhouettes.
-Composition: large open combat floor, visually quiet playable center, darker atmospheric edges, asymmetric terrain masses, subtle paths or worn flow lines that guide movement without looking like UI.
-Terrain detail: include foundation-level material variation only: moss, damp stone, scorched cracks, jade veins, worn ruin slabs, lightning fractures, shallow puddle stains, dust, sand, leaf litter, mineral flecks, faint qi residue. Keep details low and embedded in the ground.
-Lighting: soft environmental glow from the realm palette, no hard spotlight, no centered halo, no ritual target circle.
-Product design intent: every run should feel like a different cultivation trial. Leave broad negative space for dense enemies, make edges tell the realm story, and create enough local terrain variation that randomized larger rooms still feel authored rather than stretched.
-
-LAYER CONTRACT
-This is a foundation/background layer. It may show ground material, low terrain markings, floor patterns, path scars, shallow embedded detail, and non-colliding terrain boundaries.
-It must not bake any runtime-controlled object.
-
-STRICT EXCLUSIONS
-No player, enemies, NPCs, bosses, pets, projectiles, pickups, chests, doors, gates, signs, tall props, trees, buildings, crates, barrels, pillars, rocks that look collidable, walls, fences, stairs, UI, labels, text, arrows, numbers, minimap graphics, circular ritual diagrams, radial target rings, camera-centered halo, or baked collision objects.
-
-OUTPUT
-One square PNG source image, no transparency required, no border, no frame, no text.
+Art direction: 玄玉鎏金·五行秘境, dark ink jade base, restrained ritual gold, soft painterly material, elegant but functional.
+Camera: exact overhead/top-down game background, no horizon, no perspective wall, no vignette that hides gameplay.

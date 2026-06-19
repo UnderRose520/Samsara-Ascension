@@ -1,0 +1,9 @@
+Use case: game UI icon atlas.
+Asset type: 2D xianxia roguelite combat HUD weather icons.
+Primary request: create a clean 4x2 icon atlas on a perfectly flat solid #FF00FF chroma-key background, with one centered weather icon per cell and generous padding.
+Top row, left to right: clear sky jade sun disk; rain water talisman with three blue droplets; thunderstorm blue-white lightning sigil; fierce solar fire flame seal.
+Bottom row, left to right: wind spiral jade gust; fog pale mist charm; snow crystalline frost talisman; sandstorm golden dust vortex.
+Style/medium: clean hand-painted HD game UI asset, dark jade ink outlines, restrained cold gold accents, vivid elemental glow, sharp silhouettes, readable at 64px.
+Composition/framing: exact 4 columns by 2 rows, each icon centered in its cell, no borders, no grid guide lines, no text, no numbers, no watermark.
+Constraints: background must be perfectly uniform #FF00FF; do not use #FF00FF inside the icons; every icon is a compact emblem, not a square card; keep the eight icons visually consistent with the existing thunderstorm HUD sigil style.
+Avoid: old pixel-art look, flat emoji symbols, thick square frames, noisy texture, beige parchment, sci-fi metal, purple-dominant palette, readable characters.

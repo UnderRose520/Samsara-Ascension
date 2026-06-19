@@ -1,71 +1,134 @@
-[gd_scene format=3 uid="uid://dcyp2kn67a1wu"]
+[gd_scene load_steps=5 format=3 uid="uid://dcyp2kn67a1wu"]
 
 [ext_resource type="Script" path="res://ui/components/hud_character_panel.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://bhudresbar001" path="res://ui/components/hud_resource_bar.tscn" id="2"]
 [ext_resource type="Script" path="res://ui/components/hud_section_header.gd" id="3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player_style_normal_64.png" id="4"]
 
-[node name="HudCharacterPanel" type="PanelContainer"]
-custom_minimum_size = Vector2(316, 0)
-offset_right = 316.0
-offset_bottom = 284.0
+[node name="HudCharacterPanel" type="Control"]
+custom_minimum_size = Vector2(324, 0)
+offset_right = 324.0
+offset_bottom = 388.0
 mouse_filter = 2
 script = ExtResource("1")
 
 [node name="PanelFrame" type="TextureRect" parent="."]
+visible = false
 layout_mode = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
 
 [node name="AccentStripe" type="ColorRect" parent="."]
+visible = false
 layout_mode = 2
 mouse_filter = 2
 color = Color(0.482, 0.776, 0.494, 0.85)
 
 [node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 2
-theme_override_constants/margin_left = 13
-theme_override_constants/margin_top = 11
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
 
 [node name="VBox" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
-theme_override_constants/separation = 5
+theme_override_constants/separation = 8
 
-[node name="TitleLabel" type="Label" parent="Margin/VBox"]
+[node name="VitalsRow" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="AvatarFrame" type="PanelContainer" parent="Margin/VBox/VitalsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="Avatar" type="TextureRect" parent="Margin/VBox/VitalsRow/AvatarFrame"]
+layout_mode = 2
+texture = ExtResource("4")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VitalsCol" type="VBoxContainer" parent="Margin/VBox/VitalsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="Margin/VBox/VitalsRow/VitalsCol"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.843, 0, 1)
 theme_override_font_sizes/font_size = 18
 theme_override_constants/outline_size = 3
 theme_override_colors/font_outline_color = Color(0.02, 0.018, 0.012, 0.92)
-text = "轮回仙途"
+text = "炼气 · 法修"
 
-[node name="WaveLabel" type="Label" parent="Margin/VBox"]
+[node name="WaveLabel" type="Label" parent="Margin/VBox/VitalsRow/VitalsCol"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.769, 0.714, 0.612, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.82, 0.78, 0.68, 0.98)
+theme_override_font_sizes/font_size = 12
 theme_override_constants/outline_size = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.75)
-text = "初入仙途 / 战斗"
+text = "初入仙途"
+
+[node name="HpBar" parent="Margin/VBox/VitalsRow/VitalsCol" instance=ExtResource("2")]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 18)
+
+[node name="ManaBar" parent="Margin/VBox/VitalsRow/VitalsCol" instance=ExtResource("2")]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 16)
+bar_kind = 1
+
+[node name="GoldRow" type="HBoxContainer" parent="Margin/VBox/VitalsRow/VitalsCol"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="GoldIcon" type="TextureRect" parent="Margin/VBox/VitalsRow/VitalsCol/GoldRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="GoldLabel" type="Label" parent="Margin/VBox/VitalsRow/VitalsCol/GoldRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.843, 0, 0.96)
+theme_override_font_sizes/font_size = 13
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.72)
+text = "灵石 0"
 
 [node name="ObjectivePanel" type="PanelContainer" parent="Margin/VBox"]
 unique_name_in_owner = true
 visible = false
+custom_minimum_size = Vector2(0, 82)
 layout_mode = 2
+
+[node name="ObjectiveFrame" type="TextureRect" parent="Margin/VBox/ObjectivePanel"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
 
 [node name="Margin" type="MarginContainer" parent="Margin/VBox/ObjectivePanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 6
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 6
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
 
 [node name="VBox" type="VBoxContainer" parent="Margin/VBox/ObjectivePanel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 5
 
 [node name="TopRow" type="HBoxContainer" parent="Margin/VBox/ObjectivePanel/Margin/VBox"]
 layout_mode = 2
@@ -76,7 +139,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 0.843, 0, 0.98)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 14
 theme_override_constants/outline_size = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.78)
 text = "本关目标"
@@ -85,7 +148,7 @@ text = "本关目标"
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.82, 0.94, 0.86, 0.96)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 13
 theme_override_constants/outline_size = 1
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.7)
 text = "下波 0.0s"
@@ -93,7 +156,7 @@ horizontal_alignment = 2
 
 [node name="ObjectiveProgress" type="ProgressBar" parent="Margin/VBox/ObjectivePanel/Margin/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 7)
+custom_minimum_size = Vector2(0, 6)
 layout_mode = 2
 max_value = 1.0
 show_percentage = false
@@ -102,13 +165,14 @@ show_percentage = false
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.86, 0.82, 0.72, 0.98)
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 12
 theme_override_constants/outline_size = 1
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.68)
 text = "斩魔 0/0 / 第1波 / 剩 0:00"
 
 [node name="SeedLabel" type="Label" parent="Margin/VBox"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.735, 0.64, 0.95)
 theme_override_font_sizes/font_size = 12
@@ -116,32 +180,35 @@ theme_override_constants/outline_size = 1
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.65)
 text = "种子 未生成"
 
+[node name="CombatDivider" type="TextureRect" parent="Margin/VBox"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
 [node name="CombatHeader" type="Control" parent="Margin/VBox"]
-custom_minimum_size = Vector2(0, 20)
+visible = false
+custom_minimum_size = Vector2(0, 18)
 layout_mode = 2
 script = ExtResource("3")
 title = "修士"
 
 [node name="CombatRow" type="HBoxContainer" parent="Margin/VBox"]
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="ResourceCol" type="VBoxContainer" parent="Margin/VBox/CombatRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 6
-
-[node name="HpBar" parent="Margin/VBox/CombatRow/ResourceCol" instance=ExtResource("2")]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="ManaBar" parent="Margin/VBox/CombatRow/ResourceCol" instance=ExtResource("2")]
-unique_name_in_owner = true
-layout_mode = 2
-bar_kind = 1
+theme_override_constants/separation = 8
 
 [node name="ComboBadge" type="PanelContainer" parent="Margin/VBox/CombatRow"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_vertical = 4
 
@@ -155,56 +222,204 @@ theme_override_colors/font_color = Color(0.769, 0.714, 0.612, 1)
 theme_override_font_sizes/font_size = 12
 theme_override_constants/outline_size = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.75)
-text = "连击
-0"
+text = "连击 0"
 horizontal_alignment = 1
 
 [node name="BuildHeader" type="Control" parent="Margin/VBox"]
-custom_minimum_size = Vector2(0, 20)
+visible = false
+custom_minimum_size = Vector2(0, 18)
 layout_mode = 2
 script = ExtResource("3")
-title = "道路"
+title = "命纹"
 
 [node name="BuildScroll" type="ScrollContainer" parent="Margin/VBox"]
-custom_minimum_size = Vector2(0, 82)
+custom_minimum_size = Vector2(0, 132)
 layout_mode = 2
-size_flags_vertical = 3
+size_flags_vertical = 0
 horizontal_scroll_mode = 0
+vertical_scroll_mode = 0
 
 [node name="BuildVBox" type="VBoxContainer" parent="Margin/VBox/BuildScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 6
+theme_override_constants/separation = 3
+
+[node name="BuildLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.843, 0, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.72)
+text = "雷火法修"
 
 [node name="RealmBadge" type="PanelContainer" parent="Margin/VBox/BuildScroll/BuildVBox"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
+
+[node name="BuildBadgeFrame" type="TextureRect" parent="Margin/VBox/BuildScroll/BuildVBox/RealmBadge"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
 
 [node name="Margin" type="MarginContainer" parent="Margin/VBox/BuildScroll/BuildVBox/RealmBadge"]
 layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
 [node name="RealmLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox/RealmBadge/Margin"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.88, 0.82, 1, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 13
 theme_override_constants/outline_size = 1
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.68)
-text = "炼气 / 槽位 3"
+text = "核心0/3 临时0/2 封印0/1"
 
-[node name="BuildLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox"]
+[node name="AffixLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 13
 theme_override_constants/outline_size = 1
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.62)
-text = "流派 术0 体0 契0"
+text = "术0 体0 契0"
+
+[node name="AffixRuneRow" type="HBoxContainer" parent="Margin/VBox/BuildScroll/BuildVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="AffixRune0" type="PanelContainer" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow/AffixRune0"]
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow/AffixRune0"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.843, 0, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.78)
+text = "火"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AffixRune1" type="PanelContainer" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow/AffixRune1"]
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow/AffixRune1"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.843, 0, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.78)
+text = "火"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AffixRune2" type="PanelContainer" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow/AffixRune2"]
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow/AffixRune2"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.78)
+text = "雷"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AffixRune3" type="PanelContainer" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow/AffixRune3"]
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow/AffixRune3"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.78)
+text = "雷"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AffixRune4" type="PanelContainer" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow/AffixRune4"]
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow/AffixRune4"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 1, 0.82, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.78)
+text = "无"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AffixRune5" type="PanelContainer" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow/AffixRune5"]
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox/AffixRuneRow/AffixRune5"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.74, 0.66, 0.82, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.78)
+text = "封"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="DaoLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.843, 0, 0.9)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 13
 theme_override_constants/outline_size = 1
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.62)
 text = "道统 未成"
@@ -224,44 +439,16 @@ show_percentage = false
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.647, 0.302, 0.88)
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 12
 theme_override_constants/outline_size = 1
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.62)
-text = "Combo 无 0/0"
-
-[node name="AffixLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 11
-theme_override_constants/outline_size = 1
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.62)
-autowrap_mode = 3
-text = "词条 未装备"
+text = "道统候选 0/1"
 
 [node name="SkillLabel" type="Label" parent="Margin/VBox/BuildScroll/BuildVBox"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_constants/outline_size = 1
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.62)
 text = "功法 烈焰掌 Lv.1"
-
-[node name="GoldRow" type="HBoxContainer" parent="Margin/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="GoldIcon" type="TextureRect" parent="Margin/VBox/GoldRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(16, 16)
-layout_mode = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="GoldLabel" type="Label" parent="Margin/VBox/GoldRow"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.843, 0, 0.95)
-theme_override_font_sizes/font_size = 14
-theme_override_constants/outline_size = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.72)
-text = "灵石 0"

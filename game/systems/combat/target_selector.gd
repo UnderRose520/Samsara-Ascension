@@ -11,6 +11,10 @@ const TargetingConfig = preload("res://systems/combat/targeting_config.gd")
 ## 自动索敌 v2：威胁圈 + 残血 + 距离 + 攻击圈内 Boss 加权；带评分粘性。
 
 static var _locked: WeakRef
+static var _cached_target: WeakRef
+static var _cached_player_id := 0
+static var _cached_frame := -1
+static var _cached_range := 0.0
 
 
 
@@ -21,6 +25,12 @@ static func acquire(player: Node2D, max_range: float) -> Node2D:
 	if player == null or player.get_tree() == null:
 
 		return null
+
+	var cached := _get_cached_acquire(player, max_range)
+
+	if cached != null:
+
+		return cached
 
 	var stick_range := TargetingConfig.get_float("auto_target_stick_range", 650.0)
 
@@ -39,6 +49,7 @@ static func acquire(player: Node2D, max_range: float) -> Node2D:
 			if threat_override != null:
 
 				_locked = weakref(threat_override)
+				_cache_acquire(player, max_range, threat_override)
 
 				return threat_override
 
@@ -47,6 +58,7 @@ static func acquire(player: Node2D, max_range: float) -> Node2D:
 			if boss_override != null:
 
 				_locked = weakref(boss_override)
+				_cache_acquire(player, max_range, boss_override)
 
 				return boss_override
 
@@ -59,8 +71,11 @@ static func acquire(player: Node2D, max_range: float) -> Node2D:
 				if best_score > locked_score * TargetingConfig.get_float("stick_switch_ratio", 1.15):
 
 					_locked = weakref(best)
+					_cache_acquire(player, max_range, best)
 
 					return best
+
+			_cache_acquire(player, max_range, locked)
 
 			return locked
 
@@ -73,6 +88,8 @@ static func acquire(player: Node2D, max_range: float) -> Node2D:
 	else:
 
 		_locked = null
+
+	_cache_acquire(player, max_range, best)
 
 	return best
 
@@ -327,6 +344,52 @@ static func _get_locked_enemy() -> Node2D:
 		return null
 
 	return enemy as Node2D
+
+
+
+static func _cache_acquire(player: Node2D, max_range: float, target: Node2D) -> void:
+
+	_cached_player_id = player.get_instance_id()
+
+	_cached_frame = Engine.get_physics_frames()
+
+	_cached_range = max_range
+
+	_cached_target = weakref(target) if target != null else null
+
+
+
+static func _get_cached_acquire(player: Node2D, max_range: float) -> Node2D:
+
+	if _cached_frame != Engine.get_physics_frames():
+
+		return null
+
+	if _cached_player_id != player.get_instance_id():
+
+		return null
+
+	if _cached_target == null:
+
+		return null
+
+	if _cached_range + 0.01 < max_range:
+
+		return null
+
+	var target: Variant = _cached_target.get_ref()
+
+	if target == null or not is_instance_valid(target) or not (target is Node2D):
+
+		return null
+
+	var node := target as Node2D
+
+	if not _is_candidate(player, node, max_range):
+
+		return null
+
+	return node
 
 
 

@@ -3,6 +3,7 @@ extends RefCounted
 
 const AssetPaths = preload("res://assets/asset_paths.gd")
 const UiTokens = preload("res://ui/theme/ui_tokens.gd")
+const HudStyles = preload("res://ui/hud_styles.gd")
 
 const QUALITY_NAMES := ["凡品", "灵品", "仙品", "天品", "道品"]
 const CATEGORY_NAMES := ["功法", "法术", "体质", "神通", "联动", "灵宠"]
@@ -48,7 +49,7 @@ static func make_ninepatch_panel_style() -> StyleBoxTexture:
 	sb.content_margin_top = 10
 	sb.content_margin_right = 12
 	sb.content_margin_bottom = 10
-	sb.modulate_color = Color(1, 1, 1, 0.96)
+	sb.modulate_color = Color(0.76, 0.94, 0.88, 0.50)
 	return sb
 
 
@@ -65,10 +66,9 @@ static func attach_gold_corners(parent: Control) -> UiGoldCorners:
 
 
 static func apply_panel_polish(panel: PanelContainer, with_corners: bool = false) -> void:
-	# 默认不再叠加亮黄 L 形角标；改用 ninepatch 自带的雕花软金边框（见 generate_2d_sprites）
 	if panel == null:
 		return
-	panel.add_theme_stylebox_override("panel", make_ninepatch_panel_style())
+	panel.add_theme_stylebox_override("panel", HudStyles.modal_panel())
 	if with_corners:
 		var host := panel.get_child(0) as Control
 		if host:
@@ -76,7 +76,13 @@ static func apply_panel_polish(panel: PanelContainer, with_corners: bool = false
 
 
 static func apply_card_polish(card: PanelContainer, with_corners: bool = false) -> void:
-	apply_panel_polish(card, with_corners)
+	if card == null:
+		return
+	card.add_theme_stylebox_override("panel", HudStyles.decision_card(UiTokens.ACCENT_GOLD, false))
+	if with_corners:
+		var host := card.get_child(0) as Control
+		if host:
+			attach_gold_corners(host)
 
 
 static func make_hp_bar_styles() -> Dictionary:
@@ -129,12 +135,13 @@ static func decorate_modal_header(vbox: VBoxContainer, title: Label) -> void:
 	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(bar)
 	vbox.move_child(bar, title.get_index())
-	title.add_theme_font_size_override("font_size", 24)
-	title.add_theme_constant_override("outline_size", 1)
-	title.add_theme_color_override("font_outline_color", Color(0.25, 0.18, 0.05, 0.85))
+	title.add_theme_font_size_override("font_size", 26)
+	title.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD)
+	title.add_theme_constant_override("outline_size", 2)
+	title.add_theme_color_override("font_outline_color", Color(0.02, 0.012, 0.004, 0.88))
 	title.add_theme_constant_override("shadow_offset_x", 1)
-	title.add_theme_constant_override("shadow_offset_y", 1)
-	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.45))
+	title.add_theme_constant_override("shadow_offset_y", 2)
+	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.62))
 
 
 static func wrap_with_panel_texture(panel: PanelContainer, texture_path: String) -> void:

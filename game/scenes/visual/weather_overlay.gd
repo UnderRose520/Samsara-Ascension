@@ -2,12 +2,12 @@ class_name WeatherOverlay
 extends Node2D
 
 const WEATHER_PARTICLE_COUNTS := {
-	"rain": 86,
-	"thunder": 76,
-	"snow": 58,
-	"fog": 28,
-	"sand": 64,
-	"wind": 40,
+	"rain": 52,
+	"thunder": 46,
+	"snow": 34,
+	"fog": 18,
+	"sand": 38,
+	"wind": 24,
 }
 
 var _weather_id := "clear"
@@ -15,6 +15,9 @@ var _bounds := Rect2(-640.0, -360.0, 1280.0, 720.0)
 var _particles: Array = []
 var _rng := RandomNumberGenerator.new()
 var _intensity := 1.0
+var _step_accum := 0.0
+
+const WEATHER_FRAME_INTERVAL := 1.0 / 30.0
 
 
 func _ready() -> void:
@@ -29,6 +32,7 @@ func set_weather(weather_id: String, camera_bounds: Rect2, intensity: float = 1.
 	_bounds = camera_bounds
 	_intensity = clampf(intensity, 0.55, 1.85)
 	_particles.clear()
+	_step_accum = 0.0
 	var area_scale := sqrt(maxf(_bounds.size.x * _bounds.size.y, 1.0) / (1280.0 * 720.0))
 	var count := int(round(float(WEATHER_PARTICLE_COUNTS.get(weather_id, 0)) * area_scale * _intensity))
 	for _i in range(count):
@@ -41,9 +45,14 @@ func set_weather(weather_id: String, camera_bounds: Rect2, intensity: float = 1.
 func _process(delta: float) -> void:
 	if not visible:
 		return
+	_step_accum += delta
+	if _step_accum < WEATHER_FRAME_INTERVAL:
+		return
+	var step := minf(_step_accum, WEATHER_FRAME_INTERVAL * 2.0)
+	_step_accum = 0.0
 	for i in range(_particles.size()):
 		var p: Dictionary = _particles[i]
-		p["pos"] = Vector2(p["pos"]) + Vector2(p["vel"]) * delta
+		p["pos"] = Vector2(p["pos"]) + Vector2(p["vel"]) * step
 		if _is_outside(Vector2(p["pos"])):
 			p = _make_particle(false)
 		_particles[i] = p

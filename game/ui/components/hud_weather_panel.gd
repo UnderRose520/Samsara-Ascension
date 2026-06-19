@@ -18,18 +18,21 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	apply_polish()
 	next_label.text = "下一天象 未知"
+	meta_label.visible = false
 
 
 func apply_polish() -> void:
-	add_theme_stylebox_override("panel", HudStyles.weather_panel())
+	add_theme_stylebox_override("panel", HudStyles.transparent_panel())
 	var tex := AssetPaths.load_texture(AssetPaths.HUD_WEATHER_PANEL)
 	if tex and panel_frame:
 		panel_frame.texture = tex
-		panel_frame.modulate = Color(1, 1, 1, 0.35)
+		panel_frame.visible = false
 	var ring := AssetPaths.load_texture(AssetPaths.PET_AVATAR_RING)
 	if ring:
 		pet_icon.texture = ring
 	weather_icon.texture = AssetPaths.load_texture(AssetPaths.weather_icon("clear"))
+	weather_label.add_theme_constant_override("outline_size", 2)
+	weather_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.78))
 	call_deferred("_layout_frame")
 
 
@@ -47,6 +50,7 @@ func set_weather(icon: Texture2D, text: String) -> void:
 
 func set_meta_summary(text: String) -> void:
 	meta_label.text = text
+	meta_label.visible = false
 
 
 func set_pet(icon: Texture2D, text: String, accent: Color) -> void:
@@ -56,3 +60,4 @@ func set_pet(icon: Texture2D, text: String, accent: Color) -> void:
 		pet_icon.texture = AssetPaths.load_texture(AssetPaths.PET_AVATAR_RING)
 	pet_label.text = text
 	pet_label.add_theme_color_override("font_color", accent)
+	pet_label.get_parent().visible = false

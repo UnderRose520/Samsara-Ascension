@@ -28,7 +28,7 @@ func set_dock(enabled: bool) -> void:
 		return
 	_ensure_cd_text()
 	_dock = true
-	custom_minimum_size = Vector2(56, 56)
+	custom_minimum_size = Vector2(68, 68)
 	info_box.visible = false
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	add_theme_stylebox_override("panel", HudStyles.spell_dock_slot(true, true))
@@ -62,7 +62,12 @@ func set_dock(enabled: bool) -> void:
 		key_bg.content_margin_right = 2
 		key_bg.content_margin_bottom = 0
 		key_label.add_theme_stylebox_override("normal", key_bg)
-	icon_wrap.custom_minimum_size = Vector2(44, 44)
+	icon_wrap.custom_minimum_size = Vector2(56, 56)
+	icon.offset_left = -27
+	icon.offset_top = -27
+	icon.offset_right = 27
+	icon.offset_bottom = 27
+	icon.modulate = Color.WHITE
 	_cd_text.visible = false
 
 

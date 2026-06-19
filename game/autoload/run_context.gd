@@ -684,8 +684,8 @@ func add_dao_momentum(amount: float, source: String = "") -> void:
 		if dao_momentum_state != "full":
 			dao_momentum_state = "full"
 			dao_momentum_state_time = DAO_MOMENTUM_GRACE_SEC
-			EventBus.learn_feedback.emit("道韵盈满 · 万法将成", "skill")
-			EventBus.crit_moment_requested.emit("道韵盈满 · F归一", 0.55)
+			EventBus.learn_feedback.emit("道势盈满 · 万法将成", "skill")
+			EventBus.crit_moment_requested.emit("道势盈满 · F归一", 0.55)
 	_emit_dao_momentum_changed()
 
 
@@ -908,9 +908,9 @@ func build_death_summary() -> Dictionary:
 		progress_level = "high"
 	elif peak_combo_count >= 50:
 		regret = "combo_broken"
-		regret_title = "道韵中断"
+		regret_title = "道势中断"
 		regret_detail = "最高连击 %d，节奏已经成形，却没能踏到最后一拍。" % peak_combo_count
-		last_words = "道韵奔流而中断，可惜。"
+		last_words = "道势奔流而中断，可惜。"
 		progress_level = "medium"
 	elif last_horde_quota > 0 and last_horde_kills >= maxi(last_horde_quota - 3, 1):
 		regret = "missed_room_momentum"
@@ -997,7 +997,7 @@ func _on_combo_milestone(count: int) -> void:
 	if count >= 200:
 		record_run_highlight("combo_200", "道之极致", "二百连击压住全场，攻势短暂踏入巅峰。", 90)
 	elif count >= 100:
-		record_run_highlight("combo_100", "百连道韵", "连击破百，节奏已经被你打成自己的道。", 70)
+		record_run_highlight("combo_100", "百连道势", "连击破百，节奏已经被你打成自己的道。", 70)
 	elif count >= 60:
 		record_run_highlight("combo_60", "连击成势", "六十连击不断，构筑开始真正转起来。", 50)
 

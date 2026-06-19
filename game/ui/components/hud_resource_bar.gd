@@ -18,25 +18,28 @@ var _placeholder_mana := false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	value_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	value_label.clip_text = true
 	_apply_frame_texture()
 	if bar_kind == BarKind.HP:
 		hp_bar.visible = true
 		mana_bar.visible = false
 		value_label.add_theme_color_override("font_color", UiTokens.TEXT_PRIMARY)
+		tooltip_text = "气血"
 	else:
 		hp_bar.visible = false
 		mana_bar.visible = true
 		_apply_mana_bar_styles()
-		tooltip_text = "道韵"
+		tooltip_text = "道势"
 		set_values(0.0, 100.0)
 
 
 func _apply_frame_texture() -> void:
-	var path := AssetPaths.PROGRESS_HP if bar_kind == BarKind.HP else AssetPaths.PROGRESS_MANA
-	var tex := AssetPaths.load_texture(path)
+	var tex := AssetPaths.load_texture(AssetPaths.HUD_LEFT_RESOURCE_TRACK)
 	if tex and frame_bg:
 		frame_bg.texture = tex
-		frame_bg.modulate = Color(1, 1, 1, 0.35)
+		frame_bg.visible = true
+		frame_bg.modulate = Color(1, 1, 1, 0.96)
 
 
 func _apply_mana_bar_styles() -> void:
@@ -77,7 +80,7 @@ func set_values(current: float, maximum: float) -> void:
 	else:
 		mana_bar.max_value = max_v
 		mana_bar.value = cur_v
-		value_label.text = "%.0f / %.0f" % [cur_v, max_v]
+		value_label.text = "道势 %.0f / %.0f" % [cur_v, max_v]
 		value_label.modulate = Color.WHITE
 
 

@@ -51,6 +51,16 @@ var _sprite_faces_left_by_default := false
 var _mutation_timer := 0.0
 var _mutation_damage := 0.0
 var _mutation_element := "fire"
+var _separation_push := Vector2.ZERO
+var _separation_timer := 0.0
+var _action_label_text := ""
+var _action_label_color := Color.WHITE
+var _action_label_timer := 0.0
+var _redraw_timer := 0.0
+
+const SEPARATION_REFRESH_BASE := 0.10
+const ACTION_LABEL_REFRESH_SEC := 0.12
+const ENEMY_REDRAW_INTERVAL := 1.0 / 24.0
 
 func _ready() -> void:
 	health.max_hp = GameConstants.ENEMY_HP
@@ -64,6 +74,7 @@ func _ready() -> void:
 	_on_health_changed(health.current_hp, health.max_hp)
 	_skills = EnemySkillController.new()
 	_skills.setup(self, "normal")
+	_separation_timer = float(_spawn_index % 5) * 0.018
 
 
 func configure_enemy(display_name: String, is_boss: bool = false, room_type: String = "combat") -> void:
@@ -236,6 +247,8 @@ func init_combat_slot(spawn_pos: Vector2, player_pos: Vector2, index: int, total
 	else:
 		_orbit_radius = GameConstants.ENEMY_ORBIT_RADIUS + float(index % 7) * GameConstants.ENEMY_ORBIT_SPREAD
 	_speed_jitter = RunRng.enemy_jitter(index).randf_range(0.88, 1.08)
+	_separation_timer = float(index % 7) * 0.017
+	_redraw_timer = float(index % 5) * 0.011
 	if _skills:
 		_skills.apply_spawn_stagger(index)
 
@@ -306,7 +319,7 @@ func _apply_movement() -> void:
 	move_and_slide()
 	var radius := 20.0 if _is_boss else 16.0
 	global_position = GameConstants.clamp_to_arena(global_position, radius)
-	_refresh_action_label()
+	_refresh_action_label(false)
 	_update_animation_state()
 	if _needs_redraw():
 		queue_redraw()
@@ -317,6 +330,8 @@ func _physics_process(delta: float) -> void:
 		return
 	_status_feedback_cd = maxf(_status_feedback_cd - delta, 0.0)
 	_boss_gate_lock = maxf(_boss_gate_lock - delta, 0.0)
+	_separation_timer = maxf(_separation_timer - delta, 0.0)
+	_action_label_timer = maxf(_action_label_timer - delta, 0.0)
 	TerrainSystem.apply_body_effects(self, delta)
 	if not health.is_alive():
 		velocity = Vector2.ZERO
@@ -356,48 +371,62 @@ func _physics_process(delta: float) -> void:
 	_apply_movement()
 
 
-func _refresh_action_label() -> void:
-	if _skills and _skills.get_action_label().length() > 0:
-		action_label.text = "%s · %s" % [_weapon_label(), _skills.get_action_label()]
-		if _is_boss and _skills.get_phase_name().length() > 0 and not _skills.is_busy():
-			action_label.add_theme_color_override("font_color", Color(1.0, 0.55, 0.85))
-		elif _skills.is_busy():
-			action_label.add_theme_color_override("font_color", Color(1.0, 0.45, 0.25))
+func _refresh_action_label(force: bool = true) -> void:
+	if not force and _action_label_timer > 0.0:
 		return
-	if status.is_paralyzed():
-		action_label.text = "僵直"
-		action_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.5))
+	_action_label_timer = ACTION_LABEL_REFRESH_SEC
+	var next_text := ""
+	var next_color := Color(0.65, 0.62, 0.58)
+	if _skills and _skills.get_action_label().length() > 0:
+		next_text = "%s · %s" % [_weapon_label(), _skills.get_action_label()]
+		if _is_boss and _skills.get_phase_name().length() > 0 and not _skills.is_busy():
+			next_color = Color(1.0, 0.55, 0.85)
+		elif _skills.is_busy():
+			next_color = Color(1.0, 0.45, 0.25)
+	elif status.is_paralyzed():
+		next_text = "僵直"
+		next_color = Color(1.0, 0.95, 0.5)
 	elif status.is_slowed():
-		action_label.text = "缓行"
-		action_label.add_theme_color_override("font_color", Color(0.55, 0.85, 1.0))
-	elif _steer_velocity.length() > 55.0:
+		next_text = "缓行"
+		next_color = Color(0.55, 0.85, 1.0)
+	elif _steer_velocity.length_squared() > 3025.0:
 		if _is_elite:
-			action_label.text = "疾行"
-			action_label.add_theme_color_override("font_color", Color(1.0, 0.55, 0.3))
+			next_text = "疾行"
+			next_color = Color(1.0, 0.55, 0.3)
 		elif _is_boss:
-			action_label.text = "压近"
-			action_label.add_theme_color_override("font_color", Color(1.0, 0.7, 0.35))
+			next_text = "压近"
+			next_color = Color(1.0, 0.7, 0.35)
 		elif _archetype == "ranged":
-			action_label.text = "游走"
-			action_label.add_theme_color_override("font_color", Color(0.75, 0.85, 1.0))
+			next_text = "游走"
+			next_color = Color(0.75, 0.85, 1.0)
 		elif _archetype == "sniper":
-			action_label.text = "瞄准"
-			action_label.add_theme_color_override("font_color", Color(0.85, 0.75, 1.0))
+			next_text = "瞄准"
+			next_color = Color(0.85, 0.75, 1.0)
 		elif _archetype == "berserker":
-			action_label.text = "冲锋"
-			action_label.add_theme_color_override("font_color", Color(1.0, 0.35, 0.25))
+			next_text = "冲锋"
+			next_color = Color(1.0, 0.35, 0.25)
 		elif _archetype == "shaman":
-			action_label.text = "结印"
-			action_label.add_theme_color_override("font_color", Color(0.55, 0.95, 0.85))
+			next_text = "结印"
+			next_color = Color(0.55, 0.95, 0.85)
 		else:
-			action_label.text = "逼近"
-			action_label.add_theme_color_override("font_color", Color(1.0, 0.72, 0.45))
-	elif _steer_velocity.length() > 8.0:
-		action_label.text = _stat_trait_label("%s · 移动" % _weapon_label())
-		action_label.add_theme_color_override("font_color", Color(0.85, 0.8, 0.7))
+			next_text = "逼近"
+			next_color = Color(1.0, 0.72, 0.45)
+	elif _steer_velocity.length_squared() > 64.0:
+		next_text = _stat_trait_label("%s · 移动" % _weapon_label())
+		next_color = Color(0.85, 0.8, 0.7)
 	else:
-		action_label.text = _stat_trait_label("%s · 待机" % _weapon_label())
-		action_label.add_theme_color_override("font_color", Color(0.65, 0.62, 0.58))
+		next_text = _stat_trait_label("%s · 待机" % _weapon_label())
+		next_color = Color(0.65, 0.62, 0.58)
+	_apply_action_label(next_text, next_color)
+
+
+func _apply_action_label(next_text: String, next_color: Color) -> void:
+	if next_text != _action_label_text:
+		_action_label_text = next_text
+		action_label.text = next_text
+	if next_color != _action_label_color:
+		_action_label_color = next_color
+		action_label.add_theme_color_override("font_color", next_color)
 
 
 func _stat_trait_label(fallback: String) -> String:
@@ -478,7 +507,7 @@ func _compute_chase_velocity(player: Node2D, dist_to_player: float, speed: float
 	if slot_dist > GameConstants.ENEMY_ARRIVAL_THRESHOLD:
 		desired = to_slot.normalized() * speed
 
-	var push := _compute_separation_push(dist_to_player < 72.0)
+	var push := _get_separation_push(dist_to_player < 72.0)
 	if desired.length_squared() < 0.001:
 		if push.length_squared() < 0.001:
 			return Vector2.ZERO
@@ -497,14 +526,25 @@ func _compute_separation_push(near_player: bool) -> Vector2:
 	var sep_radius: float = GameConstants.ENEMY_SEPARATION_RADIUS
 	if near_player:
 		sep_radius *= 1.4
+	var sep_radius_sq := sep_radius * sep_radius
 	for other in get_tree().get_nodes_in_group("enemy"):
 		if other == self or not is_instance_valid(other):
 			continue
 		var offset: Vector2 = global_position - other.global_position
-		var dist: float = offset.length()
-		if dist < sep_radius and dist > 0.001:
-			push += offset.normalized() * (sep_radius - dist)
+		var dist_sq := offset.length_squared()
+		if dist_sq < sep_radius_sq and dist_sq > 0.0001:
+			var dist := sqrt(dist_sq)
+			push += offset / dist * (sep_radius - dist)
 	return push
+
+
+func _get_separation_push(near_player: bool) -> Vector2:
+	if _separation_timer > 0.0:
+		return _separation_push
+	var jitter := float((_spawn_index % 5) + 1) * 0.008
+	_separation_timer = SEPARATION_REFRESH_BASE + jitter
+	_separation_push = _compute_separation_push(near_player)
+	return _separation_push
 
 
 func _process(delta: float) -> void:
@@ -516,12 +556,14 @@ func _process(delta: float) -> void:
 		if _mutation_timer <= 0.0:
 			_explode_mutation()
 	_flash = maxf(_flash - delta, 0.0)
-	var needs_redraw := _flash > 0.0 or _steer_velocity.length() > 10.0
+	_redraw_timer = maxf(_redraw_timer - delta, 0.0)
+	var needs_redraw := _flash > 0.0 or _steer_velocity.length_squared() > 100.0
 	if _skills and (_skills.get_windup_progress() > 0.0 or _skills.is_dashing()):
 		needs_redraw = true
 	if status.is_burning() or status.is_poisoned() or status.is_frozen() or status.is_paralyzed() or status.is_slowed():
 		needs_redraw = true
-	if needs_redraw:
+	if needs_redraw and _redraw_timer <= 0.0:
+		_redraw_timer = ENEMY_REDRAW_INTERVAL
 		queue_redraw()
 
 

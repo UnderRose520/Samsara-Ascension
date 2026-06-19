@@ -1,0 +1,6 @@
+Use case: stylized-concept
+Asset type: transparent 2D combat HUD asset for a Chinese xianxia roguelite.
+Style/medium: clean hand-painted HD game UI, dark ink black, jade green, restrained cold gold,玄玉鎏金.
+Constraints: one centered asset only; fill most of the canvas; perfectly flat solid #FF00FF chroma-key background; do not use #FF00FF in the asset; no text, no letters, no numbers, no labels, no watermark.
+Avoid: beige parchment, sci-fi metal, thick boxy frame, cluttered decorative lines, noisy texture, huge glow, purple-dominant palette.
+Primary request: a wide compact objective-card background, dark jade rounded pill, thin cold-gold upper accent, subtle inner shadow, clean empty center for text, horizontal 4:1 composition.

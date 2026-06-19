@@ -112,8 +112,8 @@ func apply_layout(room: Dictionary, rng: RandomNumberGenerator, weather_id: Stri
 	return layout
 
 
-func set_debug_overlay_visible(show: bool) -> void:
-	_debug_overlay_visible = show
+func set_debug_overlay_visible(_show: bool) -> void:
+	_debug_overlay_visible = false
 	queue_redraw()
 
 
@@ -167,13 +167,22 @@ func make_terrain_zone_visual(terrain_type: String, color: Color, radius: float,
 	visual.name = "TerrainPropVisual"
 	var diameter := radius * 2.0
 	var cell_size := float(_terrain_prop_cell_size())
-	sprite.scale = Vector2(diameter / cell_size, diameter / cell_size)
-	sprite.modulate = Color(color.r, color.g, color.b, clampf(color.a + 0.28, 0.35, 0.78))
+	var terrain_style := _terrain_visual_style(terrain_type, color)
+	var base_scale := diameter / cell_size * float(terrain_style.get("size_mult", 1.0))
+	var stretch: Vector2 = terrain_style.get("stretch", Vector2.ONE)
+	sprite.scale = Vector2(
+		base_scale * stretch.x * rng.randf_range(0.88, 1.24),
+		base_scale * stretch.y * rng.randf_range(0.82, 1.18)
+	)
+	sprite.rotation = rng.randf_range(-PI, PI)
+	sprite.modulate = terrain_style.get("modulate", Color.WHITE)
 	sprite.z_index = 1
 	visual.add_child(sprite)
-	var aura := _make_terrain_aura(color, radius)
-	visual.add_child(aura)
-	visual.move_child(aura, 0)
+	var aura_alpha := float(terrain_style.get("aura_alpha", 0.0))
+	if aura_alpha > 0.001:
+		var aura := _make_terrain_aura(color, radius, rng, aura_alpha)
+		visual.add_child(aura)
+		visual.move_child(aura, 0)
 	return visual
 
 
@@ -584,30 +593,76 @@ func _terrain_prop_coords(terrain_type: String, rng: RandomNumberGenerator) -> V
 	var choices: Array = []
 	match terrain_type:
 		"water", "wet":
-			choices = [Vector2i(1, 1), Vector2i(0, 1), Vector2i(2, 2)]
+			choices = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)]
 		"swamp":
-			choices = [Vector2i(1, 2), Vector2i(0, 2), Vector2i(2, 1)]
+			choices = [Vector2i(1, 0), Vector2i(1, 1), Vector2i(1, 2), Vector2i(0, 2)]
 		"fire", "dry":
-			choices = [Vector2i(0, 0), Vector2i(1, 2), Vector2i(2, 1)]
+			choices = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2), Vector2i(1, 2)]
 		"rock":
-			choices = [Vector2i(2, 0), Vector2i(0, 2), Vector2i(1, 0)]
+			choices = [Vector2i(2, 0), Vector2i(2, 1), Vector2i(2, 2)]
 		"ice":
-			choices = [Vector2i(0, 1), Vector2i(2, 2), Vector2i(1, 1)]
+			choices = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)]
 		_:
-			choices = [Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2)]
+			choices = [Vector2i(0, 0), Vector2i(1, 1), Vector2i(2, 2)]
 	return choices[rng.randi_range(0, choices.size() - 1)]
 
 
-func _make_terrain_aura(color: Color, radius: float) -> Polygon2D:
+func _terrain_visual_style(terrain_type: String, color: Color) -> Dictionary:
+	match terrain_type:
+		"rock":
+			return {
+				"modulate": Color(1.02, 1.02, 1.02, 0.95),
+				"stretch": Vector2(0.92, 0.78),
+				"size_mult": 0.86,
+				"aura_alpha": 0.035,
+			}
+		"fire", "dry":
+			return {
+				"modulate": Color(1.0, 0.80, 0.56, 0.86),
+				"stretch": Vector2(1.45, 0.76),
+				"size_mult": 0.96,
+				"aura_alpha": 0.18,
+			}
+		"swamp":
+			return {
+				"modulate": Color(0.70, 1.0, 0.68, 0.70),
+				"stretch": Vector2(1.25, 0.82),
+				"size_mult": 1.02,
+				"aura_alpha": 0.14,
+			}
+		"ice":
+			return {
+				"modulate": Color(0.78, 0.94, 1.0, 0.78),
+				"stretch": Vector2(1.36, 0.72),
+				"size_mult": 1.04,
+				"aura_alpha": 0.13,
+			}
+		"water", "wet":
+			return {
+				"modulate": Color(0.70, 0.90, 1.0, 0.76),
+				"stretch": Vector2(1.42, 0.74),
+				"size_mult": 1.06,
+				"aura_alpha": 0.16,
+			}
+	return {
+		"modulate": Color(color.r, color.g, color.b, 0.68),
+		"stretch": Vector2(1.0, 1.0),
+		"size_mult": 1.0,
+		"aura_alpha": 0.10,
+	}
+
+
+func _make_terrain_aura(color: Color, radius: float, rng: RandomNumberGenerator, alpha_scale: float) -> Polygon2D:
 	var poly := Polygon2D.new()
 	var points := PackedVector2Array()
-	var steps := 18
+	var steps := rng.randi_range(13, 20)
 	for i in range(steps):
 		var angle := TAU * float(i) / float(steps)
-		var wobble := 0.86 + 0.10 * sin(float(i) * 1.7)
+		var wobble := rng.randf_range(0.62, 1.12)
 		points.append(Vector2(cos(angle), sin(angle)) * radius * wobble)
 	poly.polygon = points
-	poly.color = Color(color.r, color.g, color.b, minf(color.a * 0.55, 0.28))
+	poly.rotation = rng.randf_range(-PI, PI)
+	poly.color = Color(color.r, color.g, color.b, alpha_scale)
 	poly.z_index = 0
 	return poly
 

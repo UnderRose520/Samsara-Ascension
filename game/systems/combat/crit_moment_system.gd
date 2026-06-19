@@ -31,7 +31,7 @@ func _play_moment(count: int) -> void:
 		label = "万法将成"
 	elif count >= 60:
 		duration = 0.3
-		label = "道韵奔流"
+		label = "道势奔流"
 	elif count >= 30:
 		label = "势如破竹"
 	EventBus.crit_moment_requested.emit(label, duration)

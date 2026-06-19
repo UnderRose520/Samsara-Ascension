@@ -74,6 +74,8 @@ func _refresh_ui() -> void:
 
 	if _context.get("from_event", false):
 		title_label.text = "机缘化词条 · 槽位 %d/%d" % [owned_count, slot_max]
+	elif _context.get("opening_choice", false):
+		title_label.text = "开局机缘 · 选择起手词条"
 	elif _context.get("pet_bonded", false):
 		var pet_name: String = str(_context.get("pet_name", "火萤"))
 		title_label.text = "灵宠「%s」结缘 · 槽位 %d/%d" % [pet_name, owned_count, slot_max]
@@ -115,7 +117,12 @@ func _update_action_buttons() -> void:
 	var gold: int = int(_context.get("gold", 0))
 	reroll_button.text = "重随 (%d 灵石)" % RunContext.get_reroll_cost()
 	reroll_button.disabled = gold < RunContext.get_reroll_cost()
-	skip_button.text = "跳过 (+%d 灵石)" % GameConstants.AFFIX_SKIP_REWARD
+	if _context.get("opening_choice", false):
+		skip_button.text = "开局必须择一"
+		skip_button.disabled = true
+	else:
+		skip_button.text = "跳过 (+%d 灵石)" % GameConstants.AFFIX_SKIP_REWARD
+		skip_button.disabled = false
 
 
 func _on_card_selected(card: Control) -> void:

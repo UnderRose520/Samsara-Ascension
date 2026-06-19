@@ -43,6 +43,8 @@ var _current_event: Dictionary = {}
 var _room_clear_pending_type := GameEnums.RoomType.UNKNOWN
 var _pet: Node2D
 var _pet_bonded_this_clear := false
+var _opening_affix_pending := false
+var _opening_affix_used := false
 
 
 func _ready() -> void:
@@ -74,11 +76,15 @@ func _ready() -> void:
 	EventBus.death_moment_finished.connect(_on_death_moment_finished)
 
 	EventBus.gold_changed.emit(RunContext.gold)
-	call_deferred("_apply_run_start_bonuses")
 	if floor and floor.has_method("apply_theme"):
 		floor.apply_theme(1)
-	_enter_current_room()
+	call_deferred("_start_run_flow")
 	queue_redraw()
+
+
+func _start_run_flow() -> void:
+	_apply_run_start_bonuses()
+	_enter_current_room()
 
 
 func _apply_run_start_bonuses() -> void:
@@ -158,7 +164,34 @@ func _enter_current_room() -> void:
 		_enter_event_room()
 		return
 
+	if _should_offer_opening_affix(room_type):
+		_offer_opening_affix()
+		return
+
 	_spawn_room_enemies(room)
+
+
+func _should_offer_opening_affix(room_type: GameEnums.RoomType) -> bool:
+	if _opening_affix_used or RunContext.training_mode:
+		return false
+	return (
+		RunContext.current_stage == 0
+		and RunContext.current_room == 0
+		and RunContext.rooms_cleared == 0
+		and (GameEnums.is_combat_room_type(room_type) or GameEnums.is_boss_room_type(room_type))
+	)
+
+
+func _offer_opening_affix() -> void:
+	_opening_affix_pending = true
+	_opening_affix_used = true
+	_waiting_for_affix = true
+	_phase = RoomPhase.AFFIX
+	RunContext.ui_blocking = true
+	Engine.time_scale = 1.0
+	get_tree().paused = true
+	_affix_roll_seq = 0
+	_present_offers()
 
 
 func _apply_first_minutes_path_opportunity(room: Dictionary) -> void:
@@ -639,11 +672,12 @@ func _present_offers() -> void:
 	var room_type := _room_type(room)
 	var from_event := room_type == GameEnums.RoomType.EVENT or _event_after_affix
 	var initial_offer := _affix_roll_seq == 0
+	var roll_prefix := "opening_affix" if _opening_affix_pending else "affix"
 	var build_archetypes := BuildArchetypeRegistry.get_active_archetypes(
 		RunContext.cultivation_path_id,
 		desired_combo_tags,
 		element_bias,
-		_flow_rng("build_archetype_%d_%d" % [RunContext.rooms_cleared, _affix_roll_seq])
+		_flow_rng("%s_build_%d_%d" % [roll_prefix, RunContext.rooms_cleared, _affix_roll_seq])
 	)
 	_offer_context = {
 		"elite": VariantUtils.as_bool(room.get("is_boss", false)) or RunContext.current_stage >= 1 or RunContext.heart_demon_trial_active,
@@ -658,6 +692,7 @@ func _present_offers() -> void:
 		"from_event": from_event,
 		"rooms_cleared": RunContext.rooms_cleared,
 		"owned_count": owned.size(),
+		"opening_choice": _opening_affix_pending,
 	}
 	if initial_offer:
 		_offer_context.merge(RunDirector.get_offer_context_bonus(), true)
@@ -665,7 +700,7 @@ func _present_offers() -> void:
 		ConfigRegistry.get_all_affixes(),
 		3,
 		owned,
-		_flow_rng("affix_%d_%d" % [RunContext.rooms_cleared, _affix_roll_seq]),
+		_flow_rng("%s_%d_%d" % [roll_prefix, RunContext.rooms_cleared, _affix_roll_seq]),
 		_offer_context
 	)
 	_affix_roll_seq += 1
@@ -683,7 +718,7 @@ func _present_offers() -> void:
 					offers[i]["tag"] = shifted
 				else:
 					offers[i] = shifted
-	if initial_offer:
+	if initial_offer and not _opening_affix_pending:
 		RunDirector.record_reward_offer(offers, _offer_context)
 		var hint := str(_offer_context.get("director_hint", _offer_context.get("director_reason", "")))
 		if not hint.is_empty():
@@ -720,6 +755,8 @@ func _on_affix_reroll() -> void:
 func _on_affix_skip() -> void:
 	if not _waiting_for_affix:
 		return
+	if _opening_affix_pending:
+		return
 	RunContext.gold += GameConstants.AFFIX_SKIP_REWARD
 	EventBus.gold_changed.emit(RunContext.gold)
 	if _player:
@@ -731,6 +768,11 @@ func _on_affix_choice_closed() -> void:
 	RunContext.ui_blocking = false
 	_pet_bonded_this_clear = false
 	get_tree().paused = false
+	if _opening_affix_pending:
+		_opening_affix_pending = false
+		_phase = RoomPhase.COMBAT
+		_spawn_room_enemies(RunContext.get_current_room_def())
+		return
 	if _event_after_affix:
 		_event_after_affix = false
 		_offer_path_choice()

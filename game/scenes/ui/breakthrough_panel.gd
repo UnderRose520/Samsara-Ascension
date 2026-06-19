@@ -3,7 +3,6 @@ extends CanvasLayer
 const UiAnimations = preload("res://ui/ui_animations.gd")
 const UiHelpers = preload("res://ui/ui_helpers.gd")
 const UiTokens = preload("res://ui/theme/ui_tokens.gd")
-const AssetPaths = preload("res://assets/asset_paths.gd")
 const TALENT_CARD_SCENE = preload("res://ui/components/talent_card.tscn")
 
 @onready var panel: PanelContainer = $Panel
@@ -21,7 +20,6 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	panel.visible = false
 	dimmer.visible = false
-	_apply_weak_backdrop()
 	UiHelpers.apply_panel_polish(panel)
 	UiHelpers.decorate_modal_header($Panel/Margin/VBox, title_label)
 	UiHelpers.add_gold_divider($Panel/Margin/VBox, cards_box)
@@ -32,22 +30,6 @@ func _ready() -> void:
 		cards_box.add_child(card)
 		card.talent_selected.connect(_on_talent_selected)
 		_card_nodes.append(card)
-
-
-func _apply_weak_backdrop() -> void:
-	var tex := AssetPaths.load_texture(AssetPaths.MENU_BACKDROP)
-	if tex == null:
-		return
-	var backdrop := TextureRect.new()
-	backdrop.name = "Backdrop"
-	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
-	backdrop.texture = tex
-	backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	backdrop.modulate = Color(1, 1, 1, 0.22)
-	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(backdrop)
-	move_child(backdrop, 0)
 
 
 func _on_breakthrough_requested(offers: Array, context: Dictionary) -> void:

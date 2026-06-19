@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://brunsetup001"]
 
 [ext_resource type="Script" path="res://scenes/ui/run_setup_panel.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/ui/bg_jade_palace_hall.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/bg_run_setup_inner_court.png" id="2"]
 
 [node name="RunSetupPanel" type="CanvasLayer"]
 layer = 70
@@ -26,7 +26,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.022, 0.055, 0.043, 0.58)
+color = Color(0.005, 0.012, 0.018, 0.48)
 
 [node name="Panel" type="PanelContainer" parent="."]
 anchors_preset = 8
@@ -34,19 +34,19 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -360.0
-offset_top = -340.0
-offset_right = 360.0
-offset_bottom = 340.0
+offset_left = -470.0
+offset_top = -330.0
+offset_right = 470.0
+offset_bottom = 330.0
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Margin" type="MarginContainer" parent="Panel"]
 layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 22
 
 [node name="Scroll" type="ScrollContainer" parent="Panel/Margin"]
 layout_mode = 2
@@ -61,13 +61,13 @@ theme_override_constants/separation = 9
 [node name="Title" type="Label" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.843, 0, 1)
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 30
 text = "选择道心 · 入轮回"
 horizontal_alignment = 1
 
 [node name="Hearts" type="HBoxContainer" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 16
 alignment = 1
 
 [node name="Detail" type="Label" parent="Panel/Margin/Scroll/VBox"]
@@ -126,7 +126,7 @@ theme_type_variation = &"Secondary"
 text = "轮回成长"
 
 [node name="StartButton" type="Button" parent="Panel/Margin/Scroll/VBox"]
-custom_minimum_size = Vector2(320, 48)
+custom_minimum_size = Vector2(360, 52)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"Primary"

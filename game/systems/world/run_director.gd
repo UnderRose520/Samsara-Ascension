@@ -49,7 +49,7 @@ func get_offer_context_bonus() -> Dictionary:
 	var result := {}
 	if reward_fix_ready:
 		result["director_build_boost"] = 2.0
-		result["director_reason"] = "道韵向当前修行靠拢"
+		result["director_reason"] = "道势向当前修行靠拢"
 		_stage_reward_fix_used[RunContext.current_stage] = true
 		reward_fix_ready = false
 	if tempo_help_ready:
@@ -88,7 +88,7 @@ func record_reward_offer(offers: Array, context: Dictionary = {}) -> void:
 
 func describe_pending() -> String:
 	if reward_fix_ready:
-		return "道韵向当前修行靠拢"
+		return "道势向当前修行靠拢"
 	if tempo_help_ready:
 		return "天地灵机渐盛"
 	if survival_help_ready:

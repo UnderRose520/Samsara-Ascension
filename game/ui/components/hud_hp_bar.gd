@@ -5,9 +5,9 @@ class_name HudHpBar
 var max_value: float = 100.0
 var value: float = 100.0
 
-const _BG := Color(0.04, 0.04, 0.07, 0.85)
-const _FILL_START := Color(0.82, 0.28, 0.32, 1.0)
-const _FILL_END := Color(1.0, 0.52, 0.42, 1.0)
+const _BG := Color(0.012, 0.024, 0.026, 0.76)
+const _FILL_START := Color(0.72, 0.18, 0.24, 1.0)
+const _FILL_END := Color(1.0, 0.42, 0.36, 1.0)
 const _GLOW := Color(1.0, 0.45, 0.38, 0.35)
 const _RIM := Color(1, 1, 1, 0.14)
 

@@ -4,11 +4,16 @@ extends RefCounted
 ## Central paths for UIUX-generated PNG assets (see game/tools/generate_2d_*.py).
 
 const UI_ROOT := "res://assets/ui/"
+const HUD_UI_ROOT := UI_ROOT + "hud/"
 const SPRITE_ROOT := "res://assets/sprites/"
 const SPRITE_FRAME_ROOT := SPRITE_ROOT + "frames/"
 
 # --- 全局面板与背景 (Global panels / backdrops) ---
-const MENU_BACKDROP := UI_ROOT + "bg_jade_palace_hall.png"
+const MENU_BACKDROP := UI_ROOT + "bg_main_menu_celestial_hall.png"
+const MENU_BACKDROP_V2 := UI_ROOT + "bg_main_menu_celestial_hall.png"
+const RUN_SETUP_BACKDROP := UI_ROOT + "bg_run_setup_inner_court.png"
+const RUN_RESULT_BACKDROP := UI_ROOT + "bg_run_result_reincarnation_pool.png"
+const EVENT_SECRET_ILLUSTRATION := UI_ROOT + "event_illustration_secret_encounter.png"
 const PANEL_NINEPATCH := UI_ROOT + "panel_ninepatch_256.png"
 const SCROLL_TOAST := UI_ROOT + "scroll_toast_520x72.png"
 const MODAL_TITLE_BAR := UI_ROOT + "modal_title_bar_720x52.png"
@@ -26,6 +31,25 @@ const PROGRESS_HP := UI_ROOT + "progress_hp_9slice.png"
 const PROGRESS_MANA := UI_ROOT + "progress_mana_9slice.png"
 const COMBO_TRACK := UI_ROOT + "combo_track_256x8.png"
 const ENEMY_HP_BAR := UI_ROOT + "enemy_hp_bar_9slice.png"
+const HUD_PET_HUO_YING_AVATAR := HUD_UI_ROOT + "pet_huo_ying_avatar_96.png"
+const HUD_ARTIFACT_XUANYU_GOURD := HUD_UI_ROOT + "artifact_xuanyu_gourd_pendant_96.png"
+const HUD_WEATHER_THUNDER_SIG := HUD_UI_ROOT + "weather_thunder_icon_64.png"
+const HUD_AUTO_SEAL_BASE := HUD_UI_ROOT + "auto_seal_attack_64.png"
+const HUD_AUTO_SEAL_ATTACK := HUD_UI_ROOT + "auto_seal_attack_64.png"
+const HUD_AUTO_SEAL_GUARD := HUD_UI_ROOT + "auto_seal_guard_64.png"
+const HUD_AUTO_SEAL_PET := HUD_UI_ROOT + "auto_seal_pet_64.png"
+const HUD_AUTO_SEAL_ARTIFACT := HUD_UI_ROOT + "auto_seal_artifact_64.png"
+const HUD_LEFT_PANEL_FRAME := HUD_UI_ROOT + "hud_left_panel_frame_448x512.png"
+const HUD_LEFT_OBJECTIVE_CARD := HUD_UI_ROOT + "hud_left_objective_card_384x112.png"
+const HUD_LEFT_RESOURCE_TRACK := HUD_UI_ROOT + "hud_left_resource_track_384x32.png"
+const HUD_LEFT_BUILD_BADGE := HUD_UI_ROOT + "hud_left_build_badge_320x40.png"
+const HUD_LEFT_SECTION_DIVIDER := HUD_UI_ROOT + "hud_left_section_divider_320x24.png"
+const HUD_AFFIX_RUNE_FIRE := HUD_UI_ROOT + "affix_rune_fire_64.png"
+const HUD_AFFIX_RUNE_THUNDER := HUD_UI_ROOT + "affix_rune_thunder_64.png"
+const HUD_AFFIX_RUNE_WATER := HUD_UI_ROOT + "affix_rune_water_64.png"
+const HUD_AFFIX_RUNE_WOOD := HUD_UI_ROOT + "affix_rune_wood_64.png"
+const HUD_AFFIX_RUNE_EARTH := HUD_UI_ROOT + "affix_rune_earth_64.png"
+const HUD_AFFIX_RUNE_SEAL := HUD_UI_ROOT + "affix_rune_seal_64.png"
 
 # --- 图标：灵石 / 宠物 (Icons: currency, pet) ---
 const ICON_SPIRIT_STONE := UI_ROOT + "icon_spirit_stone_32.png"
@@ -74,6 +98,26 @@ const ELEMENT_ICONS_LARGE := {
 }
 
 # --- 天象图标 (Weather icons) ---
+const HUD_WEATHER_CLEAR_ICON := HUD_UI_ROOT + "weather_clear_icon_64.png"
+const HUD_WEATHER_RAIN_ICON := HUD_UI_ROOT + "weather_rain_icon_64.png"
+const HUD_WEATHER_THUNDER_ICON := HUD_UI_ROOT + "weather_thunder_icon_64.png"
+const HUD_WEATHER_FIRE_ICON := HUD_UI_ROOT + "weather_fire_icon_64.png"
+const HUD_WEATHER_WIND_ICON := HUD_UI_ROOT + "weather_wind_icon_64.png"
+const HUD_WEATHER_FOG_ICON := HUD_UI_ROOT + "weather_fog_icon_64.png"
+const HUD_WEATHER_SNOW_ICON := HUD_UI_ROOT + "weather_snow_icon_64.png"
+const HUD_WEATHER_SAND_ICON := HUD_UI_ROOT + "weather_sand_icon_64.png"
+
+const HUD_WEATHER_ICONS := {
+	"clear": HUD_WEATHER_CLEAR_ICON,
+	"rain": HUD_WEATHER_RAIN_ICON,
+	"thunder": HUD_WEATHER_THUNDER_ICON,
+	"fire": HUD_WEATHER_FIRE_ICON,
+	"wind": HUD_WEATHER_WIND_ICON,
+	"fog": HUD_WEATHER_FOG_ICON,
+	"snow": HUD_WEATHER_SNOW_ICON,
+	"sand": HUD_WEATHER_SAND_ICON,
+}
+
 const WEATHER_ICONS := {
 	"clear": UI_ROOT + "weather_clear_32.png",
 	"rain": UI_ROOT + "weather_rain_32.png",
@@ -86,13 +130,18 @@ const WEATHER_ICONS := {
 }
 
 # --- 法术图标 (Spell icons) ---
+const HUD_SPELL_Q_FIRE_TALISMAN := HUD_UI_ROOT + "spell_q_fire_talisman_96.png"
+const HUD_SPELL_E_JADE_SWORD_ARRAY := HUD_UI_ROOT + "spell_e_jade_sword_array_96.png"
+const HUD_SPELL_R_THUNDER_FAN := HUD_UI_ROOT + "spell_r_thunder_fan_96.png"
+const HUD_SPELL_LOCKED_JADE_SEAL := HUD_UI_ROOT + "spell_locked_jade_seal_96.png"
+
 const SPELL_ICONS := {
-	"q": UI_ROOT + "spell_q_fire_40.png",
-	"e": UI_ROOT + "spell_e_thunder_40.png",
-	"r": UI_ROOT + "spell_r_water_40.png",
-	"q_locked": UI_ROOT + "spell_q_locked_40.png",
-	"e_locked": UI_ROOT + "spell_e_locked_40.png",
-	"r_locked": UI_ROOT + "spell_r_locked_40.png",
+	"q": HUD_SPELL_Q_FIRE_TALISMAN,
+	"e": HUD_SPELL_E_JADE_SWORD_ARRAY,
+	"r": HUD_SPELL_R_THUNDER_FAN,
+	"q_locked": HUD_SPELL_LOCKED_JADE_SEAL,
+	"e_locked": HUD_SPELL_LOCKED_JADE_SEAL,
+	"r_locked": HUD_SPELL_LOCKED_JADE_SEAL,
 }
 
 ## 法术槽位底圈（圆形玉简空槽 / 锁定槽）
@@ -256,6 +305,9 @@ static func quality_frame(quality: int) -> String:
 
 
 static func weather_icon(weather_id: String) -> String:
+	var hud_icon := str(HUD_WEATHER_ICONS.get(weather_id, ""))
+	if not hud_icon.is_empty() and ResourceLoader.exists(hud_icon):
+		return hud_icon
 	return WEATHER_ICONS.get(weather_id, WEATHER_ICONS["clear"])
 
 

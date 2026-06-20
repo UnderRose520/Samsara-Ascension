@@ -2,6 +2,8 @@ extends Node
 
 const DISCOVER_CHANCE := 0.72
 const NEARBY_RADIUS := 170.0
+const CHAIN_EFFECT_RADIUS := 190.0
+const CHAIN_TRIGGER_COOLDOWN_MS := 1500
 const PET_RESONANCE_WINDOW_MS := 900
 
 const CHAINS := {
@@ -108,33 +110,94 @@ func _on_pet_coord_hit(enemy: Node) -> void:
 
 
 func _try_discover(chain_id: String, world_position: Vector2, bonus: float = 0.0, details: Dictionary = {}) -> void:
-	if SaveManager.has_discovered_hidden_chain(chain_id):
-		return
 	var now := Time.get_ticks_msec()
-	if now - int(_recent_attempts.get(chain_id, 0)) < 1500:
+	if now - int(_recent_attempts.get(chain_id, 0)) < CHAIN_TRIGGER_COOLDOWN_MS:
 		return
 	_recent_attempts[chain_id] = now
+	var row: Dictionary = CHAINS.get(chain_id, {})
+	if SaveManager.has_discovered_hidden_chain(chain_id):
+		_trigger_chain_effect(chain_id, world_position, row, details, false)
+		return
 	var chance := clampf(DISCOVER_CHANCE + bonus, 0.0, 0.92)
 	if not CombatRngService.roll_chance("hidden_chain_%s" % chain_id, chance):
 		return
 	if not SaveManager.record_hidden_chain(chain_id):
 		return
-	var row: Dictionary = CHAINS.get(chain_id, {})
+	_trigger_chain_effect(chain_id, world_position, row, details, true)
+
+
+func _trigger_chain_effect(chain_id: String, world_position: Vector2, row: Dictionary, details: Dictionary, first_discovery: bool) -> void:
 	var display_name := str(row.get("name", chain_id))
-	var payload := {
-		"world_position": world_position,
-		"hint": str(row.get("hint", "")),
-		"weather_id": WeatherSystem.current_weather_id,
-		"chain_id": chain_id,
-		"details": details,
-	}
-	EventBus.hidden_chain_discovered.emit(chain_id, display_name, payload)
-	EventBus.learn_feedback.emit("✦ 连锁发现：%s" % display_name, "skill")
-	EventBus.combo_discovered.emit(chain_id)
-	RunContext.add_dao_momentum(6, "hidden_chain_%s" % chain_id)
-	EventBus.pet_coord_feedback.emit("连锁发现：%s" % str(row.get("hint", display_name)))
+	if first_discovery:
+		var payload := {
+			"world_position": world_position,
+			"hint": str(row.get("hint", "")),
+			"weather_id": WeatherSystem.current_weather_id,
+			"chain_id": chain_id,
+			"details": details,
+			"effect_anchor_handled": true,
+		}
+		EventBus.hidden_chain_discovered.emit(chain_id, display_name, payload)
+		EventBus.learn_feedback.emit("✦ 连锁发现：%s" % display_name, "skill")
+		EventBus.combo_discovered.emit(chain_id)
+		RunContext.add_dao_momentum(6, "hidden_chain_%s" % chain_id)
+		EventBus.pet_coord_feedback.emit("连锁发现：%s" % str(row.get("hint", display_name)))
+	_apply_chain_effect(chain_id, world_position, row, details)
 	if world_position != Vector2.ZERO:
 		VfxManager.spawn_world(world_position, "gold", row.get("color", Color(1.0, 0.82, 0.28)))
+
+
+func _apply_chain_effect(chain_id: String, world_position: Vector2, row: Dictionary, details: Dictionary) -> void:
+	if world_position == Vector2.ZERO:
+		return
+	var color: Color = row.get("color", Color(1.0, 0.82, 0.28))
+	var effect := _chain_effect_spec(chain_id, details)
+	EventBus.feedback_anchor_requested.emit("chain_trigger", {
+		"world_position": world_position,
+		"color": color,
+		"label": "连锁爆发 · %s" % str(row.get("name", chain_id)),
+		"freeze": float(effect.get("freeze", 0.10)),
+		"shake": float(effect.get("shake", 9.0)),
+	})
+	var radius := float(effect.get("radius", CHAIN_EFFECT_RADIUS))
+	var damage := float(effect.get("damage", 18.0))
+	var terrain_type := str(effect.get("element", "fire"))
+	var status_name := str(effect.get("status", ""))
+	var status_duration := float(effect.get("status_duration", 0.0))
+	var hit_count := 0
+	for enemy in get_tree().get_nodes_in_group("enemy"):
+		var body := enemy as Node2D
+		if body == null or not is_instance_valid(body):
+			continue
+		if body.global_position.distance_to(world_position) > radius:
+			continue
+		if enemy.has_method("receive_terrain_damage"):
+			enemy.receive_terrain_damage(damage, terrain_type)
+			hit_count += 1
+		if not status_name.is_empty() and enemy.has_method("apply_status"):
+			enemy.apply_status(status_name, status_duration)
+		if hit_count <= 10:
+			VfxManager.spawn_world(body.global_position, str(effect.get("preset", "combo")), color)
+	if hit_count >= 4:
+		EventBus.pet_coord_feedback.emit("%s连锁扫过 %d 个目标" % [str(row.get("name", chain_id)), hit_count])
+		RunContext.add_dao_momentum(minf(18.0, float(hit_count) * 2.0), "chain_sweep_%s" % chain_id)
+
+
+func _chain_effect_spec(chain_id: String, details: Dictionary) -> Dictionary:
+	match chain_id:
+		"C01", "C13":
+			return {"radius": 230.0, "damage": 30.0, "element": "thunder", "status": "paralyze", "status_duration": 0.8, "preset": "dao", "freeze": 0.14, "shake": 12.0}
+		"C02", "C15":
+			return {"radius": 210.0, "damage": 34.0, "element": "fire", "status": "burn", "status_duration": 3.0, "preset": "combo", "freeze": 0.12, "shake": 11.0}
+		"C03":
+			return {"radius": 185.0, "damage": 24.0, "element": "earth", "status": "slow", "status_duration": 1.2, "preset": "crit", "freeze": 0.10, "shake": 10.0}
+		"C04":
+			return {"radius": 260.0, "damage": 26.0, "element": "fire", "status": "burn", "status_duration": 2.2, "preset": "combo", "freeze": 0.10, "shake": 9.0}
+		"C05":
+			return {"radius": 205.0, "damage": 24.0, "element": "water", "status": "slow", "status_duration": 2.5, "preset": "cast", "freeze": 0.11, "shake": 8.0}
+		"C21":
+			return {"radius": 150.0, "damage": 20.0, "element": str(details.get("element", "fire")), "status": "slow", "status_duration": 1.0, "preset": "gold", "freeze": 0.08, "shake": 7.0}
+	return {"radius": CHAIN_EFFECT_RADIUS, "damage": 20.0, "element": "fire", "preset": "combo"}
 
 
 func _nearby_enemy_count(world_position: Vector2) -> int:

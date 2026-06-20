@@ -105,3 +105,14 @@ func get_display_lines() -> PackedStringArray:
 			var pct: int = int(progress.get(layer, 0.0) * 100.0)
 			lines.append("%s Lv.%d %d%%" % [name, layer, pct])
 	return lines
+
+
+func get_unlocked_layer_count() -> int:
+	return unlocked_layers.size()
+
+
+func get_highest_unlocked_layer() -> int:
+	var highest := 1
+	for layer in unlocked_layers:
+		highest = maxi(highest, int(layer))
+	return highest

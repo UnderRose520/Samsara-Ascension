@@ -21,20 +21,8 @@ func _on_combo_updated(count: int) -> void:
 
 
 func _play_moment(count: int) -> void:
-	var duration := 0.2
-	var label := "灵机初动"
 	if count >= 200:
 		RunContext.trigger_dao_clarity("combo_200")
-		return
-	elif count >= 100:
-		duration = 0.5
-		label = "万法将成"
-	elif count >= 60:
-		duration = 0.3
-		label = "道势奔流"
-	elif count >= 30:
-		label = "势如破竹"
-	EventBus.crit_moment_requested.emit(label, duration)
 
 
 func _momentum_for_milestone(count: int) -> float:

@@ -16,6 +16,7 @@ var _frame_elapsed := 0.0
 
 
 func _ready() -> void:
+	add_to_group("enemy_projectile")
 	body_entered.connect(_on_body_entered)
 	_sprite = Sprite2D.new()
 	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -91,3 +92,15 @@ func _on_body_entered(body: Node) -> void:
 	if body.has_method("receive_enemy_projectile"):
 		body.receive_enemy_projectile(damage)
 	queue_free()
+
+
+func cut_by_player_slash(_player: Node = null) -> bool:
+	if not is_inside_tree() or is_queued_for_deletion():
+		return false
+	set_deferred("monitoring", false)
+	set_deferred("monitorable", false)
+	collision_layer = 0
+	collision_mask = 0
+	VfxManager.spawn_world(global_position, "crit", Color(0.72, 0.9, 1.0))
+	queue_free()
+	return true

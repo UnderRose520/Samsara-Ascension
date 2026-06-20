@@ -321,7 +321,9 @@ func _apply_movement() -> void:
 	global_position = GameConstants.clamp_to_arena(global_position, radius)
 	_refresh_action_label(false)
 	_update_animation_state()
-	if _needs_redraw():
+	# Throttled: let _process()'s ENEMY_REDRAW_INTERVAL gate control actual redraws.
+	if _needs_redraw() and _redraw_timer <= 0.0:
+		_redraw_timer = ENEMY_REDRAW_INTERVAL
 		queue_redraw()
 
 
@@ -770,9 +772,13 @@ func _apply_incoming_damage(amount: float) -> float:
 		_boss_phase_gate_index += 1
 		_boss_gate_lock = 0.35
 		_flash = 0.24
-		EventBus.crit_moment_requested.emit("%s · 阶段突破" % _display_name, 0.3)
+		var phase_label := _skills.get_phase_name() if _skills else "守势崩裂"
+		EventBus.feedback_anchor_requested.emit("boss_phase_break", {
+			"world_position": global_position,
+			"label": "%s · %s" % [_display_name, phase_label],
+			"color": Color(1.0, 0.45, 0.22),
+		})
 		EventBus.pet_coord_feedback.emit("%s 守势崩裂，余劲被化去" % _display_name)
-		VfxManager.spawn_world(global_position, "gold", Color(1.0, 0.45, 0.22))
 		return applied
 	return health.take_damage(amount)
 
@@ -825,12 +831,27 @@ func _on_died() -> void:
 		EventBus.pet_coord_feedback.emit("%s击杀 · 道势 +%d" % [bonus_label, int(round(momentum))])
 	_maybe_grant_promoted_reward()
 	if _is_boss:
-		EventBus.crit_moment_requested.emit("%s · 传承现世" % _display_name, 0.65)
-		EventBus.pet_coord_feedback.emit("%s败退，本命器祭炼开启" % _display_name)
+		var inheritance := _boss_inheritance_label()
+		EventBus.feedback_anchor_requested.emit("boss_inheritance", {
+			"world_position": global_position,
+			"label": "%s · %s" % [_display_name, inheritance],
+			"color": Color(1.0, 0.84, 0.2),
+		})
+		EventBus.pet_coord_feedback.emit("%s败退，%s开启" % [_display_name, inheritance])
 	var burst_preset := "gold" if _is_boss else ("combo" if _is_elite else "hit")
 	var burst_color := Color(1.0, 0.84, 0.2) if _is_boss else GameConstants.COLOR_ENEMY
 	VfxManager.spawn_world(global_position, burst_preset, burst_color)
 	queue_free()
+
+
+func _boss_inheritance_label() -> String:
+	match _weapon_id:
+		"soul_banner":
+			return "魂幡传承 · 本命器祭炼"
+		"xuanwu_shield":
+			return "玄甲传承 · 法宝碎片"
+		_:
+			return "Boss传承 · 本命器祭炼"
 
 
 func _explode_mutation() -> void:

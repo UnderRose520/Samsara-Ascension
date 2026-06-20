@@ -216,7 +216,7 @@ func _on_room_entered(_room: Dictionary, _stage: Dictionary) -> void:
 
 
 func _on_run_started(_seed_value: int) -> void:
-	TargetSelector.clear_lock()
+	TargetSelector.reset_for_new_run()
 	_on_weapon_changed(RunContext.get_weapon())
 
 
@@ -455,6 +455,7 @@ func _fire_projectile_attack(dir: Vector2) -> void:
 	var projectile: Area2D = PROJECTILE_SCENE.instantiate()
 	projectile.global_position = global_position + dir * 16.0
 	var weapon_mods := RunContext.get_weapon_mod_effects()
+	var weapon_family := str(_weapon.get("family", "orb"))
 	var speed := float(_weapon.get("projectile_speed", GameConstants.PROJECTILE_SPEED))
 	var damage_mult := float(_weapon.get("damage_mult", 1.0)) * float(weapon_mods.get("damage_mult", 1.0)) * RunContext.get_dao_clarity_attack_mult() * _consume_perfect_counter_mult()
 	var element_hint := str(_weapon.get("element_hint", "fire"))
@@ -463,6 +464,20 @@ func _fire_projectile_attack(dir: Vector2) -> void:
 	var color := Color(str(_weapon.get("visual_color", "#ffd700")))
 	var radius := float(_weapon.get("projectile_radius", 5.0))
 	var attack_range := float(_weapon.get("attack_range", 520.0)) * float(weapon_mods.get("range_mult", 1.0))
+	if weapon_family == "talisman":
+		speed *= 0.92
+		radius *= 1.12
+		VfxManager.spawn_world(global_position + dir * 22.0, "cast", Color(0.45, 0.95, 0.48))
+		EventBus.feedback_anchor_requested.emit("path_talisman", {
+			"world_position": global_position + dir * 34.0,
+			"color": Color(0.45, 0.95, 0.48),
+		})
+	elif weapon_family == "orb":
+		VfxManager.spawn_world(global_position, "dao", color)
+		EventBus.feedback_anchor_requested.emit("path_caster", {
+			"world_position": global_position + dir * 18.0,
+			"color": color,
+		})
 	projectile.setup(
 		dir,
 		attack_power * damage_mult,
@@ -473,12 +488,13 @@ func _fire_projectile_attack(dir: Vector2) -> void:
 		-1,
 		element_hint,
 		attack_range,
-		"weapon_projectile",
+		"weapon_%s_projectile" % weapon_family,
 		str(weapon_mods.get("status_on_hit", "")),
 		float(weapon_mods.get("status_duration", 0.0))
 	)
 	get_tree().current_scene.add_child(projectile)
-	VfxManager.spawn_world(global_position + dir * 16.0, "cast", color)
+	if weapon_family not in ["orb", "talisman"]:
+		VfxManager.spawn_world(global_position + dir * 16.0, "cast", color)
 
 
 func _fire_short_arc_attack(dir: Vector2) -> void:
@@ -492,6 +508,7 @@ func _fire_short_arc_attack(dir: Vector2) -> void:
 	var hit_count := 0
 	var half_arc := deg_to_rad(arc_deg) * 0.5
 	_spawn_slash_arc(dir, attack_range, arc_deg)
+	var projectile_cut_count := _cut_enemy_projectiles_with_slash(dir, attack_range, half_arc)
 	for enemy in get_tree().get_nodes_in_group("enemy"):
 		if enemy == null or not is_instance_valid(enemy) or not enemy is Node2D:
 			continue
@@ -502,14 +519,48 @@ func _fire_short_arc_attack(dir: Vector2) -> void:
 		if absf(wrapf(offset.angle() - dir.angle(), -PI, PI)) > half_arc:
 			continue
 		if enemy.has_method("receive_player_weapon_hit"):
-			enemy.receive_player_weapon_hit(self, attack_power * damage_mult, element_hint, "weapon_%s" % str(_weapon.get("weapon_id", "basic")))
+			enemy.receive_player_weapon_hit(self, attack_power * damage_mult, element_hint, "weapon_short_arc_%s" % str(_weapon.get("weapon_id", "basic")))
 			_apply_weapon_mod_status(enemy, weapon_mods)
 			hit_count += 1
 	if hit_count > 0:
 		RunContext.add_dao_momentum(4.0 if hit_count >= 3 else 1.0, "weapon_cleave")
-		VfxManager.spawn_world(global_position + dir * minf(attack_range * 0.45, 40.0), "combo", Color(0.88, 0.94, 1.0))
+		EventBus.feedback_anchor_requested.emit("hit_heavy", {
+			"world_position": global_position + dir * minf(attack_range * 0.45, 40.0),
+			"color": Color(0.88, 0.94, 1.0),
+			"label": "剑势破空" if hit_count >= 3 else "",
+			"duration": 0.22,
+		})
+	elif projectile_cut_count > 0:
+		RunContext.add_dao_momentum(minf(6.0, float(projectile_cut_count) * 1.5), "sword_projectile_parry")
+		EventBus.feedback_anchor_requested.emit("hit_heavy", {
+			"world_position": global_position + dir * minf(attack_range * 0.52, 46.0),
+			"color": Color(0.72, 0.9, 1.0),
+			"label": "斩落弹幕" if projectile_cut_count >= 2 else "",
+			"duration": 0.22,
+			"freeze": 0.035,
+			"shake": 5.0 + float(projectile_cut_count),
+		})
 	else:
 		VfxManager.spawn_world(global_position + dir * 24.0, "cast", Color(0.75, 0.82, 0.95))
+
+
+func _cut_enemy_projectiles_with_slash(dir: Vector2, attack_range: float, half_arc: float) -> int:
+	if str(_weapon.get("family", "")) != "sword":
+		return 0
+	var count := 0
+	for projectile in get_tree().get_nodes_in_group("enemy_projectile"):
+		var body := projectile as Node2D
+		if body == null or not is_instance_valid(body):
+			continue
+		var offset := body.global_position - global_position
+		var distance := offset.length()
+		if distance > attack_range or distance <= 0.01:
+			continue
+		if absf(wrapf(offset.angle() - dir.angle(), -PI, PI)) > half_arc:
+			continue
+		if projectile.has_method("cut_by_player_slash") and projectile.cut_by_player_slash(self):
+			count += 1
+	return count
 
 
 func _spawn_slash_arc(dir: Vector2, attack_range: float, arc_deg: float) -> void:

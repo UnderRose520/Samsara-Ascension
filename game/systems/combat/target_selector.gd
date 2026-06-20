@@ -18,6 +18,14 @@ static var _cached_range := 0.0
 
 
 
+## Reset statics so a fresh editor run doesn't carry stale WeakRef / frame cache.
+static func reset_for_new_run() -> void:
+	_locked = null
+	_cached_target = null
+	_cached_player_id = 0
+	_cached_frame = -1
+	_cached_range = 0.0
+
 
 
 static func acquire(player: Node2D, max_range: float) -> Node2D:
@@ -41,6 +49,12 @@ static func acquire(player: Node2D, max_range: float) -> Node2D:
 
 
 	if locked != null and _is_candidate(player, locked, stick_range):
+		# Locked enemy is within the stickiness buffer.  Check whether it is
+		# also inside the active acquisition range (max_range).  When it sits
+		# in the gap between max_range and stick_range we still preserve the
+		# lock — that is the whole point of the hysteresis so the player
+		# doesn't lose auto-aim tracking on a nearby target that briefly
+		# stepped outside acquisition range.
 
 		if _is_candidate(player, locked, max_range):
 
@@ -75,9 +89,11 @@ static func acquire(player: Node2D, max_range: float) -> Node2D:
 
 					return best
 
-			_cache_acquire(player, max_range, locked)
+		# Preserve the lock when the target is inside stick_range but
+		# outside max_range — this is the core stickiness guarantee.
+		_cache_acquire(player, max_range, locked)
 
-			return locked
+		return locked
 
 
 
@@ -440,4 +456,3 @@ static func _normalize_or_default(dir: Vector2, fallback: Vector2) -> Vector2:
 		return dir.normalized()
 
 	return fallback
-

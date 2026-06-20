@@ -1,6 +1,7 @@
 extends Node
 
 signal damage_dealt(result: Dictionary)
+signal feedback_anchor_requested(anchor_id: String, payload: Dictionary)
 signal player_hp_changed(current: float, maximum: float)
 signal combo_updated(count: int)
 signal enemy_killed(enemy: Node)

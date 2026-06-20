@@ -34,6 +34,9 @@ func _on_spawn_player_projectile(payload: Dictionary) -> void:
 		str(payload.get("source_tag", "projectile")),
 		str(payload.get("status_on_hit", "")),
 		float(payload.get("status_duration", 0.0)),
+		int(payload.get("evolution_layer", 1)),
+		str(payload.get("evolution_branch", "base")),
+		int(payload.get("synergy_rank", 0)),
 	)
 	scene_root.add_child(projectile)
 

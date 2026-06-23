@@ -1,5 +1,6 @@
 extends Node
 
+const AssetPaths = preload("res://assets/asset_paths.gd")
 const ARENA_SCENE = preload("res://scenes/rooms/run_controller.tscn")
 const SETUP_SCENE = preload("res://scenes/ui/run_setup_panel.tscn")
 const AFFIX_PANEL_SCENE = preload("res://scenes/ui/affix_choice_panel.tscn")
@@ -19,12 +20,14 @@ const META_PANEL_SCENE = preload("res://scenes/ui/meta_upgrade_panel.tscn")
 const WEAPON_MOD_PANEL_SCENE = preload("res://scenes/ui/weapon_mod_choice_panel.tscn")
 
 @onready var world: Node2D = $World
+@onready var background: TextureRect = $BackgroundLayer/Background
 
 var _pause_overlay: CanvasLayer
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_apply_menu_backdrop()
 	add_child(AFFIX_PANEL_SCENE.instantiate())
 	add_child(BREAKTHROUGH_SCENE.instantiate())
 	add_child(PATH_PANEL_SCENE.instantiate())
@@ -36,6 +39,8 @@ func _ready() -> void:
 	add_child(_pause_overlay)
 	if _pause_overlay.has_signal("restart_run_requested"):
 		_pause_overlay.connect("restart_run_requested", _on_restart_run_requested)
+	if _pause_overlay.has_signal("quit_game_requested"):
+		_pause_overlay.connect("quit_game_requested", _on_quit_game_requested)
 	add_child(COMBAT_FEEDBACK_SCENE.instantiate())
 	add_child(TOP_ANNOUNCEMENT_SCENE.instantiate())
 	add_child(EVENT_PANEL_SCENE.instantiate())
@@ -45,6 +50,12 @@ func _ready() -> void:
 	add_child(META_PANEL_SCENE.instantiate())
 	add_child(WEAPON_MOD_PANEL_SCENE.instantiate())
 	EventBus.run_setup_confirmed.connect(_on_run_setup_confirmed)
+
+
+func _apply_menu_backdrop() -> void:
+	if background == null:
+		return
+	background.texture = AssetPaths.load_texture(AssetPaths.MENU_BACKDROP)
 
 
 func _on_run_setup_confirmed() -> void:
@@ -75,3 +86,9 @@ func _on_restart_run_requested() -> void:
 	get_tree().paused = false
 	Engine.time_scale = 1.0
 	get_tree().reload_current_scene()
+
+
+func _on_quit_game_requested() -> void:
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	get_tree().quit()

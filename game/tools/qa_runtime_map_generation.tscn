@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://qa_runtime_map_generation"]
+
+[ext_resource type="Script" path="res://tools/qa_runtime_map_generation.gd" id="1"]
+
+[node name="QaRuntimeMapGeneration" type="Node"]
+script = ExtResource("1")

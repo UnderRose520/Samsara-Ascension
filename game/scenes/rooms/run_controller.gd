@@ -10,6 +10,7 @@ const EventResolver = preload("res://systems/world/event_resolver.gd")
 const WeaponModCatalog = preload("res://systems/equipment/weapon_mod_catalog.gd")
 const CultivationPathRegistry = preload("res://systems/realm/cultivation_path_registry.gd")
 const RoomLayoutGenerator = preload("res://systems/world/room_layout_generator.gd")
+const StageGenerator = preload("res://systems/world/stage_generator.gd")
 const RunRng = preload("res://core/utils/run_rng.gd")
 const PLAYER_SCENE = preload("res://scenes/player/player.tscn")
 const HUD_SCENE = preload("res://scenes/ui/hud.tscn")
@@ -45,6 +46,30 @@ var _pet: Node2D
 var _pet_bonded_this_clear := false
 var _opening_affix_pending := false
 var _opening_affix_used := false
+var _saved_time_scale := 1.0
+var _paused_nest_level := 0
+
+
+## Save Engine.time_scale before entering a paused/modal state so that
+## active slow-motion effects (crit moments, death overlay, etc.) are
+## not silently destroyed.  Nesting-safe: only the outermost pause saves
+## the original time_scale so that chains like breakthrough→affix don't
+## overwrite the saved value with 1.0.
+func _enter_paused_state() -> void:
+	if _paused_nest_level == 0:
+		_saved_time_scale = Engine.time_scale
+	_paused_nest_level += 1
+	Engine.time_scale = 1.0
+	get_tree().paused = true
+
+
+func _leave_paused_state() -> void:
+	_paused_nest_level = maxi(_paused_nest_level - 1, 0)
+	get_tree().paused = false
+	# Only restore when the outermost pause is unwound AND nothing else
+	# has changed time_scale since we paused.
+	if _paused_nest_level == 0 and Engine.time_scale == 1.0:
+		Engine.time_scale = _saved_time_scale
 
 
 func _ready() -> void:
@@ -129,6 +154,8 @@ func _enter_current_room() -> void:
 		return
 	var weather_id := str(stage.get("weather_id", "clear"))
 	var stage_idx := int(stage.get("stage_index", RunContext.current_stage + 1))
+	if room.has("weather_id"):
+		weather_id = str(room.get("weather_id", weather_id))
 	if get_combat_floor() and get_combat_floor().has_method("apply_theme"):
 		get_combat_floor().apply_theme(stage_idx)
 	_room_waves = []
@@ -145,10 +172,13 @@ func _enter_current_room() -> void:
 		var weather_opportunity := RunContext.consume_weather_opportunity()
 		if not weather_opportunity.is_empty():
 			weather_id = str(weather_opportunity.get("weather_id", weather_id))
+			room["weather_id"] = weather_id
+			_sync_room_terrain_weights_for_weather(room, weather_id)
 			var opportunity_layout := str(weather_opportunity.get("layout_id", ""))
 			if not opportunity_layout.is_empty():
 				room["layout_id"] = opportunity_layout
 			room["weather_opportunity_boost"] = true
+		room["weather_id"] = weather_id
 		_apply_first_minutes_path_opportunity(room)
 		WeatherSystem.set_weather(weather_id)
 		_apply_room_layout(room, stage_idx, weather_id)
@@ -188,8 +218,7 @@ func _offer_opening_affix() -> void:
 	_waiting_for_affix = true
 	_phase = RoomPhase.AFFIX
 	RunContext.ui_blocking = true
-	Engine.time_scale = 1.0
-	get_tree().paused = true
+	_enter_paused_state()
 	_affix_roll_seq = 0
 	_present_offers()
 
@@ -204,6 +233,25 @@ func _apply_first_minutes_path_opportunity(room: Dictionary) -> void:
 	if room_number == 2 and not bool(room.get("weather_opportunity_boost", false)):
 		room["layout_id"] = _starter_layout_for_path(RunContext.cultivation_path_id)
 	EventBus.pet_coord_feedback.emit("%s前奏：%s" % [RunContext.cultivation_path_name, goal])
+
+
+func _sync_room_terrain_weights_for_weather(room: Dictionary, weather_id: String) -> void:
+	var base_weights: Dictionary = {}
+	var profile: Dictionary = room.get("layout_profile", {})
+	if room.has("base_terrain_feature_weights"):
+		base_weights = room.get("base_terrain_feature_weights", {})
+	elif profile.has("base_terrain_feature_weights"):
+		base_weights = profile.get("base_terrain_feature_weights", {})
+	elif profile.has("terrain_feature_weights"):
+		base_weights = profile.get("terrain_feature_weights", {})
+	elif room.has("terrain_feature_weights"):
+		base_weights = room.get("terrain_feature_weights", {})
+	if base_weights.is_empty():
+		return
+	var adjusted_weights := StageGenerator.weather_adjusted_terrain_feature_weights(base_weights, weather_id)
+	room["terrain_feature_weights"] = adjusted_weights
+	profile["terrain_feature_weights"] = adjusted_weights
+	room["layout_profile"] = profile
 
 
 func _starter_layout_for_path(path_id: String) -> String:
@@ -553,8 +601,7 @@ func _maybe_offer_weapon_mod(room_type: GameEnums.RoomType, stage_index: int) ->
 	_waiting_for_weapon_mod = true
 	_phase = RoomPhase.WEAPON_MOD
 	RunContext.ui_blocking = true
-	Engine.time_scale = 1.0
-	get_tree().paused = true
+	_enter_paused_state()
 	EventBus.weapon_mod_choice_requested.emit(offers, {
 		"source": "Boss传承 · 本命器祭炼" if room_type == GameEnums.RoomType.BOSS else "清场祭炼",
 		"stage_index": stage_index,
@@ -571,6 +618,7 @@ func _on_weapon_mod_choice_closed(mod_id: String) -> void:
 		return
 	_waiting_for_weapon_mod = false
 	RunContext.ui_blocking = false
+	_leave_paused_state()
 	if RunContext.add_weapon_mod(mod_id):
 		var mod := WeaponModCatalog.get_mod(mod_id)
 		EventBus.pet_coord_feedback.emit("\u672c\u547d\u5668\u796d\u70bc\uff1a%s" % str(mod.get("name", mod_id)))
@@ -581,8 +629,7 @@ func _offer_breakthrough() -> void:
 	_waiting_for_breakthrough = true
 	_phase = RoomPhase.BREAKTHROUGH
 	RunContext.ui_blocking = true
-	Engine.time_scale = 1.0
-	get_tree().paused = true
+	_enter_paused_state()
 	var offers := TalentSelector.roll_talents(
 		RunContext.realm_level,
 		3,
@@ -593,6 +640,7 @@ func _offer_breakthrough() -> void:
 		RunContext.complete_breakthrough()
 		_waiting_for_breakthrough = false
 		RunContext.ui_blocking = false
+		_leave_paused_state()
 		EventBus.pet_coord_feedback.emit("突破成功 · 词条槽 %d" % RunContext.affix_slot_max())
 		_offer_affix()
 		return
@@ -606,6 +654,7 @@ func _offer_breakthrough() -> void:
 func _on_breakthrough_closed(talent_id: String) -> void:
 	_waiting_for_breakthrough = false
 	RunContext.ui_blocking = false
+	_leave_paused_state()
 	if not RunContext.breakthrough_done:
 		RunContext.complete_breakthrough()
 	var talent = TalentSelector.get_talent(talent_id)
@@ -648,8 +697,7 @@ func _offer_affix() -> void:
 	_waiting_for_affix = true
 	_phase = RoomPhase.AFFIX
 	RunContext.ui_blocking = true
-	Engine.time_scale = 1.0
-	get_tree().paused = true
+	_enter_paused_state()
 	_affix_roll_seq = 0
 	_present_offers()
 	if room_type != GameEnums.RoomType.EVENT:
@@ -761,13 +809,16 @@ func _on_affix_skip() -> void:
 	EventBus.gold_changed.emit(RunContext.gold)
 	if _player:
 		VfxManager.spawn_gold_reward_feedback(_player.global_position + Vector2(0, -24), GameConstants.AFFIX_SKIP_REWARD)
+	# Safety: if the panel close animation callback never fires
+	# affix_choice_closed, force cleanup after 2 seconds.
+	get_tree().create_timer(2.0, true).timeout.connect(_force_affix_cleanup, CONNECT_ONE_SHOT)
 
 
 func _on_affix_choice_closed() -> void:
 	_waiting_for_affix = false
 	RunContext.ui_blocking = false
 	_pet_bonded_this_clear = false
-	get_tree().paused = false
+	_leave_paused_state()
 	if _opening_affix_pending:
 		_opening_affix_pending = false
 		_phase = RoomPhase.COMBAT
@@ -778,6 +829,19 @@ func _on_affix_choice_closed() -> void:
 		_offer_path_choice()
 		return
 	_offer_path_choice()
+
+
+## Safety-net: if affix_choice_closed never fires (token race, tween kill),
+## force cleanup after the 2-second timeout in _on_affix_skip expires.
+func _force_affix_cleanup() -> void:
+	if not _waiting_for_affix:
+		return
+	_waiting_for_affix = false
+	RunContext.ui_blocking = false
+	if get_tree().paused:
+		_leave_paused_state()
+	if not _opening_affix_pending:
+		_offer_path_choice()
 
 
 func _offer_path_choice() -> void:
@@ -911,8 +975,7 @@ func _on_player_died() -> void:
 	get_horde().reset()
 	EntityCache.invalidate_player()
 	RunContext.run_active = false
-	Engine.time_scale = 1.0
-	get_tree().paused = true
+	_enter_paused_state()
 	EventBus.death_moment_requested.emit(RunContext.build_death_summary())
 
 

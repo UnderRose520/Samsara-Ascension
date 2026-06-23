@@ -1,0 +1,36 @@
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: runtime combat action FX atlas for a 1920x1080 top-down 2D cultivation roguelite.
+Grid: exactly 4 columns by 4 rows, one centered alpha-ready FX glyph per cell, no visible grid lines or borders.
+Cell order: left to right, top to bottom.
+1. player melee slash arc: cold jade crescent brush slash, blue-white core, old-gold sparks, transparent inner gap
+2. screen crit slash: long diagonal ink blade slash, cold jade white edge, sparse old-gold spark flecks, no straight debug line
+3. enemy windup seal: red-orange broken talisman ring, transparent center, threat readable but not a western magic circle
+4. actor foot presence shadow: black-jade oval brush wash with cold jade lower rim, very low contrast
+5. player Dao momentum aura: old-gold jade orbit brush ring, open center, calm cultivation pressure
+6. perfect counter aura: sharper old-gold impact ring with two jade-white spark knots, open center
+7. elite enemy identity ring: old-gold broken lower halo, dark jade smoke, subtle corner ticks
+8. boss identity ring: larger red-orange and old-gold oath halo, black ink pressure, transparent actor center
+9. guardian aura: xuanwu shield field, old-gold jade defensive ring, low alpha center, no solid disk
+10. world status badge backing: tiny black jade circular seal plate, cold jade rim, readable at 12px
+11. enemy claw windup glyph: three red-orange ink claw slashes, pointed right, black smoke edge
+12. enemy crossbow windup glyph: horizontal talisman crossbow silhouette, old-gold stock, blue-white bolt tip
+13. enemy furnace core windup glyph: ember alchemy furnace eye, orange-red core inside black jade ring
+14. enemy xuanwu shield windup glyph: dark turtle-shell shield sigil, old-gold rim, jade crack light
+15. enemy soul banner windup glyph: vertical torn black-violet banner, old-gold pole, purple soul flame edge
+16. enemy poison spit windup glyph: jade venom ink droplet burst, pointed right, dark smoke outline
+Visual language: dark Chinese ink-wash xianxia combat overlays, black jade mass first, cold jade rim second, old-gold ritual sparks third. Red-orange appears only on hostile windup threat cells, not on player slash or neutral backing.
+Runtime use: assets are drawn over sprites and UI overlays at 12px to 640px; each cell must have a clean silhouette, transparent center where actors stand, generous padding, and no cell-edge touching.
+Shape rules: slash assets are brush strokes, ring assets are broken talisman halos with open centers, weapon glyphs point right so the runtime can rotate them toward the player.
+Style: high-saturation particles are crisp gameplay signals only; keep ambient ink dark and elegant, not western dark fantasy, not Diablo loot art, not photoreal.
+Constraints: no text, no letters, no readable Chinese characters, no character bodies, no UI panels, no inventory icons, no western magic circles, no sci-fi reticles, no full opaque disks, no watermark.

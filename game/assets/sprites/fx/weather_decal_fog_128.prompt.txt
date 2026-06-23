@@ -1,0 +1,29 @@
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: runtime weather ground decal atlas for a top-down 2D combat arena.
+Grid: exactly 4 columns by 2 rows, one centered low ground decal per cell, no visible grid lines or borders.
+Cell order: left to right, top to bottom.
+1. rain: shallow cyan ink puddle ripple, wet brush stain, low contrast edge, no hazard circle
+2. thunder: storm-dark wet ground stain with tiny blue-white branch vein, not a warning target
+3. snow: pale cyan frost dust patch, broken snow crystals on black jade stone, soft and sparse
+4. sand: old-gold dry dust smear, wind-brushed grit crescent, subdued on dark ink floor
+5. fog: gray-jade low mist stain, soft ink bloom, transparent open center
+6. fire weather: ember ash scorch stain, orange-red hairline cracks only on edge, no lava puddle
+7. wind: jade wind-swept grassless brush curl, very thin spiral smear, non-hazard
+8. clear fallback: faint circular black-jade breathing brush mark, two old-gold dust flecks, distinct calm outline but very low contrast
+Visual language: flat ground-contact ink stains and shallow elemental residue, not icons and not UI.
+Runtime use: decals are randomly placed on top-down battle floors at 40-90px display size, so the center must remain soft and non-blocking.
+Style: dark Chinese ink-wash xianxia ground marks, black jade floor residue, cold jade rim light only where needed, restrained old-gold dust lines.
+Gameplay rule: weather decals must never look like enemy danger zones; no target circles, no thick rings, no bright filled disks.
+Composition: each decal occupies the central 58-72 percent of its cell with feathered transparent edges and strong alpha-ready silhouette.
+Constraints: no text, no letters, no characters, no props, no stones taller than ground, no UI emblem, no western magic circle, no photoreal puddle, no full-cell glow, no watermark.

@@ -2,8 +2,8 @@
   "schema": "samsara_ascension.runtime_scene_manifest.v1",
   "generated_from": [
     "GDD_轮回仙途_v7.0.md",
-    "docs/UIUX_轮回仙途_v2.0_像素风.md",
-    "docs/UI资产提示词_像素风.md",
+    "docs/UIUX_全新暗色水墨五行粒子_v1.0.md",
+    "docs/mimo_ui_master_index.md",
     "game/tools/generate_runtime_maps.py"
   ],
   "pipeline": {
@@ -13,9 +13,7 @@
     "runtime_object_model": "foundation_background_plus_tileset_plus_transparent_terrain_props_plus_obstacle_bodies_plus_scene_hooks",
     "collision_model": "obstacle_bodies_with_manifest_spawn_bounds",
     "engine_target": "Godot_TileMap",
-    "visual_asset_source": "hybrid_ssstoken_gpt_image_2_backgrounds_and_procedural_tiles_props",
-    "image_endpoint": "https://api.ssstoken.net/v1/images/generations",
-    "image_model": "gpt-image-2",
+    "visual_asset_source": "hybrid_environment_image_generation_backgrounds_and_project_native_tiles_props",
     "runtime_assets": [
       "room_background",
       "tileset",
@@ -30,7 +28,7 @@
       "prompt_files",
       "tileset_metadata.json"
     ],
-    "note": "Runtime map assets use the existing generate2dmap contract. All five stage room_background.png files were generated through the SSSToken OpenAI-compatible gpt-image-2 endpoint and cropped to 1280x720; raw image2 backups are stored under output/imagegen/map_backgrounds. Tilesets, terrain props, collision, spawn zones, safe zones, no-spawn zones, and scenery props remain project-native/procedural runtime data. Prompt files are saved beside visible assets."
+    "note": "Runtime map assets follow the 玄墨道场、五行照夜 visual direction. Visible background assets may be requested from an environment-configured image generation provider; prompt files are saved beside visible assets. Tilesets, terrain props, collision, spawn zones, safe zones, no-spawn zones, and scenery props remain project-native runtime data."
   },
   "arena": {
     "viewport_size": [
@@ -71,6 +69,148 @@
       "y": -360,
       "width": 1280,
       "height": 720
+    },
+    "terrain_prop_semantics": {
+      "water": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "wet": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "swamp": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "fire": [
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "dry": [
+        [
+          0,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "rock": [
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ]
+      ],
+      "ice": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "thunder": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "obstacle": [
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ]
+      ],
+      "default": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          0,
+          1
+        ]
+      ]
     }
   },
   "stages": [
@@ -420,7 +560,32 @@
             0.46
           ]
         }
-      ]
+      ],
+      "weather_pool": [
+        {
+          "id": "clear",
+          "weight": 4
+        },
+        {
+          "id": "rain",
+          "weight": 3
+        },
+        {
+          "id": "fog",
+          "weight": 2
+        },
+        {
+          "id": "wind",
+          "weight": 1
+        }
+      ],
+      "terrain_feature_weights": {
+        "water": 4,
+        "swamp": 3,
+        "rock": 2,
+        "fire": 1
+      },
+      "terrain_feature_count_bias": 1
     },
     {
       "stage_index": 2,
@@ -752,7 +917,32 @@
             0.52
           ]
         }
-      ]
+      ],
+      "weather_pool": [
+        {
+          "id": "rain",
+          "weight": 4
+        },
+        {
+          "id": "fog",
+          "weight": 2
+        },
+        {
+          "id": "clear",
+          "weight": 1
+        },
+        {
+          "id": "thunder",
+          "weight": 1
+        }
+      ],
+      "terrain_feature_weights": {
+        "water": 5,
+        "rock": 4,
+        "swamp": 2,
+        "ice": 1
+      },
+      "terrain_feature_count_bias": 1
     },
     {
       "stage_index": 3,
@@ -1091,7 +1281,32 @@
             0.5
           ]
         }
-      ]
+      ],
+      "weather_pool": [
+        {
+          "id": "fire",
+          "weight": 4
+        },
+        {
+          "id": "thunder",
+          "weight": 2
+        },
+        {
+          "id": "sand",
+          "weight": 1
+        },
+        {
+          "id": "fog",
+          "weight": 1
+        }
+      ],
+      "terrain_feature_weights": {
+        "fire": 5,
+        "swamp": 3,
+        "rock": 3,
+        "water": 1
+      },
+      "terrain_feature_count_bias": 2
     },
     {
       "stage_index": 4,
@@ -1446,14 +1661,39 @@
             0.54
           ]
         }
-      ]
+      ],
+      "weather_pool": [
+        {
+          "id": "fire",
+          "weight": 3
+        },
+        {
+          "id": "fog",
+          "weight": 3
+        },
+        {
+          "id": "wind",
+          "weight": 2
+        },
+        {
+          "id": "snow",
+          "weight": 1
+        }
+      ],
+      "terrain_feature_weights": {
+        "rock": 5,
+        "fire": 3,
+        "water": 2,
+        "ice": 1
+      },
+      "terrain_feature_count_bias": 1
     },
     {
       "stage_index": 5,
       "theme_id": "tribulation_thunder",
       "theme_label": "天劫雷台",
       "stage_name": "天劫试场",
-      "weather_id": "wind",
+      "weather_id": "thunder",
       "tileset": "res://assets/maps/tribulation_thunder/tileset.png",
       "room_background": "res://assets/maps/tribulation_thunder/room_background.png",
       "terrain_props": "res://assets/maps/tribulation_thunder/terrain_props.png",
@@ -1809,7 +2049,28 @@
             0.48
           ]
         }
-      ]
+      ],
+      "weather_pool": [
+        {
+          "id": "thunder",
+          "weight": 6
+        },
+        {
+          "id": "rain",
+          "weight": 2
+        },
+        {
+          "id": "wind",
+          "weight": 1
+        }
+      ],
+      "terrain_feature_weights": {
+        "thunder": 5,
+        "rock": 4,
+        "water": 3,
+        "fire": 1
+      },
+      "terrain_feature_count_bias": 2
     }
   ]
 }

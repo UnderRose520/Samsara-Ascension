@@ -1,0 +1,1 @@
+derived from image2 raw hud_spell_slot_cooling_72 plus deterministic alpha sweep; runtime 96x96 cooldown overlay

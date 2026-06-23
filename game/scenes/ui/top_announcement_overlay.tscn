@@ -9,26 +9,27 @@ script = ExtResource("1")
 
 [node name="Bar" type="PanelContainer" parent="."]
 visible = false
+custom_minimum_size = Vector2(360, 40)
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -230.0
-offset_top = 82.0
-offset_right = 230.0
-offset_bottom = 116.0
+offset_left = -180.0
+offset_top = 78.0
+offset_right = 180.0
+offset_bottom = 118.0
 grow_horizontal = 2
 
 [node name="Margin" type="MarginContainer" parent="Bar"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 4
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 6
 
 [node name="Label" type="Label" parent="Bar/Margin"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.843, 0, 0.72)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 15
 text = "公告"
 horizontal_alignment = 1
 vertical_alignment = 1

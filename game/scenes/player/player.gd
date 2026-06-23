@@ -1,4 +1,4 @@
-extends CharacterBody2D
+﻿extends CharacterBody2D
 
 const GameConstants = preload("res://core/constants/game_constants.gd")
 const DamagePipeline = preload("res://systems/combat/damage_pipeline.gd")
@@ -43,9 +43,14 @@ var _perfect_counter_time := 0.0
 var _perfect_counter_flash := 0.0
 var _perfect_counter_bonus_ready := false
 var _guardian_invuln := 0.0
+var _status_icon_texture_cache: Dictionary = {}
+var _combat_fx_texture_cache: Dictionary = {}
+var _combat_fx_texture_hits := 0
 
 const COMBAT_ANIMATION_HOLD_SEC := 0.5
 const DAO_REDRAW_INTERVAL := 1.0 / 24.0
+const STATUS_ICON_SIZE := 12.0
+const STATUS_ICON_MAX := 6
 const ANIMATION_FPS := {
 	"idle": 6.0,
 	"walk": 8.0,
@@ -382,6 +387,7 @@ func _apply_sprite_style() -> void:
 	var path: String = AssetPaths.player_sprite(SaveManager.get_sprite_style(), 64)
 	if body_visual.has_method("set_texture_path"):
 		body_visual.set_texture_path(path)
+	body_visual.scale = Vector2(1.16, 1.16)
 	if "animation_fps" in body_visual:
 		body_visual.animation_fps = float(ANIMATION_FPS.get(_anim_state, 6.0))
 	if body_visual.has_method("set_animation_prefix_name"):
@@ -426,6 +432,8 @@ func _needs_redraw() -> bool:
 	if _iframe > 0.0:
 		return true
 	if spell_caster and spell_caster.has_method("is_casting") and spell_caster.is_casting():
+		return true
+	if _has_visible_status_icons():
 		return true
 	if RunContext.dao_momentum_state != "idle" or RunContext.dao_momentum > 0.0:
 		if _dao_redraw_timer <= 0.0:
@@ -566,6 +574,7 @@ func _cut_enemy_projectiles_with_slash(dir: Vector2, attack_range: float, half_a
 func _spawn_slash_arc(dir: Vector2, attack_range: float, arc_deg: float) -> void:
 	var visual := SlashArcVisual.new()
 	visual.setup(dir, attack_range, deg_to_rad(arc_deg), Color(0.72, 0.9, 1.0, 0.72))
+	_combat_fx_texture_hits += int(visual.get_texture_hit_count())
 	add_child(visual)
 
 
@@ -590,11 +599,15 @@ func _apply_weapon_mod_status(enemy: Node, effects: Dictionary) -> void:
 class SlashArcVisual:
 	extends Node2D
 
+	const AssetPaths = preload("res://assets/asset_paths.gd")
+
 	var _dir := Vector2.RIGHT
 	var _range := 72.0
 	var _arc := PI * 0.5
 	var _color := Color.WHITE
 	var _life := 0.0
+	var _texture: Texture2D
+	var _texture_hit := false
 	const LIFE_MAX := 0.14
 
 	func setup(dir: Vector2, attack_range: float, arc_rad: float, color: Color) -> void:
@@ -602,7 +615,12 @@ class SlashArcVisual:
 		_range = attack_range
 		_arc = arc_rad
 		_color = color
+		_texture = AssetPaths.load_texture(AssetPaths.combat_action_fx("player_slash_arc"))
+		_texture_hit = _texture != null
 		z_index = 8
+
+	func get_texture_hit_count() -> int:
+		return int(_texture_hit)
 
 	func _process(delta: float) -> void:
 		_life += delta
@@ -617,10 +635,14 @@ class SlashArcVisual:
 		color.a *= alpha
 		var start := _dir.angle() - _arc * 0.5
 		var end := _dir.angle() + _arc * 0.5
-		draw_arc(Vector2.ZERO, _range * 0.72, start, end, 18, color, 5.0, true)
-		var inner := color
-		inner.a *= 0.45
-		draw_arc(Vector2.ZERO, _range * 0.42, start, end, 14, inner, 3.0, true)
+		if _texture:
+			var width := _range * 1.58
+			var height := maxf(_range * 0.96, 42.0)
+			draw_set_transform(Vector2.ZERO, _dir.angle(), Vector2.ONE)
+			var rect := Rect2(Vector2(_range * 0.14, -height * 0.5), Vector2(width, height))
+			draw_texture_rect(_texture, rect, false, color)
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+			return
 
 
 func _resolve_basic_attack_direction(move_hint: Vector2) -> Vector2:
@@ -642,21 +664,45 @@ func _on_died() -> void:
 	EventBus.player_died.emit()
 
 
-func receive_contact_damage(amount: float) -> void:
+func receive_contact_damage(
+	amount: float,
+	element_key: String = "",
+	status_name: String = "",
+	source_tag: String = "contact",
+) -> bool:
 	if get_tree().paused:
-		return
+		return false
 	if _guardian_invuln > 0.0:
-		return
+		return false
 	if _iframe > 0.0:
 		_trigger_perfect_dodge()
-		return
+		return false
 	if _hit_invuln > 0.0:
-		return
-	_apply_player_damage(amount)
+		return false
+	return _apply_player_damage(amount, element_key, status_name, source_tag)
 
 
-func receive_enemy_projectile(amount: float) -> void:
-	receive_contact_damage(amount)
+func receive_enemy_projectile(
+	amount: float,
+	element_key: String = "",
+	status_name: String = "",
+	status_duration: float = 0.0,
+	source_tag: String = "enemy_projectile",
+) -> bool:
+	var clean_status := status_name.strip_edges().to_lower()
+	var clean_element := element_key.strip_edges().to_lower()
+	var hit_applied := receive_contact_damage(amount, clean_element, clean_status, source_tag)
+	if not hit_applied:
+		return false
+	if not clean_status.is_empty():
+		apply_status(clean_status, maxf(status_duration, 0.8))
+	EventBus.feedback_anchor_requested.emit("enemy_projectile_hit", {
+		"world_position": global_position,
+		"element": clean_element,
+		"status": clean_status,
+		"source": source_tag,
+	})
+	return true
 
 
 func _trigger_perfect_dodge() -> void:
@@ -695,7 +741,12 @@ func _emit_unity_hit_floater(enemy: Node, estimated_damage: float, color: Color,
 	})
 
 
-func _apply_player_damage(amount: float) -> void:
+func _apply_player_damage(
+	amount: float,
+	element_key: String = "",
+	status_name: String = "",
+	source_tag: String = "damage",
+) -> bool:
 	var defense_val := defense
 	if affix_holder:
 		defense_val += affix_holder.flat_defense
@@ -711,7 +762,12 @@ func _apply_player_damage(amount: float) -> void:
 		"target_is_player": true,
 		"is_crit": false,
 		"is_combo": false,
+		"element": element_key,
+		"status": status_name,
+		"source_tag": source_tag,
+		"damage_source": source_tag,
 	})
+	return true
 
 
 func grant_guardian_invuln(duration: float) -> void:
@@ -723,35 +779,40 @@ func grant_guardian_invuln(duration: float) -> void:
 
 
 func _draw() -> void:
+	_draw_player_presence_shadow()
 	_draw_dao_momentum_aura()
 	if body_visual and body_visual.texture != null:
-		if _iframe > 0.0:
-			draw_circle(Vector2.ZERO, 14.0, Color(1, 1, 1, 0.25))
 		if _perfect_counter_flash > 0.0:
 			var pulse := 0.5 + 0.5 * sin(_dao_visual_time * 18.0)
-			draw_circle(Vector2.ZERO, 22.0 + pulse * 5.0, Color(1.0, 0.9, 0.35, 0.22))
-			draw_arc(Vector2.ZERO, 28.0 + pulse * 6.0, 0.0, TAU, 42, Color(1.0, 0.86, 0.28, 0.65), 3.5)
+			var counter_aura := _combat_fx_texture("player_counter_aura")
+			if counter_aura:
+				_draw_centered_texture(counter_aura, Vector2.ZERO, Vector2.ONE * (58.0 + pulse * 8.0), Color(1.0, 0.86, 0.28, 0.72))
 		if spell_caster and spell_caster.has_method("is_casting") and spell_caster.is_casting():
 			var cast_color := Color(1.0, 0.45, 0.15, 0.85)
 			if spell_caster.has_method("get_casting_color"):
 				cast_color = spell_caster.get_casting_color()
 				cast_color.a = 0.85
-			draw_arc(Vector2.ZERO, 18.0, -PI * 0.5, PI * 0.5, 16, cast_color, 2.5)
+			var dao_aura := _combat_fx_texture("player_dao_aura")
+			if dao_aura:
+				_draw_centered_texture(dao_aura, Vector2.ZERO, Vector2.ONE * 42.0, Color(cast_color.r, cast_color.g, cast_color.b, 0.58))
+		_draw_status_icons(14.0)
 		return
-	var color: Color = GameConstants.COLOR_PLAYER
-	if _iframe > 0.0:
-		color = color.lightened(0.35)
-	draw_circle(Vector2.ZERO, 12.0, color)
-	if _perfect_counter_flash > 0.0:
-		var pulse := 0.5 + 0.5 * sin(_dao_visual_time * 18.0)
-		draw_circle(Vector2.ZERO, 22.0 + pulse * 5.0, Color(1.0, 0.9, 0.35, 0.22))
-		draw_arc(Vector2.ZERO, 28.0 + pulse * 6.0, 0.0, TAU, 42, Color(1.0, 0.86, 0.28, 0.65), 3.5)
-	if spell_caster and spell_caster.has_method("is_casting") and spell_caster.is_casting():
-		var cast_color := Color(1.0, 0.45, 0.15, 0.85)
-		if spell_caster.has_method("get_casting_color"):
-			cast_color = spell_caster.get_casting_color()
-			cast_color.a = 0.85
-		draw_arc(Vector2.ZERO, 18.0, -PI * 0.5, PI * 0.5, 16, cast_color, 2.5)
+	_draw_status_icons(12.0)
+
+
+func _draw_player_presence_shadow() -> void:
+	var base_radius := 14.0
+	var shadow := _combat_fx_texture("actor_presence_shadow")
+	if shadow:
+		var shadow_size := Vector2(base_radius * 3.3, base_radius * 1.55)
+		_draw_centered_texture(shadow, Vector2(0.0, base_radius * 0.8), shadow_size, Color(1.0, 1.0, 1.0, 0.72))
+	var ring_color := Color(0.52, 1.0, 0.86, 0.30)
+	if RunContext.dao_momentum_state == "full" or RunContext.dao_momentum_state == "clarity":
+		ring_color = Color(1.0, 0.82, 0.26, 0.42)
+	elif RunContext.dao_momentum_state == "dao_extreme":
+		ring_color = Color(1.0, 0.92, 0.32, 0.58)
+	if shadow:
+		_draw_centered_texture(shadow, Vector2(0.0, base_radius * 0.6), Vector2(base_radius * 3.0, base_radius * 1.2), Color(ring_color.r, ring_color.g, ring_color.b, minf(ring_color.a + 0.18, 0.62)))
 
 
 func _draw_dao_momentum_aura() -> void:
@@ -776,7 +837,124 @@ func _draw_dao_momentum_aura() -> void:
 		color = Color(1.0, 0.95, 0.36, 0.62 + pulse * 0.28)
 		radius = 42.0 + pulse * 7.0
 		width = 5.0
-	draw_arc(Vector2.ZERO, radius, 0.0, TAU * pct, 40, color, width, true)
+	var aura_key := "player_counter_aura" if charged_state else "player_dao_aura"
+	var aura := _combat_fx_texture(aura_key)
+	if aura:
+		var size := Vector2.ONE * radius * 2.15
+		_draw_centered_texture(aura, Vector2.ZERO, size, Color(color.r, color.g, color.b, minf(color.a + 0.18, 0.88)))
 	if charged_state:
 		var fill_alpha := 0.2 if RunContext.dao_momentum_state == "dao_extreme" else 0.12
-		draw_circle(Vector2.ZERO, 18.0 + pulse * 3.0, Color(1.0, 0.72, 0.18, fill_alpha))
+		if aura:
+			_draw_centered_texture(aura, Vector2.ZERO, Vector2.ONE * (38.0 + pulse * 6.0), Color(1.0, 0.72, 0.18, fill_alpha + 0.06))
+
+
+func _has_visible_status_icons() -> bool:
+	return not _active_status_keys().is_empty()
+
+
+func get_status_icon_texture_hit_count() -> int:
+	var hits := 0
+	for key in _active_status_keys():
+		if _status_icon_texture(key) != null:
+			hits += 1
+	return hits
+
+
+func get_combat_fx_texture_hit_count() -> int:
+	var hits := _combat_fx_texture_hits
+	for key in ["actor_presence_shadow", "player_dao_aura", "player_counter_aura", "status_badge_backing"]:
+		if _combat_fx_texture(key) != null:
+			hits += 1
+	return hits
+
+
+func get_visible_status_icon_count() -> int:
+	return _active_status_keys().size()
+
+
+func _active_status_keys() -> Array[String]:
+	var keys: Array[String] = []
+	if status.is_burning():
+		keys.append("burn")
+	if status.is_poisoned():
+		keys.append("poison")
+	if status.is_frozen():
+		keys.append("freeze")
+	elif status.is_slowed() or _wet_slow_strength > 0.05:
+		keys.append("slow")
+	if status.is_paralyzed():
+		keys.append("paralyze")
+	if _guardian_invuln > 0.0:
+		keys.append("guard")
+	if _iframe > 0.0 or _dodge_time > 0.0:
+		keys.append("dodge")
+	if _perfect_counter_time > 0.0:
+		keys.append("counter")
+	if spell_caster and spell_caster.has_method("is_casting") and spell_caster.is_casting():
+		keys.append("windup")
+	if RunContext.dao_momentum_state != "idle" or RunContext.dao_momentum > 0.0:
+		keys.append("dao")
+	return keys.slice(0, STATUS_ICON_MAX)
+
+
+func _draw_status_icons(radius: float) -> void:
+	var keys := _active_status_keys()
+	if keys.is_empty():
+		return
+	var count := mini(keys.size(), STATUS_ICON_MAX)
+	var orbit_radius := radius + 20.0
+	var start_angle := -PI * 0.88
+	var end_angle := -PI * 0.12
+	if count == 1:
+		_draw_status_icon(str(keys[0]), Vector2(0.0, -orbit_radius), STATUS_ICON_SIZE)
+		return
+	for i in range(count):
+		var t := float(i) / float(maxi(count - 1, 1))
+		var angle := lerpf(start_angle, end_angle, t)
+		_draw_status_icon(str(keys[i]), Vector2(cos(angle), sin(angle)) * orbit_radius, STATUS_ICON_SIZE)
+
+
+func _draw_status_icon(status_key: String, center: Vector2, size: float) -> void:
+	var texture := _status_icon_texture(status_key)
+	var color := _status_icon_color(status_key)
+	var backing := _combat_fx_texture("status_badge_backing")
+	if backing:
+		_draw_centered_texture(backing, center, Vector2.ONE * size * 1.48, Color(color.r, color.g, color.b, 0.92))
+	if texture:
+		var rect := Rect2(center - Vector2(size, size) * 0.5, Vector2(size, size))
+		draw_texture_rect(texture, rect, false, Color(1.0, 1.0, 1.0, 0.95))
+
+
+func _status_icon_texture(status_key: String) -> Texture2D:
+	if _status_icon_texture_cache.has(status_key):
+		return _status_icon_texture_cache[status_key] as Texture2D
+	var icon_path := AssetPaths.status_icon(status_key)
+	var texture := AssetPaths.load_texture(icon_path)
+	_status_icon_texture_cache[status_key] = texture
+	return texture
+
+
+func _combat_fx_texture(key: String) -> Texture2D:
+	if _combat_fx_texture_cache.has(key):
+		return _combat_fx_texture_cache[key] as Texture2D
+	var texture := AssetPaths.load_texture(AssetPaths.combat_action_fx(key))
+	_combat_fx_texture_cache[key] = texture
+	return texture
+
+
+func _draw_centered_texture(texture: Texture2D, center: Vector2, draw_size: Vector2, modulate: Color = Color.WHITE) -> void:
+	if texture == null:
+		return
+	var rect := Rect2(center - draw_size * 0.5, draw_size)
+	draw_texture_rect(texture, rect, false, modulate)
+
+
+func _status_icon_color(status_key: String) -> Color:
+	match status_key:
+		"guard":
+			return Color(1.0, 0.82, 0.34)
+		"dodge":
+			return Color(0.55, 0.86, 1.0)
+		"dao", "counter":
+			return Color(1.0, 0.85, 0.22)
+	return StatusComponent.status_color(status_key)

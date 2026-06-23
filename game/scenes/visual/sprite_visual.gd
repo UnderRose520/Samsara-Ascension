@@ -8,8 +8,6 @@ const AssetPaths = preload("res://assets/asset_paths.gd")
 @export var animation_prefix: String = ""
 @export var animation_fps: float = 6.0
 @export var auto_infer_animation: bool = true
-@export var fallback_radius: float = 8.0
-@export var fallback_color: Color = Color(0.5, 0.5, 0.55, 0.85)
 
 var _animation_frames: Array[Texture2D] = []
 var _frame_index := 0
@@ -78,4 +76,5 @@ func _frame_paths() -> Array[String]:
 func _draw() -> void:
 	if texture != null:
 		return
-	draw_circle(Vector2.ZERO, fallback_radius, fallback_color)
+	if not texture_path.is_empty():
+		push_error("SpriteVisual missing image2 texture for `%s`" % texture_path)

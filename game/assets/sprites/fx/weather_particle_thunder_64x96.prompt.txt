@@ -1,0 +1,29 @@
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: runtime weather overlay particle atlas for a top-down 2D combat arena.
+Grid: exactly 4 columns by 2 rows, one centered particle or wisp per cell, no visible grid lines or borders.
+Cell order: left to right, top to bottom.
+1. rain overlay particle: long thin cyan-blue ink rain slash, tapered brush ends, slight black-jade ghost edge
+2. thunderstorm overlay particle: rain slash with tiny blue-white lightning fork and two old-gold spark flecks
+3. snow overlay particle: pale cyan frost blossom, broken six-point ink crystal, sparse transparent interior
+4. fog overlay particle: soft gray-jade ink cloud wisp, feathered edge, open transparent center
+5. sand overlay particle: old-gold dry grit crescent, wind-brushed dust stroke, subdued on dark floor
+6. wind overlay particle: jade-green calligraphy wind curl, thin ribbon stroke with transparent center
+7. fire weather ash particle: tiny ember ash spark, orange-red edge and black ink smoke tail, not a projectile
+8. clear fallback mote: faint black-jade dust mote with one restrained old-gold glint, very low contrast
+Visual language: small airborne ink-wash weather marks, not UI icons and not ground decals.
+Runtime use: particles are repeatedly spawned across a 1920x1080 combat camera, scaled from about 10px to 90px depending on weather; each cell must remain readable when small and soft when large.
+Style: dark Chinese ink-wash xianxia weather, black jade shadow strokes, cold jade rim light, restrained old-gold dust only for sand, thunder, and clear motes.
+Gameplay rule: overlay particles must never look like enemy bullets, loot, target markers, or UI badges; rain and wind must be directional brush marks, fog must be soft and non-blocking.
+Composition: each particle occupies the central 46-70 percent of its cell with generous transparent padding and clean alpha-ready silhouette.
+Constraints: no text, no letters, no characters, no creature, no weapon, no item icon, no circular badge, no western magic rune, no photoreal storm photo, no full-cell glow, no watermark.

@@ -1,0 +1,44 @@
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Icon runtime rules: transparent-source atlas on flat #FF00FF background.
+One centered emblem per cell, circular jade-seal or talisman language, readable at 48px and 96px.
+No square inventory panel, no item-card background, no thick metal frame, no 3D object lighting.
+No readable Chinese characters, letters, labels, or decorative text strokes.
+Each spell, status, weather, pet, and artifact icon must have a distinct silhouette before color is considered.
+Element color stays inside the emblem core; old-gold rim and dark-jade base stay consistent across all icons.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: combat status and enemy identity icons, icon atlas.
+Grid: exactly 5 columns by 4 rows, one centered icon per cell, no visible grid lines or borders.
+Cell order: left to right, top to bottom.
+1. burn status, orange-red flame crack seal
+2. freeze status, cyan ice shard seal
+3. paralyze status, blue-white broken thunder seal
+4. poison status, jade thorn droplet seal
+5. slow status, dim water ripple weight seal
+6. shield status, basalt xuanwu ward seal
+7. haste status, jade wind arrow seal
+8. root status, green vine binding seal
+9. bleed status, dark red ink cut seal
+10. curse status, violet broken oath seal
+11. wet status, cyan water drop ring seal
+12. elite identity, old-gold dangerous triangle crest
+13. boss identity, thunder crown boss crest
+14. promoted identity, ascending jade-gold step crest
+15. Dao status, quiet white-gold orbit seal
+16. counter status, reversed blade crescent seal
+17. mutation status, unstable purple-red crack seed
+18. windup warning, orange threat eye seal
+Style: clean HD Chinese xianxia HUD icon, circular jade-seal language, restrained old-gold rim, strong tiny-icon silhouette, readable at 48px and 96px.
+Icon language: flat emblem-like xianxia talisman and seal silhouettes, not rendered physical inventory objects.
+Rune strokes must be abstract marks only; icons must not include readable glyph text or written characters.
+Use one compact xianxia seal per cell. Debuffs use sharper cracked silhouettes; buffs use rounder upward silhouettes; identity icons use crest-like threat marks. Keep all icons readable at 32px, with dark-jade body and one tiny saturated semantic core.
+Constraints: no text, no letters, no Chinese characters, no labels, no UI card background, no square item panel, no western dark-fantasy item render, no thick metal frame, no photoreal 3D object.

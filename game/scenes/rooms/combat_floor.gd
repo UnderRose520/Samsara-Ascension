@@ -7,9 +7,13 @@ const DEFAULT_THEME_ID := "qi_refining_verdant"
 const RoomLayoutGenerator = preload("res://systems/world/room_layout_generator.gd")
 const GameConstants = preload("res://core/constants/game_constants.gd")
 const WeatherOverlay = preload("res://scenes/visual/weather_overlay.gd")
+const AssetPaths = preload("res://assets/asset_paths.gd")
+const RunRng = preload("res://core/utils/run_rng.gd")
 
 const THUNDER_STRIKE_BASE_DAMAGE := 34.0
 const THUNDER_STRIKE_BATCH_INTERVAL := 3.8
+const FLOOR_DETAIL_BASE_ALPHA := 0.16
+const FLOOR_DETAIL_MAX_COVERAGE := 0.28
 
 @onready var _background: Sprite2D = $Background
 @onready var _tile_map: TileMap = $TileMap
@@ -47,7 +51,7 @@ func _ready() -> void:
 	add_child(_prop_root)
 	_weather_ground_root = Node2D.new()
 	_weather_ground_root.name = "WeatherGroundRoot"
-	_weather_ground_root.z_index = -1
+	_weather_ground_root.z_index = 0
 	add_child(_weather_ground_root)
 	_weather_overlay = WeatherOverlay.new()
 	_weather_overlay.name = "WeatherOverlay"
@@ -89,6 +93,15 @@ func clear_layout() -> void:
 	_current_room = {}
 	_active_arena = _scene_manifest.get("arena", {}).duplicate(true)
 	_clear_obstacles()
+	_clear_props()
+	TerrainSystem.clear()
+	_clear_weather_ground_cover()
+	if _weather_overlay:
+		_weather_overlay.set_weather("clear", _active_camera_rect(), 0.0)
+	if _background:
+		_background.modulate = Color.WHITE
+	if _floor_layer:
+		_floor_layer.modulate = _floor_detail_modulate_for_weather("clear")
 	_schedule_weather_strikes("clear")
 	queue_redraw()
 
@@ -141,6 +154,19 @@ func get_world_bounds() -> Dictionary:
 	return _active_arena.get("world_bounds", _fallback_world_bounds())
 
 
+func get_floor_detail_used_cell_count() -> int:
+	return _floor_layer.get_used_cells().size() if _floor_layer else 0
+
+
+func get_floor_detail_max_cell_count() -> int:
+	var cells := _tilemap_cells()
+	return int(floor(float(cells.x * cells.y) * FLOOR_DETAIL_MAX_COVERAGE))
+
+
+func get_floor_detail_alpha() -> float:
+	return _floor_layer.modulate.a if _floor_layer else 0.0
+
+
 func clamp_to_active_arena(pos: Vector2, body_radius: float = 12.0) -> Vector2:
 	var bounds: Dictionary = get_world_bounds()
 	var margin := body_radius + 2.0
@@ -151,7 +177,7 @@ func clamp_to_active_arena(pos: Vector2, body_radius: float = 12.0) -> Vector2:
 	return Vector2(clampf(pos.x, min_x, max_x), clampf(pos.y, min_y, max_y))
 
 
-func make_terrain_zone_visual(terrain_type: String, color: Color, radius: float, rng: RandomNumberGenerator) -> Node2D:
+func make_terrain_zone_visual(terrain_type: String, color: Color, radius: float, rng: RandomNumberGenerator, blocks_movement: bool = false) -> Node2D:
 	var terrain_props := str(_current_theme.get("terrain_props", ""))
 	if terrain_props.is_empty():
 		return null
@@ -165,18 +191,21 @@ func make_terrain_zone_visual(terrain_type: String, color: Color, radius: float,
 		return null
 	var visual := Node2D.new()
 	visual.name = "TerrainPropVisual"
+	visual.z_index = 1 if blocks_movement else -1
 	var diameter := radius * 2.0
 	var cell_size := float(_terrain_prop_cell_size())
 	var terrain_style := _terrain_visual_style(terrain_type, color)
-	var base_scale := diameter / cell_size * float(terrain_style.get("size_mult", 1.0))
+	var visual_size_boost := 1.42
+	var base_scale := diameter / cell_size * float(terrain_style.get("size_mult", 1.0)) * visual_size_boost
 	var stretch: Vector2 = terrain_style.get("stretch", Vector2.ONE)
 	sprite.scale = Vector2(
 		base_scale * stretch.x * rng.randf_range(0.88, 1.24),
 		base_scale * stretch.y * rng.randf_range(0.82, 1.18)
 	)
 	sprite.rotation = rng.randf_range(-PI, PI)
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	sprite.modulate = terrain_style.get("modulate", Color.WHITE)
-	sprite.z_index = 1
+	sprite.z_index = 1 if blocks_movement else 0
 	visual.add_child(sprite)
 	var aura_alpha := float(terrain_style.get("aura_alpha", 0.0))
 	if aura_alpha > 0.001:
@@ -221,16 +250,11 @@ func _spawn_obstacle(obs: Dictionary) -> void:
 	body.add_child(shape)
 	body.add_child(_make_obstacle_shadow(size))
 	var obstacle_sprite := _make_obstacle_sprite(size)
-	if obstacle_sprite:
-		body.add_child(obstacle_sprite)
-	else:
-		var visual := ColorRect.new()
-		visual.size = size
-		visual.position = -size * 0.5
-		visual.color = Color(str(obs.get("color", "#5A5A6E")))
-		visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		body.add_child(visual)
-	body.add_child(_make_obstacle_edge_highlight(size))
+	if obstacle_sprite == null:
+		push_warning("CombatFloor: skipped obstacle without image2 terrain prop texture")
+		body.queue_free()
+		return
+	body.add_child(obstacle_sprite)
 	_obstacle_root.add_child(body)
 	_layout_blockers.append({
 		"position": pos,
@@ -337,22 +361,24 @@ func _swap_textures(theme: Dictionary) -> void:
 
 func _fill_floor_tiles(theme: Dictionary) -> void:
 	_floor_layer.clear()
-	# 与背景 room_background.png（1280×720 @ -640,-360）对齐
 	var cells := _tilemap_cells()
 	var cols := cells.x
 	var rows := cells.y
 	var origin := Vector2i(-cols / 2, -rows / 2)
-	var floor_atlas := _atlas_coords_from_theme(theme, "floor_atlas_coords", Vector2i(0, 0))
 	var floor_alt_atlas := _atlas_coords_from_theme(theme, "floor_alt_atlas_coords", Vector2i(1, 0))
 	var decoration_atlas := _atlas_coords_from_theme(theme, "decoration_atlas_coords", Vector2i(3, 0))
 	var decoration_lookup := _decoration_cell_lookup(theme)
 	for y in range(rows):
 		for x in range(cols):
 			var coords := origin + Vector2i(x, y)
-			var atlas := floor_alt_atlas if _uses_alt_floor(theme, x, y) else floor_atlas
-			if decoration_lookup.has(coords):
+			var atlas := Vector2i(-1, -1)
+			if _uses_floor_decoration_detail(theme, coords, x, y, decoration_lookup):
 				atlas = decoration_atlas
-			_floor_layer.set_cell(coords, 0, atlas)
+			elif _uses_floor_ink_detail(theme, x, y):
+				atlas = floor_alt_atlas
+			if atlas.x >= 0:
+				_floor_layer.set_cell(coords, 0, atlas)
+	_floor_layer.modulate = _floor_detail_modulate_for_weather(_active_weather_id)
 
 
 func _apply_arena_manifest() -> void:
@@ -394,13 +420,29 @@ func _tile_size() -> int:
 
 
 func _make_obstacle_sprite(size: Vector2) -> Sprite2D:
-	var sprite := _make_atlas_sprite({"atlas_coords": _atlas_coords_from_theme(_current_theme, "obstacle_atlas_coords", Vector2i(2, 0))})
+	var terrain_props := str(_current_theme.get("terrain_props", ""))
+	if terrain_props.is_empty():
+		return null
+	var sprite := _make_atlas_sprite({
+		"atlas_path": terrain_props,
+		"atlas_coords": _obstacle_prop_coords(size),
+		"atlas_cell_size": _terrain_prop_cell_size(),
+	})
 	if sprite == null:
 		return null
-	var tile_size := float(_tile_size())
-	sprite.scale = Vector2(size.x / tile_size, size.y / tile_size)
-	sprite.modulate = Color(1.0, 1.0, 1.0, 0.92)
+	var cell_size := float(_terrain_prop_cell_size())
+	sprite.scale = Vector2(size.x / cell_size, size.y / cell_size) * 1.28
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	sprite.modulate = Color(0.96, 0.98, 0.94, 0.9)
 	return sprite
+
+
+func _obstacle_prop_coords(size: Vector2) -> Vector2i:
+	var choices := _terrain_prop_choices_from_manifest("obstacle")
+	if choices.is_empty():
+		choices = [Vector2i(2, 0), Vector2i(2, 1), Vector2i(2, 2)]
+	var variant := int(round(size.x + size.y)) % choices.size()
+	return choices[variant]
 
 
 func _make_obstacle_shadow(size: Vector2) -> Polygon2D:
@@ -440,13 +482,24 @@ func _make_atlas_sprite(entry: Dictionary) -> Sprite2D:
 		return null
 	var atlas := AtlasTexture.new()
 	atlas.atlas = source_texture
-	var coords: Variant = entry.get("atlas_coords", Vector2i(3, 0))
-	var atlas_coords := Vector2i(3, 0)
+	var coords: Variant = entry.get("atlas_coords", Vector2i(0, 0))
+	var atlas_coords := Vector2i(0, 0)
 	if coords is Vector2i:
 		atlas_coords = coords
 	elif coords is Array and coords.size() >= 2:
 		atlas_coords = Vector2i(int(coords[0]), int(coords[1]))
+	elif coords is Dictionary:
+		atlas_coords = Vector2i(int(coords.get("x", 0)), int(coords.get("y", 0)))
 	var cell_size := float(_atlas_cell_size(entry))
+	var texture_size := source_texture.get_size()
+	var grid_size := Vector2i(
+		maxi(1, int(floor(texture_size.x / cell_size))),
+		maxi(1, int(floor(texture_size.y / cell_size)))
+	)
+	atlas_coords = Vector2i(
+		clampi(atlas_coords.x, 0, grid_size.x - 1),
+		clampi(atlas_coords.y, 0, grid_size.y - 1)
+	)
 	atlas.region = Rect2(Vector2(atlas_coords) * cell_size, Vector2(cell_size, cell_size))
 	var sprite := Sprite2D.new()
 	sprite.texture = atlas
@@ -456,8 +509,17 @@ func _make_atlas_sprite(entry: Dictionary) -> Sprite2D:
 
 func _layout_profile_for_current_theme(room: Dictionary = {}) -> Dictionary:
 	var profile: Dictionary = _current_theme.get("layout_profile", {}).duplicate(true)
+	if _current_theme.has("terrain_feature_weights") and not profile.has("terrain_feature_weights"):
+		profile["terrain_feature_weights"] = _current_theme.get("terrain_feature_weights", {})
+	if _current_theme.has("terrain_feature_count_bias") and not profile.has("terrain_feature_count_bias"):
+		profile["terrain_feature_count_bias"] = int(_current_theme.get("terrain_feature_count_bias", 0))
 	if room.has("layout_profile"):
 		profile.merge(room.get("layout_profile", {}), true)
+	if room.has("terrain_feature_weights"):
+		profile["terrain_feature_weights"] = room.get("terrain_feature_weights", {})
+	if room.has("terrain_feature_count_bias"):
+		profile["terrain_feature_count_bias"] = int(room.get("terrain_feature_count_bias", 0))
+	profile["weather_id"] = room.get("weather_id", WeatherSystem.current_weather_id)
 	profile["safe_zones"] = room.get("safe_zones", _current_theme.get("safe_zones", []))
 	profile["no_spawn_zones"] = room.get("no_spawn_zones", _current_theme.get("no_spawn_zones", []))
 	profile["arena_bounds"] = _active_arena.get("world_bounds", _fallback_world_bounds())
@@ -590,65 +652,89 @@ func _terrain_prop_cell_size() -> int:
 
 
 func _terrain_prop_coords(terrain_type: String, rng: RandomNumberGenerator) -> Vector2i:
+	var choices := _terrain_prop_choices_from_manifest(terrain_type)
+	if choices.is_empty():
+		choices = _fallback_terrain_prop_choices(terrain_type)
+	return choices[rng.randi_range(0, choices.size() - 1)]
+
+
+func _terrain_prop_choices_from_manifest(semantic: String) -> Array:
+	var arena: Dictionary = _scene_manifest.get("arena", {})
+	var semantics: Dictionary = arena.get("terrain_prop_semantics", {})
+	var raw_choices: Variant = semantics.get(semantic, [])
+	if not (raw_choices is Array) or raw_choices.is_empty():
+		raw_choices = semantics.get("default", [])
 	var choices: Array = []
+	if raw_choices is Array:
+		for raw in raw_choices:
+			if raw is Array and raw.size() >= 2:
+				choices.append(Vector2i(int(raw[0]), int(raw[1])))
+			elif raw is Vector2i:
+				choices.append(raw)
+			elif raw is Dictionary:
+				choices.append(Vector2i(int(raw.get("x", 0)), int(raw.get("y", 0))))
+	return choices
+
+
+func _fallback_terrain_prop_choices(terrain_type: String) -> Array:
 	match terrain_type:
 		"water", "wet":
-			choices = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)]
+			return [Vector2i(0, 0), Vector2i(0, 1), Vector2i(1, 1)]
 		"swamp":
-			choices = [Vector2i(1, 0), Vector2i(1, 1), Vector2i(1, 2), Vector2i(0, 2)]
+			return [Vector2i(1, 0), Vector2i(1, 1), Vector2i(1, 2)]
 		"fire", "dry":
-			choices = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2), Vector2i(1, 2)]
+			return [Vector2i(0, 2), Vector2i(0, 1), Vector2i(1, 1)]
 		"rock":
-			choices = [Vector2i(2, 0), Vector2i(2, 1), Vector2i(2, 2)]
+			return [Vector2i(2, 0), Vector2i(2, 1), Vector2i(2, 2)]
 		"ice":
-			choices = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)]
-		_:
-			choices = [Vector2i(0, 0), Vector2i(1, 1), Vector2i(2, 2)]
-	return choices[rng.randi_range(0, choices.size() - 1)]
+			return [Vector2i(0, 0), Vector2i(0, 1), Vector2i(1, 1)]
+		"thunder":
+			return [Vector2i(0, 1), Vector2i(0, 2), Vector2i(1, 2)]
+	return [Vector2i(0, 0), Vector2i(1, 1), Vector2i(2, 2)]
 
 
 func _terrain_visual_style(terrain_type: String, color: Color) -> Dictionary:
 	match terrain_type:
 		"rock":
 			return {
-				"modulate": Color(1.02, 1.02, 1.02, 0.95),
-				"stretch": Vector2(0.92, 0.78),
-				"size_mult": 0.86,
-				"aura_alpha": 0.035,
+				"modulate": Color(0.92, 0.98, 0.92, 0.88),
+				"stretch": Vector2(1.02, 0.86),
+				"size_mult": 1.12,
+				"aura_alpha": 0.0,
 			}
 		"fire", "dry":
 			return {
-				"modulate": Color(1.0, 0.80, 0.56, 0.86),
-				"stretch": Vector2(1.45, 0.76),
-				"size_mult": 0.96,
-				"aura_alpha": 0.18,
+				"modulate": Color(0.74, 0.82, 0.58, 0.66),
+				"stretch": Vector2(1.56, 0.86),
+				"size_mult": 1.18,
+				"aura_alpha": 0.075,
 			}
 		"swamp":
 			return {
-				"modulate": Color(0.70, 1.0, 0.68, 0.70),
-				"stretch": Vector2(1.25, 0.82),
-				"size_mult": 1.02,
-				"aura_alpha": 0.14,
+				"modulate": Color(0.78, 1.0, 0.76, 0.74),
+				"stretch": Vector2(1.36, 0.92),
+				"size_mult": 1.24,
+				"aura_alpha": 0.09,
 			}
 		"ice":
 			return {
-				"modulate": Color(0.78, 0.94, 1.0, 0.78),
-				"stretch": Vector2(1.36, 0.72),
-				"size_mult": 1.04,
-				"aura_alpha": 0.13,
+				"modulate": Color(0.82, 0.96, 1.0, 0.72),
+				"stretch": Vector2(1.46, 0.84),
+				"size_mult": 1.22,
+				"aura_alpha": 0.10,
 			}
 		"water", "wet":
 			return {
-				"modulate": Color(0.70, 0.90, 1.0, 0.76),
-				"stretch": Vector2(1.42, 0.74),
-				"size_mult": 1.06,
-				"aura_alpha": 0.16,
+				"modulate": Color(0.78, 0.94, 1.0, 0.70),
+				"stretch": Vector2(1.58, 0.88),
+				"size_mult": 1.26,
+				"aura_alpha": 0.10,
 			}
 	return {
-		"modulate": Color(color.r, color.g, color.b, 0.68),
+		"modulate": Color(1.0, 1.0, 1.0, 0.72),
 		"stretch": Vector2(1.0, 1.0),
-		"size_mult": 1.0,
-		"aura_alpha": 0.10,
+		"size_mult": 1.18,
+		"aura_alpha": 0.08,
 	}
 
 
@@ -668,38 +754,40 @@ func _make_terrain_aura(color: Color, radius: float, rng: RandomNumberGenerator,
 
 
 func _apply_weather_mood(weather_id: String) -> void:
+	var resolved_weather := _normalized_weather_id(weather_id)
 	var bg := Color.WHITE
-	var floor := Color.WHITE
-	match weather_id:
+	match resolved_weather:
 		"rain":
-			bg = Color(0.78, 0.86, 1.0, 1.0)
-			floor = Color(0.74, 0.88, 1.0, 1.0)
+			bg = Color(0.62, 0.72, 0.84, 1.0)
 		"thunder":
-			bg = Color(0.70, 0.76, 1.08, 1.0)
-			floor = Color(0.72, 0.78, 1.05, 1.0)
+			bg = Color(0.50, 0.56, 0.68, 1.0)
 		"fire":
-			bg = Color(1.08, 0.82, 0.66, 1.0)
-			floor = Color(1.10, 0.82, 0.68, 1.0)
+			bg = Color(0.46, 0.56, 0.55, 1.0)
 		"wind":
-			bg = Color(0.90, 1.04, 0.88, 1.0)
-			floor = Color(0.88, 1.02, 0.86, 1.0)
+			bg = Color(0.70, 0.86, 0.74, 1.0)
 		"fog":
-			bg = Color(0.86, 0.90, 0.88, 1.0)
-			floor = Color(0.86, 0.92, 0.90, 1.0)
+			bg = Color(0.66, 0.72, 0.70, 1.0)
 		"snow":
-			bg = Color(0.84, 0.94, 1.08, 1.0)
-			floor = Color(0.84, 0.96, 1.10, 1.0)
+			bg = Color(0.68, 0.78, 0.88, 1.0)
 		"sand":
-			bg = Color(1.08, 0.96, 0.74, 1.0)
-			floor = Color(1.08, 0.95, 0.72, 1.0)
+			bg = Color(0.50, 0.58, 0.53, 1.0)
 	if _background:
 		_background.modulate = bg
 	if _floor_layer:
-		_floor_layer.modulate = floor
-	_apply_weather_ground_cover(weather_id)
+		_floor_layer.modulate = _floor_detail_modulate_for_weather(resolved_weather)
+	_apply_weather_ground_cover(resolved_weather)
 	if _weather_overlay:
-		_weather_overlay.set_weather(weather_id, _active_camera_rect(), WeatherSystem.get_weather_intensity(weather_id))
-	_schedule_weather_strikes(weather_id)
+		_weather_overlay.set_weather(resolved_weather, _active_camera_rect(), WeatherSystem.get_weather_intensity(resolved_weather))
+	_schedule_weather_strikes(resolved_weather)
+
+
+func _normalized_weather_id(weather_id: String) -> String:
+	var key := weather_id.strip_edges().to_lower()
+	match key:
+		"storm", "thunderstorm":
+			return "thunder"
+		_:
+			return key
 
 
 func _active_camera_rect() -> Rect2:
@@ -714,9 +802,8 @@ func _active_camera_rect() -> Rect2:
 func _apply_weather_ground_cover(weather_id: String) -> void:
 	if _weather_ground_root == null:
 		return
-	for child in _weather_ground_root.get_children():
-		child.queue_free()
-	if weather_id == "clear" or weather_id == "wind":
+	_clear_weather_ground_cover()
+	if weather_id == "clear":
 		return
 	var bounds := _active_camera_rect()
 	var intensity := WeatherSystem.get_weather_intensity(weather_id)
@@ -725,36 +812,46 @@ func _apply_weather_ground_cover(weather_id: String) -> void:
 	rng.seed = hash("%s_%s_%s" % [weather_id, str(_current_stage_index), str(_current_room.get("layout_id", ""))])
 	match weather_id:
 		"snow":
-			_spawn_ground_patches(bounds, rng, int(18 * area_scale * intensity), Color(0.86, 0.95, 1.0, 0.22), Vector2(54, 24))
+			_spawn_ground_patches(bounds, rng, int(18 * area_scale * intensity), Color(0.66, 0.78, 0.88, 0.16), Vector2(54, 24), weather_id)
 		"rain", "thunder":
-			_spawn_ground_patches(bounds, rng, int(14 * area_scale * intensity), Color(0.34, 0.58, 0.86, 0.18), Vector2(48, 18))
+			_spawn_ground_patches(bounds, rng, int(12 * area_scale * intensity), Color(0.14, 0.30, 0.56, 0.16), Vector2(46, 17), weather_id)
 		"sand":
-			_spawn_ground_patches(bounds, rng, int(20 * area_scale * intensity), Color(0.84, 0.67, 0.36, 0.16), Vector2(58, 16))
+			_spawn_ground_patches(bounds, rng, int(18 * area_scale * intensity), Color(0.42, 0.54, 0.50, 0.09), Vector2(58, 16), weather_id)
 		"fog":
-			_spawn_ground_patches(bounds, rng, int(10 * area_scale), Color(0.78, 0.84, 0.78, 0.10), Vector2(72, 28))
+			_spawn_ground_patches(bounds, rng, int(10 * area_scale), Color(0.54, 0.62, 0.58, 0.09), Vector2(72, 28), weather_id)
 		"fire":
-			_spawn_ground_patches(bounds, rng, int(12 * area_scale), Color(0.78, 0.30, 0.12, 0.11), Vector2(42, 14))
+			_spawn_ground_patches(bounds, rng, int(8 * area_scale), Color(0.52, 0.72, 0.62, 0.085), Vector2(42, 14), weather_id)
+		"wind":
+			_spawn_ground_patches(bounds, rng, int(8 * area_scale * intensity), Color(0.30, 0.72, 0.52, 0.10), Vector2(66, 20), weather_id)
 
 
-func _spawn_ground_patches(bounds: Rect2, rng: RandomNumberGenerator, count: int, color: Color, base_size: Vector2) -> void:
+func _spawn_ground_patches(bounds: Rect2, rng: RandomNumberGenerator, count: int, color: Color, base_size: Vector2, weather_id: String) -> void:
+	var texture := AssetPaths.load_texture(AssetPaths.weather_decal(weather_id))
+	if texture == null:
+		push_warning("CombatFloor: skipped weather ground cover without image2 decal for `%s`" % weather_id)
+		return
 	for _i in range(maxi(count, 0)):
-		var patch := Polygon2D.new()
 		var center := Vector2(
 			rng.randf_range(bounds.position.x + 30.0, bounds.end.x - 30.0),
 			rng.randf_range(bounds.position.y + 36.0, bounds.end.y - 30.0)
 		)
 		var size := Vector2(base_size.x * rng.randf_range(0.72, 1.45), base_size.y * rng.randf_range(0.62, 1.28))
-		var points := PackedVector2Array()
-		var steps := 10
-		for j in range(steps):
-			var angle := TAU * float(j) / float(steps)
-			var wobble := rng.randf_range(0.68, 1.08)
-			points.append(Vector2(cos(angle) * size.x, sin(angle) * size.y) * 0.5 * wobble)
-		patch.position = center
-		patch.rotation = rng.randf_range(-0.35, 0.35)
-		patch.polygon = points
-		patch.color = color
-		_weather_ground_root.add_child(patch)
+		var sprite := Sprite2D.new()
+		sprite.texture = texture
+		sprite.position = center
+		sprite.rotation = rng.randf_range(-0.45, 0.45)
+		var tex_size := texture.get_size()
+		var target := maxf(size.x, size.y) * rng.randf_range(1.05, 1.55)
+		sprite.scale = Vector2(target / maxf(tex_size.x, 1.0), target / maxf(tex_size.y, 1.0)) * Vector2(rng.randf_range(0.82, 1.24), rng.randf_range(0.62, 1.08))
+		sprite.modulate = Color(color.r, color.g, color.b, clampf(color.a * rng.randf_range(1.2, 1.8), 0.06, 0.30))
+		_weather_ground_root.add_child(sprite)
+
+
+func _clear_weather_ground_cover() -> void:
+	if _weather_ground_root == null:
+		return
+	for child in _weather_ground_root.get_children():
+		child.queue_free()
 
 
 func _load_cached_texture(path: String) -> Texture2D:
@@ -787,6 +884,52 @@ func _decoration_cell_lookup(theme: Dictionary) -> Dictionary:
 		if raw is Array and raw.size() >= 2:
 			lookup[Vector2i(int(raw[0]), int(raw[1]))] = true
 	return lookup
+
+
+func _uses_floor_decoration_detail(_theme: Dictionary, coords: Vector2i, x: int, y: int, decoration_lookup: Dictionary) -> bool:
+	if not decoration_lookup.has(coords):
+		return false
+	return _floor_detail_noise(x, y, 37) % 3 == 0
+
+
+func _uses_floor_ink_detail(theme: Dictionary, x: int, y: int) -> bool:
+	if not _uses_alt_floor(theme, x, y):
+		return false
+	var cells := _tilemap_cells()
+	var edge_distance: int = mini(mini(x, y), mini(cells.x - 1 - x, cells.y - 1 - y))
+	if edge_distance <= 1:
+		return _floor_detail_noise(x, y, 11) % 2 == 0
+	if edge_distance <= 3:
+		return _floor_detail_noise(x, y, 17) % 5 == 0
+	return _floor_detail_noise(x, y, 23) % 12 == 0
+
+
+func _floor_detail_noise(x: int, y: int, salt: int) -> int:
+	var value := (x + 97) * 73856093
+	value = value ^ ((y + 193) * 19349663)
+	value = value ^ (salt * 83492791)
+	return abs(value)
+
+
+func _floor_detail_modulate_for_weather(weather_id: String) -> Color:
+	var alpha := FLOOR_DETAIL_BASE_ALPHA
+	var tint := Color(0.72, 0.86, 0.82, alpha)
+	match _normalized_weather_id(weather_id):
+		"rain":
+			tint = Color(0.54, 0.68, 0.74, alpha * 0.90)
+		"thunder":
+			tint = Color(0.56, 0.64, 0.78, alpha * 0.95)
+		"fire":
+			tint = Color(0.58, 0.74, 0.66, alpha * 0.78)
+		"wind":
+			tint = Color(0.52, 0.76, 0.62, alpha * 0.82)
+		"fog":
+			tint = Color(0.58, 0.68, 0.66, alpha * 0.72)
+		"snow":
+			tint = Color(0.62, 0.72, 0.78, alpha * 0.76)
+		"sand":
+			tint = Color(0.58, 0.66, 0.54, alpha * 0.76)
+	return tint
 
 
 func _uses_alt_floor(theme: Dictionary, x: int, y: int) -> bool:
@@ -832,6 +975,13 @@ func _spawn_thunder_strike_batch() -> void:
 	for i in range(count):
 		var strike := ThunderStrikeMarker.new()
 		strike.name = "ThunderStrikeMarker_%d_%d" % [_thunder_strike_batch, i]
+		strike.warning_texture = _load_cached_texture(AssetPaths.THUNDER_STRIKE_WARNING)
+		strike.impact_texture = _load_cached_texture(AssetPaths.THUNDER_STRIKE_IMPACT)
+		strike.bolt_texture = _load_cached_texture(AssetPaths.THUNDER_STRIKE_BOLT)
+		strike.scorch_texture = _load_cached_texture(AssetPaths.THUNDER_STRIKE_SCORCH)
+		if strike.warning_texture == null or strike.impact_texture == null or strike.bolt_texture == null or strike.scorch_texture == null:
+			push_warning("CombatFloor: skipped thunder strike marker because an image2 strike decal is missing")
+			continue
 		strike.setup(
 			Vector2(
 				rng.randf_range(bounds.position.x + 70.0, bounds.end.x - 70.0),
@@ -855,6 +1005,10 @@ class ThunderStrikeMarker:
 	var _life := 0.0
 	var _done := false
 	var _color := Color(0.78, 0.88, 1.0, 0.9)
+	var warning_texture: Texture2D
+	var impact_texture: Texture2D
+	var bolt_texture: Texture2D
+	var scorch_texture: Texture2D
 
 	func setup(pos: Vector2, warning_time: float, impact_time: float, radius: float, damage: float) -> void:
 		global_position = pos
@@ -862,7 +1016,7 @@ class ThunderStrikeMarker:
 		_impact_time = impact_time
 		_radius = radius
 		_damage = damage
-		z_index = 90
+		z_index = 18
 		set_process(true)
 
 	func _ready() -> void:
@@ -882,26 +1036,42 @@ class ThunderStrikeMarker:
 		if _life < _warning_time:
 			var t := clampf(_life / maxf(_warning_time, 0.01), 0.0, 1.0)
 			var pulse := 0.4 + 0.6 * sin(t * PI)
-			var warn_color := Color(0.95, 0.92, 0.38, 0.25 + pulse * 0.35)
-			draw_circle(Vector2.ZERO, _radius, Color(0.95, 0.76, 0.16, 0.08 + pulse * 0.06))
-			draw_arc(Vector2.ZERO, _radius, 0.0, TAU, 64, warn_color, 4.0, true)
-			draw_arc(Vector2.ZERO, _radius * 0.55, 0.0, TAU, 48, Color(1.0, 0.78, 0.18, 0.18 + pulse * 0.2), 2.0, true)
+			if warning_texture:
+				var size := _radius * 2.25
+				draw_texture_rect(
+					warning_texture,
+					Rect2(Vector2(-size * 0.5, -size * 0.5), Vector2(size, size)),
+					false,
+					Color(1.0, 1.0, 1.0, 0.50 + pulse * 0.42)
+				)
 		else:
 			var impact_t := clampf((_life - _warning_time) / maxf(_impact_time, 0.01), 0.0, 1.0)
 			var alpha := 0.5 * (1.0 - impact_t)
 			var bolt_alpha := 0.86 * (1.0 - impact_t)
-			var top := Vector2(-18.0, -420.0)
-			var bolt := PackedVector2Array([
-				top,
-				Vector2(10.0, -300.0),
-				Vector2(-14.0, -184.0),
-				Vector2(18.0, -78.0),
-				Vector2.ZERO,
-			])
-			draw_polyline(bolt, Color(0.78, 0.92, 1.0, bolt_alpha), 7.0, true)
-			draw_polyline(bolt, Color(1.0, 0.98, 0.68, bolt_alpha), 2.5, true)
-			draw_circle(Vector2.ZERO, _radius * (1.0 + impact_t * 0.35), Color(1.0, 0.92, 0.62, alpha))
-			draw_arc(Vector2.ZERO, _radius * (0.72 + impact_t * 0.45), 0.0, TAU, 64, Color(0.72, 0.88, 1.0, alpha), 3.0, true)
+			if scorch_texture:
+				var scorch_size := _radius * (2.0 + impact_t * 0.25)
+				draw_texture_rect(
+					scorch_texture,
+					Rect2(Vector2(-scorch_size * 0.5, -scorch_size * 0.5), Vector2(scorch_size, scorch_size)),
+					false,
+					Color(1.0, 1.0, 1.0, maxf(0.12, alpha * 0.70))
+				)
+			if bolt_texture:
+				var bolt_size := Vector2(maxf(54.0, _radius * 1.05), 420.0)
+				draw_texture_rect(
+					bolt_texture,
+					Rect2(Vector2(-bolt_size.x * 0.5, -bolt_size.y + 8.0), bolt_size),
+					false,
+					Color(1.0, 1.0, 1.0, bolt_alpha)
+				)
+			if impact_texture:
+				var impact_size := _radius * (2.15 + impact_t * 0.55)
+				draw_texture_rect(
+					impact_texture,
+					Rect2(Vector2(-impact_size * 0.5, -impact_size * 0.5), Vector2(impact_size, impact_size)),
+					false,
+					Color(1.0, 1.0, 1.0, clampf(alpha * 1.85, 0.0, 0.92))
+				)
 
 	func _strike() -> void:
 		if get_tree() == null:

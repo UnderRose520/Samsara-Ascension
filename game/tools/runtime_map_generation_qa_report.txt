@@ -1,0 +1,7 @@
+Runtime map generation QA
+=========================
+Checked seeds: 8
+Checked combat rooms: 120
+Weather ids seen: ["rain", "fog", "clear", "fire", "thunder", "wind", "sand", "snow"]
+Runtime map generation QA passed
+Exit code: 0

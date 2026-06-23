@@ -55,8 +55,14 @@ func apply_spell_states(states: Dictionary) -> void:
 			VariantUtils.as_bool(info.get("unlocked", false)),
 			float(info.get("cd_remaining", 0.0)),
 			float(info.get("cd_total", 0.0)),
-			VariantUtils.as_bool(info.get("casting", false))
+			VariantUtils.as_bool(info.get("casting", false)),
+			str(info.get("spell_id", "")),
+			str(info.get("element", ""))
 		)
+
+
+func get_spell_slot_node(slot: String) -> Node:
+	return spell_slots.get(slot.strip_edges().to_lower(), null) as Node
 
 
 func pulse() -> void:

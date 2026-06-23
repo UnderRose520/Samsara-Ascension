@@ -1,12 +1,18 @@
 extends Control
 
+const AssetPaths = preload("res://assets/asset_paths.gd")
+
 var slash_color := Color(1.0, 0.88, 0.2, 0.0)
 var _life := 0.0
+var _slash_texture: Texture2D
+var _texture_hit := false
 
 
 func play(duration: float = 0.35, color: Color = Color(1.0, 0.88, 0.2, 1.0)) -> void:
 	slash_color = Color(color.r, color.g, color.b, 0.0)
 	_life = duration
+	_slash_texture = AssetPaths.load_texture(AssetPaths.combat_action_fx("crit_screen_slash"))
+	_texture_hit = _slash_texture != null
 	set_process(true)
 	queue_redraw()
 
@@ -21,10 +27,15 @@ func _process(delta: float) -> void:
 		visible = false
 
 
+func get_slash_texture_hit_count() -> int:
+	return int(_texture_hit)
+
+
 func _draw() -> void:
 	if slash_color.a <= 0.01:
 		return
 	var c := size * 0.5
-	var len := minf(size.x, size.y) * 0.42
-	draw_line(c + Vector2(-len, -len * 0.2), c + Vector2(len, len * 0.2), slash_color, 4.0, true)
-	draw_line(c + Vector2(-len * 0.7, len * 0.1), c + Vector2(len * 0.8, -len * 0.15), Color(slash_color.r, slash_color.g, slash_color.b, slash_color.a * 0.55), 2.0, true)
+	if _slash_texture:
+		var draw_size := Vector2(minf(size.x * 0.72, 920.0), minf(size.y * 0.28, 260.0))
+		var rect := Rect2(c - draw_size * 0.5, draw_size)
+		draw_texture_rect(_slash_texture, rect, false, slash_color)

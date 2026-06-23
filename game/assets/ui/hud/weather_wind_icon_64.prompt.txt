@@ -1,9 +1,34 @@
-Use case: game UI icon atlas.
-Asset type: 2D xianxia roguelite combat HUD weather icons.
-Primary request: create a clean 4x2 icon atlas on a perfectly flat solid #FF00FF chroma-key background, with one centered weather icon per cell and generous padding.
-Top row, left to right: clear sky jade sun disk; rain water talisman with three blue droplets; thunderstorm blue-white lightning sigil; fierce solar fire flame seal.
-Bottom row, left to right: wind spiral jade gust; fog pale mist charm; snow crystalline frost talisman; sandstorm golden dust vortex.
-Style/medium: clean hand-painted HD game UI asset, dark jade ink outlines, restrained cold gold accents, vivid elemental glow, sharp silhouettes, readable at 64px.
-Composition/framing: exact 4 columns by 2 rows, each icon centered in its cell, no borders, no grid guide lines, no text, no numbers, no watermark.
-Constraints: background must be perfectly uniform #FF00FF; do not use #FF00FF inside the icons; every icon is a compact emblem, not a square card; keep the eight icons visually consistent with the existing thunderstorm HUD sigil style.
-Avoid: old pixel-art look, flat emoji symbols, thick square frames, noisy texture, beige parchment, sci-fi metal, purple-dominant palette, readable characters.
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Icon runtime rules: transparent-source atlas on flat #FF00FF background.
+One centered emblem per cell, circular jade-seal or talisman language, readable at 48px and 96px.
+No square inventory panel, no item-card background, no thick metal frame, no 3D object lighting.
+No readable Chinese characters, letters, labels, or decorative text strokes.
+Each spell, status, weather, pet, and artifact icon must have a distinct silhouette before color is considered.
+Element color stays inside the emblem core; old-gold rim and dark-jade base stay consistent across all icons.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: combat weather HUD icons, icon atlas.
+Grid: exactly 4 columns by 2 rows, one centered icon per cell, no visible grid lines or borders.
+Cell order: left to right, top to bottom.
+1. clear sky jade sun disk
+2. rain water talisman with three blue droplets
+3. thunderstorm blue-white lightning sigil
+4. fierce solar fire flame seal
+5. wind spiral jade gust
+6. fog pale mist charm
+7. snow crystalline frost talisman
+8. sandstorm old-gold dust vortex
+Style: clean HD Chinese xianxia HUD icon, circular jade-seal language, restrained old-gold rim, strong tiny-icon silhouette, readable at 48px and 96px.
+Icon language: flat emblem-like xianxia talisman and seal silhouettes, not rendered physical inventory objects.
+Rune strokes must be abstract marks only; icons must not include readable glyph text or written characters.
+Weather icons must read as a family of compact celestial talisman emblems. Keep color roles distinct: clear jade-gold, rain water-cyan, thunder blue-white, fire orange-red, wind jade-cyan, fog pale blue-gray, snow icy cyan, sand old-gold.
+Constraints: no text, no letters, no Chinese characters, no labels, no UI card background, no square item panel, no western dark-fantasy item render, no thick metal frame, no photoreal 3D object.

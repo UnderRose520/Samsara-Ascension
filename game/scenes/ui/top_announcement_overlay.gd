@@ -2,11 +2,14 @@ extends CanvasLayer
 
 const UiTokens = preload("res://ui/theme/ui_tokens.gd")
 const UiAnimations = preload("res://ui/ui_animations.gd")
+const AssetPaths = preload("res://assets/asset_paths.gd")
+const UiHelpers = preload("res://ui/ui_helpers.gd")
 
 @onready var bar: PanelContainer = $Bar
 @onready var label: Label = $Bar/Margin/Label
 
 var _timer := 0.0
+var _texture_hit_count := 0
 
 
 func _ready() -> void:
@@ -26,18 +29,14 @@ func _on_announce(text: String) -> void:
 
 
 func _apply_bar_style() -> void:
-	var panel := StyleBoxFlat.new()
-	panel.bg_color = Color(0.006, 0.014, 0.016, 0.58)
-	panel.border_width_left = 1
-	panel.border_width_top = 1
-	panel.border_width_right = 1
-	panel.border_width_bottom = 1
-	panel.border_color = Color(UiTokens.ACCENT_JADE.r, UiTokens.ACCENT_JADE.g, UiTokens.ACCENT_JADE.b, 0.38)
-	panel.corner_radius_top_left = 8
-	panel.corner_radius_top_right = 8
-	panel.corner_radius_bottom_left = 8
-	panel.corner_radius_bottom_right = 8
-	bar.add_theme_stylebox_override("panel", panel)
+	var panel := UiHelpers.make_button_texture_style(AssetPaths.HUD_LEFT_BUILD_BADGE, Color(0.78, 1.0, 0.92, 0.82), Vector2(30, 18))
+	if panel.texture != null:
+		bar.add_theme_stylebox_override("panel", panel)
+		_texture_hit_count += 1
+	label.add_theme_constant_override("outline_size", 2)
+	label.add_theme_color_override("font_outline_color", Color(0.02, 0.012, 0.004, 0.88))
+	label.clip_text = true
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 
 
 func _show(text: String, color: Color, duration: float) -> void:
@@ -86,3 +85,7 @@ func _should_show_as_announcement(text: String) -> bool:
 		if text.find(key) >= 0:
 			return true
 	return false
+
+
+func get_texture_hit_count() -> int:
+	return _texture_hit_count

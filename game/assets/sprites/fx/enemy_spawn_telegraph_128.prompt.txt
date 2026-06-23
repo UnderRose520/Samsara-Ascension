@@ -1,0 +1,27 @@
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: runtime enemy danger telegraph atlas for a top-down 2D roguelite combat arena.
+Grid: exactly 3 columns by 2 rows, one centered warning decal per cell, no visible grid lines or borders.
+Cell order: left to right, top to bottom.
+1. normal enemy spawn warning: broken red-orange square talisman corners, black ink smoke, transparent center
+2. elite spawn warning: double-layer broken red-orange talisman frame, old-gold corner hooks, tiny threat sparks, transparent center
+3. standard enemy attack lane: long thin red-orange ink blade strip, broken talisman ticks along both edges
+4. dash warning lane: wider red-orange rush smear with old-gold speed cuts, clear transparent middle
+5. sniper warning lane: extremely thin sharp red-orange thread with tiny blue-white aiming sparks, slimmer than the standard lane
+6. melee warning arc: compact crescent claw arc seal, red-orange outer edge, transparent interior
+Visual language: red-orange danger talisman marks painted with Chinese ink, black jade smoke, sparse old-gold ritual ticks.
+Gameplay rule: enemy warnings are allowed to be brighter than ambient art. They must stay readable over dark ink maps while preserving transparent centers for actors.
+Shape rule: spawn cells are compact square/ring-like talisman marks; line cells are horizontal lanes pointing right; melee cell is a compact crescent/arc.
+Style: high-saturation red-orange only on danger edges and tick marks, no solid filled red slabs, no rectangular debug bars.
+Composition: each warning fully separated from the #FF00FF background, generous padding, no cell-edge touching.
+Constraints: no text, no letters, no readable Chinese characters, no UI labels, no western magic circle, no sci-fi targeting reticle, no full opaque rectangle, no watermark.

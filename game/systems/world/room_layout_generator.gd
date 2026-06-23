@@ -300,13 +300,9 @@ static func _build_terrain_features(count: int, obstacles: Array, terrain_slots:
 	var half := _arena_half_for_profile(profile, 72.0)
 	var room_scale := _scale_for_profile(profile)
 	var size_scale := clampf((room_scale.x + room_scale.y) * 0.5, 0.85, 1.55)
-	var weighted_types := [
-		{"type": "rock", "weight": 4},
-		{"type": "water", "weight": 3},
-		{"type": "swamp", "weight": 2},
-		{"type": "fire", "weight": 2},
-	]
-	var target_count := clampi(int(round(float(count) * size_scale)), 5, 10)
+	var weighted_types := _terrain_feature_weights_for_profile(profile)
+	var count_bias := int(profile.get("terrain_feature_count_bias", 0))
+	var target_count := clampi(int(round(float(count + count_bias) * size_scale)), 5, 11)
 	var attempts := 0
 	while features.size() < target_count and attempts < target_count * 36:
 		attempts += 1
@@ -326,6 +322,25 @@ static func _build_terrain_features(count: int, obstacles: Array, terrain_slots:
 			"height": radius * 1.35,
 		})
 	return features
+
+
+static func _terrain_feature_weights_for_profile(profile: Dictionary = {}) -> Array:
+	var raw_weights: Dictionary = profile.get("terrain_feature_weights", {})
+	var weighted_types: Array = []
+	for key in raw_weights.keys():
+		var terrain_type := str(key)
+		var weight := int(raw_weights.get(key, 0))
+		if terrain_type.is_empty() or weight <= 0:
+			continue
+		weighted_types.append({"type": terrain_type, "weight": weight})
+	if not weighted_types.is_empty():
+		return weighted_types
+	return [
+		{"type": "rock", "weight": 4},
+		{"type": "water", "weight": 3},
+		{"type": "swamp", "weight": 2},
+		{"type": "fire", "weight": 2},
+	]
 
 
 static func _pick_weighted_type(weighted_types: Array, rng: RandomNumberGenerator) -> String:

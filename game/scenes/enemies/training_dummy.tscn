@@ -21,9 +21,7 @@ shape = SubResource("CircleShape2D_1")
 z_index = -1
 texture_filter = 0
 script = ExtResource("4")
-texture_path = "res://assets/sprites/enemy_training_dummy_64.png"
-fallback_radius = 16.0
-fallback_color = Color(0.85, 0.22, 0.22, 0.95)
+texture_path = "res://assets/sprites/enemy_style_normal_melee_64.png"
 
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("2")
@@ -31,27 +29,48 @@ script = ExtResource("2")
 [node name="StatusComponent" type="Node" parent="."]
 script = ExtResource("3")
 
+[node name="NameplateBg" type="TextureRect" parent="."]
+offset_left = -64.0
+offset_top = -69.0
+offset_right = 64.0
+offset_bottom = -45.0
+mouse_filter = 2
+modulate = Color(0.78, 1, 0.92, 0.74)
+expand_mode = 1
+stretch_mode = 1
+
 [node name="NameLabel" type="Label" parent="."]
 offset_left = -56.0
-offset_top = -58.0
+offset_top = -66.0
 offset_right = 56.0
-offset_bottom = -38.0
+offset_bottom = -46.0
 theme_override_colors/font_color = Color(0.941, 0.925, 0.894, 1)
 theme_override_font_sizes/font_size = 12
 text = "训练木人"
 horizontal_alignment = 1
 
 [node name="WorldEnemyHealthBar" parent="." instance=ExtResource("5")]
-offset_left = -28.0
-offset_top = -36.0
-offset_right = 28.0
-offset_bottom = -24.0
+offset_left = -22.0
+offset_top = -35.0
+offset_right = 22.0
+offset_bottom = -29.0
+
+[node name="ActionLabelBg" type="TextureRect" parent="."]
+visible = false
+offset_left = -32.0
+offset_top = 17.0
+offset_right = 32.0
+offset_bottom = 33.0
+mouse_filter = 2
+modulate = Color(0.78, 1, 0.92, 0.48)
+expand_mode = 1
+stretch_mode = 1
 
 [node name="ActionLabel" type="Label" parent="."]
-offset_left = -48.0
-offset_top = -24.0
-offset_right = 48.0
-offset_bottom = -8.0
-theme_override_colors/font_color = Color(1, 0.72, 0.45, 1)
-theme_override_font_sizes/font_size = 10
+offset_left = -46.0
+offset_top = 18.0
+offset_right = 46.0
+offset_bottom = 32.0
+theme_override_colors/font_color = Color(1, 0.72, 0.45, 0.72)
+theme_override_font_sizes/font_size = 8
 horizontal_alignment = 1

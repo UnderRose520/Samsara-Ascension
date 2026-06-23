@@ -1,5 +1,6 @@
 extends CanvasLayer
 
+const AssetPaths = preload("res://assets/asset_paths.gd")
 const CritSlashDraw = preload("res://vfx/crit_slash_draw.gd")
 const VariantUtils = preload("res://core/utils/variant_utils.gd")
 
@@ -8,6 +9,16 @@ const VariantUtils = preload("res://core/utils/variant_utils.gd")
 @onready var vignette: ColorRect = $Vignette
 @onready var slash: CritSlashDraw = $Slash
 @onready var edge_glow: Control = $EdgeGlow
+@onready var edge_nodes: Array[TextureRect] = [
+	$EdgeGlow/Top,
+	$EdgeGlow/Bottom,
+	$EdgeGlow/Left,
+	$EdgeGlow/Right,
+	$EdgeGlow/TopLeftCorner,
+	$EdgeGlow/TopRightCorner,
+	$EdgeGlow/BottomLeftCorner,
+	$EdgeGlow/BottomRightCorner,
+]
 
 var _end_ms := 0
 var _banner_tween: Tween
@@ -20,22 +31,41 @@ var _was_paused_before_freeze := false
 var _active_priority := 0
 var _edge_glow_time := 0.0
 var _edge_glow_color := Color(1.0, 0.82, 0.24, 0.0)
+var _edge_texture_hits := 0
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_apply_fullscreen_layout()
+	var viewport := get_viewport()
+	if viewport != null and not viewport.size_changed.is_connected(_apply_fullscreen_layout):
+		viewport.size_changed.connect(_apply_fullscreen_layout)
 	banner.visible = false
 	_set_desaturate_strength(0.0)
 	vignette.modulate.a = 0.0
 	slash.visible = false
 	edge_glow.visible = false
-	edge_glow.draw.connect(_draw_edge_glow)
+	_apply_edge_textures()
 	EventBus.crit_moment_requested.connect(_on_moment)
 	EventBus.damage_dealt.connect(_on_damage_crit)
 	EventBus.perfect_dodge_triggered.connect(_on_perfect_dodge)
 	EventBus.unity_burst_visual_requested.connect(_on_unity_burst_visual)
 	EventBus.run_completed.connect(_force_cleanup)
 	EventBus.room_entered.connect(_on_room_entered)
+
+
+func _apply_fullscreen_layout() -> void:
+	var viewport_size := get_viewport().get_visible_rect().size
+	for node in [desaturate, vignette, slash, edge_glow]:
+		var control := node as Control
+		if control == null:
+			continue
+		control.set_anchors_preset(Control.PRESET_FULL_RECT)
+		control.offset_left = 0.0
+		control.offset_top = 0.0
+		control.offset_right = 0.0
+		control.offset_bottom = 0.0
+		control.size = viewport_size
 
 
 func _on_room_entered(_room: Dictionary, _stage: Dictionary) -> void:
@@ -71,8 +101,8 @@ func _on_unity_burst_visual(payload: Dictionary) -> void:
 	vignette.modulate.a = 0.0
 	_unity_tween = create_tween().set_parallel(true)
 	_unity_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	_unity_tween.tween_property(vignette, "modulate:a", 0.84, 0.08)
-	_unity_tween.tween_property(vignette, "modulate:a", 0.38, 0.42).set_delay(0.08)
+	_unity_tween.tween_property(vignette, "modulate:a", 0.0, 0.08)
+	_unity_tween.tween_property(vignette, "modulate:a", 0.0, 0.42).set_delay(0.08)
 
 
 func _play_moment(text: String, duration: float, slash_color: Color, priority: int = 1) -> void:
@@ -104,19 +134,19 @@ func _play_moment(text: String, duration: float, slash_color: Color, priority: i
 	_banner_tween.tween_property(banner, "modulate:a", 1.0, 0.08)
 	_banner_tween.tween_property(banner, "scale", Vector2(1.12, 1.12) if is_extreme or is_unity else Vector2.ONE, 0.12).set_trans(Tween.TRANS_BACK)
 	if not VfxManager.should_reduce_motion():
-		vignette.color = (Color(0.78, 0.76, 0.68, 1.0) if is_extreme else (slash_color if is_unity else Color.BLACK))
-		_banner_tween.tween_property(vignette, "modulate:a", 0.78 if is_unity else (0.72 if is_extreme else 0.55), 0.1)
+		vignette.color = Color.BLACK
+		_banner_tween.tween_property(vignette, "modulate:a", 0.0, 0.1)
 		if is_perfect_dodge:
 			_freeze_game(0.1)
 		else:
 			Engine.time_scale = 0.22 if is_unity else (0.25 if is_extreme else 0.35)
 			_time_scale_modified = true
 		if is_extreme:
-			_set_desaturate_strength(0.82)
+			_set_desaturate_strength(0.0)
 		var center := _screen_center()
 		VfxManager.spawn_screen(self, center * Vector2(1.0, 0.84), "crit", slash_color)
 	else:
-		_banner_tween.tween_property(vignette, "modulate:a", 0.25, 0.08)
+		_banner_tween.tween_property(vignette, "modulate:a", 0.0, 0.08)
 
 
 func _screen_center() -> Vector2:
@@ -127,7 +157,7 @@ func _process(_delta: float) -> void:
 	if _edge_glow_time > 0.0:
 		_edge_glow_time = maxf(_edge_glow_time - _delta, 0.0)
 		edge_glow.visible = _edge_glow_time > 0.0
-		edge_glow.queue_redraw()
+		_apply_edge_glow_alpha()
 	if _end_ms <= 0:
 		return
 	if Time.get_ticks_msec() < _end_ms:
@@ -150,17 +180,31 @@ func _finish_moment() -> void:
 	_restore_pause()
 
 
-func _draw_edge_glow() -> void:
-	if _edge_glow_time <= 0.0:
-		return
-	var rect := get_viewport().get_visible_rect()
-	var alpha := clampf(_edge_glow_time / 3.0, 0.0, 1.0) * 0.42
-	var color := Color(_edge_glow_color.r, _edge_glow_color.g, _edge_glow_color.b, alpha)
-	var thickness := 26.0
-	edge_glow.draw_rect(Rect2(Vector2.ZERO, Vector2(rect.size.x, thickness)), color, true)
-	edge_glow.draw_rect(Rect2(Vector2(0.0, rect.size.y - thickness), Vector2(rect.size.x, thickness)), color, true)
-	edge_glow.draw_rect(Rect2(Vector2.ZERO, Vector2(thickness, rect.size.y)), color, true)
-	edge_glow.draw_rect(Rect2(Vector2(rect.size.x - thickness, 0.0), Vector2(thickness, rect.size.y)), color, true)
+func _apply_edge_textures() -> void:
+	_edge_texture_hits = 0
+	var top := AssetPaths.load_texture(AssetPaths.combat_action_fx("crit_edge_top"))
+	var side := AssetPaths.load_texture(AssetPaths.combat_action_fx("crit_edge_side"))
+	var corner := AssetPaths.load_texture(AssetPaths.combat_action_fx("crit_edge_corner"))
+	for i in edge_nodes.size():
+		var node := edge_nodes[i]
+		if i < 2:
+			node.texture = top
+		elif i < 4:
+			node.texture = side
+		else:
+			node.texture = corner
+		node.modulate = Color(1, 1, 1, 0)
+		_edge_texture_hits += int(node.texture != null)
+
+
+func _apply_edge_glow_alpha() -> void:
+	var alpha := clampf(_edge_glow_time / 3.0, 0.0, 1.0) * 0.62
+	for node in edge_nodes:
+		node.modulate = Color(_edge_glow_color.r, _edge_glow_color.g, _edge_glow_color.b, alpha)
+
+
+func get_edge_texture_hit_count() -> int:
+	return _edge_texture_hits
 
 
 func _force_cleanup(_victory: bool = false) -> void:

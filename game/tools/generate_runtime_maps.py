@@ -125,7 +125,7 @@ STAGES = [
         "theme_id": "tribulation_thunder",
         "theme_label": "天劫雷台",
         "stage_name": "天劫试场",
-        "weather_id": "wind",
+        "weather_id": "thunder",
         "palette": {
             "sky": (8, 10, 29),
             "ground": (42, 45, 65),
@@ -627,16 +627,16 @@ Each prop must stay centered inside its own invisible 128x128 cell with generous
 Use a solid #FF00FF magenta background across the entire sheet for chroma-key/alpha postprocessing.
 Do not draw visible grid lines, labels, numbers, captions, borders, or cell guides.
 
-PROP LIST
-1. small embedded floor crack / qi scar
-2. small moss, spirit grass, ash, or mineral cluster
-3. compact non-colliding stone/slab/debris accent
-4. glowing vein or elemental trace
-5. shallow stain, puddle rim, scorch, dust swirl, or wind streak
-6. tiny broken talisman/glyph fragment embedded flat in the ground
-7. compact realm-specific terrain motif
-8. alternate low ground ornament
-9. subtle aura residue patch
+ROW-MAJOR CELL LIST AND RUNTIME SEMANTICS
+1. [0,0] thin embedded wet qi crack or elemental vein, horizontal/diagonal, flat on ground
+2. [1,0] small moss, spirit grass, ash, or mineral cluster
+3. [2,0] compact non-colliding stone/slab/debris accent
+4. [0,1] alternate glowing vein or elemental trace
+5. [1,1] shallow stain, puddle rim, scorch, dust swirl, or wind streak
+6. [2,1] compact low debris or unreadable glyph fragment embedded flat in the ground
+7. [0,2] compact realm-specific elemental scar or aura residue
+8. [1,2] alternate low ground ornament with a different silhouette
+9. [2,2] alternate stone/slab/debris accent for obstacle-adjacent dressing
 
 ART DIRECTION
 Clean hand-painted HD xianxia map-prop style, top-down with slight 3/4 material read, readable at small sizes, matching the realm palette and lighting. These are low terrain details, not tall props.
@@ -829,6 +829,21 @@ def _write_prompt(stage_dir: Path, stage: dict) -> None:
     (stage_dir / "terrain_props.prompt.txt").write_text(_terrain_props_prompt(stage), encoding="utf-8")
 
 
+def _terrain_prop_semantics() -> dict:
+    return {
+        "water": [[0, 0], [0, 1], [1, 1]],
+        "wet": [[0, 0], [0, 1], [1, 1]],
+        "swamp": [[1, 0], [1, 1], [1, 2]],
+        "fire": [[0, 2], [0, 1], [1, 1]],
+        "dry": [[0, 2], [2, 1], [1, 1]],
+        "rock": [[2, 0], [2, 1], [2, 2]],
+        "ice": [[0, 0], [0, 1], [1, 1]],
+        "thunder": [[0, 1], [0, 2], [1, 2]],
+        "obstacle": [[2, 0], [2, 1], [2, 2]],
+        "default": [[0, 0], [1, 1], [2, 2]],
+    }
+
+
 def _preview(background: Image.Image, stage: dict, cells: list[list[int]]) -> Image.Image:
     p = stage["palette"]
     img = background.convert("RGBA")
@@ -843,8 +858,8 @@ def _preview(background: Image.Image, stage: dict, cells: list[list[int]]) -> Im
 def _build_runtime_manifest(stage_entries: list[dict], asset_source: str, args: argparse.Namespace) -> dict:
     if asset_source == "ssstoken_gpt_image_2":
         note = (
-            "Visible map assets were requested from the SSSToken OpenAI-compatible image generation "
-            f"endpoint with model {args.image_model}. Prompt files are saved beside every visible map asset."
+            "Visible map assets were requested from an environment-configured image generation provider. "
+            "Prompt files are saved beside every visible map asset."
         )
     else:
         note = (
@@ -855,8 +870,8 @@ def _build_runtime_manifest(stage_entries: list[dict], asset_source: str, args: 
         "schema": "samsara_ascension.runtime_scene_manifest.v1",
         "generated_from": [
             "GDD_轮回仙途_v7.0.md",
-            "docs/UIUX_轮回仙途_v2.0_像素风.md",
-            "docs/UI资产提示词_像素风.md",
+            "docs/UIUX_全新暗色水墨五行粒子_v1.0.md",
+            "docs/mimo_ui_master_index.md",
             "game/tools/generate_runtime_maps.py",
         ],
         "pipeline": {
@@ -867,8 +882,6 @@ def _build_runtime_manifest(stage_entries: list[dict], asset_source: str, args: 
             "collision_model": "obstacle_bodies_with_manifest_spawn_bounds",
             "engine_target": "Godot_TileMap",
             "visual_asset_source": asset_source,
-            "image_endpoint": args.image_endpoint if asset_source == "ssstoken_gpt_image_2" else "",
-            "image_model": args.image_model if asset_source == "ssstoken_gpt_image_2" else "",
             "runtime_assets": ["room_background", "tileset", "terrain_props", "spawn_zones", "safe_zones", "no_spawn_zones", "scenery_props"],
             "metadata_only_assets": ["qa_preview", "prompt_files", "tileset_metadata.json"],
             "note": note,
@@ -882,6 +895,7 @@ def _build_runtime_manifest(stage_entries: list[dict], asset_source: str, args: 
                 "grid": [3, 3],
                 "runtime_alpha_source": "terrain_props.png is saved with alpha after magenta chroma-key cleanup",
             },
+            "terrain_prop_semantics": _terrain_prop_semantics(),
             "world_bounds": WORLD_BOUNDS,
             "player_spawn": [0, 0],
             "enemy_spawn_policy": {

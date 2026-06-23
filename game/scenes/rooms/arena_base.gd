@@ -313,7 +313,9 @@ func _spawn_enemy_dummy(spawn_def: Dictionary, room: Dictionary) -> void:
 	var final_display_name := display_name
 	if bool(enemy_stats.get("promoted", false)) and not is_boss:
 		final_display_name = "%s%s" % [str(enemy_stats.get("prefix", "")), display_name]
-	if dummy.has_method("configure_enemy"):
+	if dummy.has_method("configure_enemy_by_id"):
+		dummy.configure_enemy_by_id(enemy_id, is_boss, room_type_id, display_name)
+	elif dummy.has_method("configure_enemy"):
 		dummy.configure_enemy(display_name, is_boss, room_type_id)
 	elif is_boss and dummy.has_method("configure_as_boss"):
 		dummy.configure_as_boss()

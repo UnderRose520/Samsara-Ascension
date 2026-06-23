@@ -1,36 +1,37 @@
-SYSTEM ROLE
-You are generating a transparent prop pack for runtime terrain details in a top-down Godot 4 combat arena. Use the rules of a professional game prop sheet: consistent scale, clean silhouettes, no edge touching, and no unrelated objects.
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Map runtime rules: exact overhead top-down 2D game ground, no horizon, no walls pretending to be arena borders.
+Playable center 70-75 percent must remain matte, low-noise, low-contrast dark ink-stone.
+All cracks, sigils, fog, veins, ruins, lamps, water highlights, and story detail stay in the outer 20 percent.
+No central magic circle, target ring, door, chest, pillar, tree canopy, tall prop, character, projectile, UI, text, or collidable-looking object baked into the background.
+Tileset source: top row exactly four swatches only: floor, floor_alt, blocker, decoration; lower 75 percent must be plain filler with no extra tile concepts.
+Terrain props: flat low ground details only, centered per cell, no tall rocks, walls, pillars, or trees.
+Runtime terrain prop rule: transparent-source 3x3 prop sheet, resized to 384x384 and sliced into nine 128x128 cells.
+Use solid #FF00FF as the entire background for chroma-key cleanup. Do not use #FF00FF inside props.
+Each cell contains one compact low terrain-detail prop, centered with generous padding and no edge touching.
+These are flat non-colliding terrain details: veins, moss, stains, low debris, scars, shallow puddle rims, dust, aura residue.
+No tall props, large rocks, walls, pillars, trees, crates, chests, doors, UI, labels, characters, weapons, projectiles, or full backgrounds.
 
-PROJECT CONTEXT
-Game: Samsara Ascension / 轮回仙途, Chinese xianxia cultivation roguelite.
-Realm/stage: 金丹魔域 / 渡劫前夜.
-Theme motif: demonic golden-core battlefield with purple qi scars in the ground.
-Runtime: this sheet will be resized to 384x384 and sliced into a 3x3 grid of 128x128 cells. Props are rendered separately from the background and may be tinted or scaled by runtime_scene_manifest.json.
-
-STRICT SHEET LAYOUT
-Create exactly 9 compact terrain-detail props arranged in a clean 3x3 grid.
-Each prop must stay centered inside its own invisible 128x128 cell with generous padding; no prop may touch or cross a cell edge.
-Use a solid #FF00FF magenta background across the entire sheet for chroma-key/alpha postprocessing.
-Do not draw visible grid lines, labels, numbers, captions, borders, or cell guides.
-
-PROP LIST
-1. small embedded floor crack / qi scar
-2. small moss, spirit grass, ash, or mineral cluster
-3. compact non-colliding stone/slab/debris accent
-4. glowing vein or elemental trace
-5. shallow stain, puddle rim, scorch, dust swirl, or wind streak
-6. tiny broken talisman/glyph fragment embedded flat in the ground
-7. compact realm-specific terrain motif
-8. alternate low ground ornament
-9. subtle aura residue patch
-
-ART DIRECTION
-Clean hand-painted HD xianxia map-prop style, top-down with slight 3/4 material read, readable at small sizes, matching the realm palette and lighting. These are low terrain details, not tall props.
-Make silhouettes varied and useful for random placement: some horizontal, some diagonal, some round, some narrow. Keep them subtle enough not to obscure combat.
-The pack should add tactical readability and atmosphere to larger randomized rooms: cracks suggest danger history, grass/minerals suggest realm identity, stains and aura residue break repetition, but every prop remains flat and non-colliding.
-
-STRICT EXCLUSIONS
-No player, enemies, NPCs, bosses, pets, projectiles, weapons, pickups, chests, doors, gates, signs, trees, buildings, crates, barrels, UI, labels, text, arrows, large walls, tall pillars, large rocks, collision-critical blockers, or full room backgrounds.
-
-OUTPUT
-One square PNG prop sheet, solid #FF00FF background, exactly nine compact props.
+Asset type: runtime transparent terrain prop atlas.
+Stage: 金丹魔域 / golden_core_demon.
+Theme prop language: thin ember scars, ash swirls, low demon stone chips, faint violet residue.
+Accent: small orange-red fire cracks and faint soul violet smoke at edges. High saturation appears only as tiny gameplay-readable traces, never as full-cell glow.
+Grid: exactly 3 columns by 3 rows, one centered prop per cell, no visible grid lines.
+Cell order:
+1. [0,0] thin embedded elemental vein or wet qi crack
+2. [1,0] small moss, spirit grass, ash, dust, or mineral cluster
+3. [2,0] compact low stone/slab/debris accent
+4. [0,1] alternate thin glowing vein or elemental trace
+5. [1,1] shallow stain, puddle rim, scorch, dust swirl, or wind streak
+6. [2,1] compact low debris or flat glyph fragment
+7. [0,2] compact realm-specific elemental scar or aura residue
+8. [1,2] alternate low ground ornament with a different silhouette
+9. [2,2] alternate stone/slab/debris accent for obstacle-adjacent dressing
+Style: clean hand-painted HD xianxia map-prop style, subtle enough for dense combat, varied silhouettes, flat non-colliding ground details.
+Constraints: no tall object, no large boulder, no wall, no pillar, no tree, no chest, no weapon, no character, no text, no label, no UI, no background scene.

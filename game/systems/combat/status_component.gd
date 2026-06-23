@@ -78,14 +78,28 @@ func get_visual_tint() -> Color:
 static func status_color(status_name: String) -> Color:
 	match status_name:
 		"burn":
-			return Color(1.0, 0.36, 0.08)
+			return Color(1.0, 0.24, 0.06)
 		"slow", "freeze":
-			return Color(0.45, 0.9, 1.0)
+			return Color(0.25, 0.76, 1.0)
 		"paralyze":
-			return Color(1.0, 0.95, 0.28)
+			return Color(0.66, 0.34, 1.0)
 		"poison":
-			return Color(0.42, 1.0, 0.35)
-	return Color(0.9, 0.85, 1.0)
+			return Color(0.18, 0.9, 0.42)
+		"shield", "guard":
+			return Color(0.88, 0.58, 0.22)
+		"haste", "dodge":
+			return Color(0.28, 0.82, 1.0)
+		"boss":
+			return Color(1.0, 0.32, 0.12)
+		"elite":
+			return Color(0.92, 0.58, 0.18)
+		"promoted":
+			return Color(0.9, 0.66, 0.22)
+		"dao", "counter":
+			return Color(0.92, 0.72, 0.22)
+		"mutation", "windup":
+			return Color(1.0, 0.24, 0.12)
+	return Color(0.72, 0.58, 1.0)
 
 
 func consume_combust(base_damage: float) -> float:

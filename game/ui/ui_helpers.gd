@@ -38,6 +38,27 @@ static func apply_quality_frame(frame: TextureRect, quality: int) -> void:
 	frame.visible = tex != null
 
 
+static func apply_reward_card_frame(frame: TextureRect, quality: int) -> void:
+	if frame == null:
+		return
+	var path := AssetPaths.reward_card_frame(quality)
+	var tex := AssetPaths.load_texture(path)
+	frame.texture = tex
+	frame.visible = tex != null
+
+
+static func apply_modal_veil(veil: TextureRect, alpha: float = 0.86) -> void:
+	if veil == null:
+		return
+	var tex := AssetPaths.load_texture(AssetPaths.MODAL_INK_VEIL)
+	veil.texture = tex
+	veil.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	veil.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	veil.mouse_filter = Control.MOUSE_FILTER_STOP
+	veil.modulate = Color(1.0, 1.0, 1.0, alpha)
+	veil.set_meta("modal_veil_alpha", alpha)
+
+
 static func make_ninepatch_panel_style() -> StyleBoxTexture:
 	var sb := StyleBoxTexture.new()
 	sb.texture = AssetPaths.load_texture(AssetPaths.PANEL_NINEPATCH)
@@ -51,6 +72,37 @@ static func make_ninepatch_panel_style() -> StyleBoxTexture:
 	sb.content_margin_bottom = 10
 	sb.modulate_color = Color(0.76, 0.94, 0.88, 0.50)
 	return sb
+
+
+static func make_button_texture_style(texture_path: String, tint: Color, margins := Vector2(24, 16)) -> StyleBoxTexture:
+	var sb := StyleBoxTexture.new()
+	sb.texture = AssetPaths.load_texture(texture_path)
+	sb.texture_margin_left = int(margins.x)
+	sb.texture_margin_top = int(margins.y)
+	sb.texture_margin_right = int(margins.x)
+	sb.texture_margin_bottom = int(margins.y)
+	sb.content_margin_left = 16
+	sb.content_margin_top = 9
+	sb.content_margin_right = 16
+	sb.content_margin_bottom = 9
+	sb.modulate_color = tint
+	return sb
+
+
+static func apply_button_asset(button: Button, primary: bool = false) -> void:
+	if button == null:
+		return
+	var path := AssetPaths.BTN_PRIMARY_GOLD if primary else AssetPaths.BTN_SECONDARY
+	var normal := make_button_texture_style(path, Color(1, 1, 1, 0.96 if primary else 0.88))
+	if normal.texture == null:
+		return
+	var hover := make_button_texture_style(path, Color(1.08, 1.05, 0.94, 1.0) if primary else Color(0.78, 1.05, 0.96, 1.0))
+	var pressed := make_button_texture_style(path, Color(0.82, 0.76, 0.62, 1.0) if primary else Color(0.55, 0.82, 0.78, 0.96))
+	var disabled := make_button_texture_style(path, Color(0.38, 0.38, 0.38, 0.48))
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", pressed)
+	button.add_theme_stylebox_override("disabled", disabled)
 
 
 static func attach_gold_corners(parent: Control) -> UiGoldCorners:
@@ -68,7 +120,11 @@ static func attach_gold_corners(parent: Control) -> UiGoldCorners:
 static func apply_panel_polish(panel: PanelContainer, with_corners: bool = false) -> void:
 	if panel == null:
 		return
-	panel.add_theme_stylebox_override("panel", HudStyles.modal_panel())
+	var ink_panel := make_ninepatch_panel_style()
+	if ink_panel.texture:
+		panel.add_theme_stylebox_override("panel", ink_panel)
+	else:
+		panel.add_theme_stylebox_override("panel", HudStyles.modal_panel())
 	if with_corners:
 		var host := panel.get_child(0) as Control
 		if host:
@@ -124,17 +180,17 @@ static func add_gold_divider(parent: Control, before: Control = null) -> Texture
 
 
 static func decorate_modal_header(vbox: VBoxContainer, title: Label) -> void:
-	if vbox.get_node_or_null("ModalTitleBar") != null:
+	if vbox.get_node_or_null("ModalTitleDivider") != null:
 		return
-	var bar := TextureRect.new()
-	bar.name = "ModalTitleBar"
-	bar.custom_minimum_size = Vector2(0, 44)
-	bar.texture = AssetPaths.load_texture(AssetPaths.MODAL_TITLE_BAR)
-	bar.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-	bar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(bar)
-	vbox.move_child(bar, title.get_index())
+	var divider := TextureRect.new()
+	divider.name = "ModalTitleDivider"
+	divider.custom_minimum_size = Vector2(0, 6)
+	divider.texture = AssetPaths.load_texture(AssetPaths.DIVIDER_GOLD)
+	divider.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	divider.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	divider.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(divider)
+	vbox.move_child(divider, title.get_index() + 1)
 	title.add_theme_font_size_override("font_size", 26)
 	title.add_theme_color_override("font_color", UiTokens.ACCENT_GOLD)
 	title.add_theme_constant_override("outline_size", 2)

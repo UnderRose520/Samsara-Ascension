@@ -1,6 +1,7 @@
 extends Node
 
 const ActiveSpellRegistry = preload("res://systems/combat/active_spell_registry.gd")
+const SpellSynergy = preload("res://systems/combat/spell_synergy.gd")
 const VariantUtils = preload("res://core/utils/variant_utils.gd")
 
 const DEFAULT_SPELL_BINDINGS := {
@@ -39,6 +40,8 @@ func get_slot_preview_states() -> Dictionary:
 		var unlocked := VariantUtils.as_bool(slots_unlocked.get(slot, false))
 		out[slot] = {
 			"name": str(spell.get("name", slot.to_upper())),
+			"spell_id": spell_id,
+			"element": SpellSynergy.element_for_spell(spell_id),
 			"unlocked": unlocked,
 			"cd_remaining": 0.0,
 			"cd_total": 0.0,

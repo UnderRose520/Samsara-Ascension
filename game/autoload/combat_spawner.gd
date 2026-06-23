@@ -55,5 +55,9 @@ func _on_spawn_enemy_projectile(payload: Dictionary) -> void:
 		float(payload.get("speed", 240.0)),
 		float(payload.get("radius", 5.0)),
 		payload.get("color", Color(1.0, 0.35, 0.35)),
+		str(payload.get("element", "")),
+		str(payload.get("status_on_hit", "")),
+		float(payload.get("status_duration", 0.0)),
+		str(payload.get("source_tag", "enemy_projectile")),
 	)
 	scene_root.add_child(projectile)

@@ -1,12 +1,14 @@
 extends PanelContainer
 
 const AssetPaths = preload("res://assets/asset_paths.gd")
-const HudStyles = preload("res://ui/hud_styles.gd")
 const UiTokens = preload("res://ui/theme/ui_tokens.gd")
 
 @onready var icon_wrap: Control = $Margin/HBox/IconWrap
+@onready var slot_frame: TextureRect = $Margin/HBox/IconWrap/SlotFrame
 @onready var icon: TextureRect = $Margin/HBox/IconWrap/Icon
 @onready var cd_ring: SpellIconFrame = $Margin/HBox/IconWrap/CdRing
+@onready var cooldown_sweep: TextureRect = $Margin/HBox/IconWrap/CooldownSweep
+@onready var shortcut_badge: TextureRect = $Margin/HBox/IconWrap/ShortcutBadge
 @onready var key_label: Label = $Margin/HBox/Info/KeyLabel
 @onready var name_label: Label = $Margin/HBox/Info/NameLabel
 @onready var state_label: Label = $Margin/HBox/Info/StateLabel
@@ -17,6 +19,8 @@ var _dock := false
 var _ready_state := true
 var _unlocked := true
 var _cd_text: Label
+var _slot_frame_texture_hits := 0
+var _shortcut_badge_texture_hits := 0
 
 
 func _ready() -> void:
@@ -31,52 +35,47 @@ func set_dock(enabled: bool) -> void:
 	custom_minimum_size = Vector2(68, 68)
 	info_box.visible = false
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	add_theme_stylebox_override("panel", HudStyles.spell_dock_slot(true, true))
+	add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	_apply_shortcut_badge_texture()
+	_apply_slot_frame_texture(true, true)
 	if key_label.get_parent() == info_box:
 		info_box.remove_child(key_label)
 		icon_wrap.add_child(key_label)
-		# small circular gold key badge pinned to the top of the round slot
 		key_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-		key_label.offset_left = -9
-		key_label.offset_top = -11
-		key_label.offset_right = 9
-		key_label.offset_bottom = 7
+		key_label.offset_left = -12
+		key_label.offset_top = -10
+		key_label.offset_right = 12
+		key_label.offset_bottom = 12
 		key_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		key_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		key_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		key_label.add_theme_font_size_override("font_size", 10)
-		key_label.add_theme_color_override("font_color", UiTokens.BG_DEEP)
-		var key_bg := StyleBoxFlat.new()
-		key_bg.bg_color = UiTokens.ACCENT_GOLD
-		key_bg.corner_radius_top_left = 9
-		key_bg.corner_radius_top_right = 9
-		key_bg.corner_radius_bottom_left = 9
-		key_bg.corner_radius_bottom_right = 9
-		key_bg.border_width_left = 1
-		key_bg.border_width_top = 1
-		key_bg.border_width_right = 1
-		key_bg.border_width_bottom = 1
-		key_bg.border_color = Color(0.35, 0.28, 0.08, 0.8)
-		key_bg.content_margin_left = 2
-		key_bg.content_margin_top = 0
-		key_bg.content_margin_right = 2
-		key_bg.content_margin_bottom = 0
-		key_label.add_theme_stylebox_override("normal", key_bg)
+		key_label.add_theme_color_override("font_color", UiTokens.TEXT_PRIMARY)
+		key_label.remove_theme_stylebox_override("normal")
 	icon_wrap.custom_minimum_size = Vector2(56, 56)
 	icon.offset_left = -27
 	icon.offset_top = -27
 	icon.offset_right = 27
 	icon.offset_bottom = 27
 	icon.modulate = Color.WHITE
+	_layout_texture_chrome()
 	_cd_text.visible = false
 
 
-func apply_state(slot: String, spell_name: String, unlocked: bool, cd_remaining: float, cd_total: float, casting: bool) -> void:
+func apply_state(
+	slot: String,
+	spell_name: String,
+	unlocked: bool,
+	cd_remaining: float,
+	cd_total: float,
+	casting: bool,
+	spell_id: String = "",
+	element: String = ""
+) -> void:
 	key_label.text = slot.to_upper()
 	if not _dock:
 		name_label.text = spell_name
-	var icon_key: String = slot if unlocked else "%s_locked" % slot
-	var icon_path: String = AssetPaths.SPELL_ICONS.get(icon_key, AssetPaths.SPELL_ICONS["q_locked"])
+	var icon_path: String = AssetPaths.spell_icon(spell_id, element, slot, unlocked)
 	icon.texture = AssetPaths.load_texture(icon_path)
 	var ready: bool = unlocked and not casting and cd_remaining <= 0.05
 	var ratio: float = 0.0
@@ -87,7 +86,7 @@ func apply_state(slot: String, spell_name: String, unlocked: bool, cd_remaining:
 	_unlocked = unlocked
 	if _dock:
 		_update_cd_text(cd_remaining, casting)
-		add_theme_stylebox_override("panel", HudStyles.spell_dock_slot(ready, unlocked))
+		_apply_slot_frame_texture(ready, unlocked)
 		tooltip_text = spell_name if unlocked else "未解锁"
 		modulate = Color(0.5, 0.5, 0.52) if not unlocked else Color.WHITE
 		return
@@ -135,3 +134,54 @@ func _update_cd_text(cd_remaining: float, casting: bool) -> void:
 		return
 	_cd_text.text = "%.1f" % cd_remaining if cd_remaining < 10.0 else "%d" % ceili(cd_remaining)
 	_cd_text.visible = true
+
+
+func _layout_texture_chrome() -> void:
+	for node in [slot_frame, cooldown_sweep, cd_ring]:
+		if node == null:
+			continue
+		node.set_anchors_preset(Control.PRESET_FULL_RECT)
+		node.offset_left = 0
+		node.offset_top = 0
+		node.offset_right = 0
+		node.offset_bottom = 0
+	if shortcut_badge != null:
+		shortcut_badge.set_anchors_preset(Control.PRESET_CENTER_TOP)
+		shortcut_badge.offset_left = -16
+		shortcut_badge.offset_top = -14
+		shortcut_badge.offset_right = 16
+		shortcut_badge.offset_bottom = 18
+
+
+func _apply_slot_frame_texture(ready: bool, unlocked: bool) -> void:
+	if slot_frame == null:
+		return
+	var texture := AssetPaths.load_texture(AssetPaths.spell_slot_frame(ready, unlocked))
+	if texture != null:
+		slot_frame.texture = texture
+		_slot_frame_texture_hits += 1
+	slot_frame.visible = texture != null
+
+
+func _apply_shortcut_badge_texture() -> void:
+	if shortcut_badge == null:
+		return
+	var texture := AssetPaths.load_texture(AssetPaths.spell_shortcut_badge())
+	if texture != null:
+		shortcut_badge.texture = texture
+		_shortcut_badge_texture_hits += 1
+	shortcut_badge.visible = texture != null
+
+
+func get_slot_frame_texture_hit_count() -> int:
+	return _slot_frame_texture_hits
+
+
+func get_shortcut_badge_texture_hit_count() -> int:
+	return _shortcut_badge_texture_hits
+
+
+func get_cooldown_texture_hit_count() -> int:
+	if cd_ring == null or not cd_ring.has_method("get_cooldown_texture_hit_count"):
+		return 0
+	return int(cd_ring.call("get_cooldown_texture_hit_count"))

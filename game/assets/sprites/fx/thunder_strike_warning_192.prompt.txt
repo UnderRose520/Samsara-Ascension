@@ -1,0 +1,24 @@
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: runtime thunder strike VFX decal atlas for a top-down 2D combat arena.
+Grid: exactly 2 columns by 2 rows, one centered VFX decal per cell, no visible grid lines or borders.
+Cell order: left to right, top to bottom.
+1. warning ground seal: thin broken old-gold ring with tiny blue-white thunder knots, transparent center
+2. impact ground burst: blue-white thunder splash and old-gold scorch ring, edge-heavy, transparent center
+3. vertical lightning bolt: jagged Chinese ink thunder stroke, blue-white core, old-gold spark tips, tall transparent asset
+4. after-scorch: fading storm scorch blossom, blue-gray ink smoke, a few gold crack sparks
+Visual language: Chinese tribulation thunder, black ink strokes, old-gold warning seal fragments, blue-white lightning core.
+Runtime use: warning and impact decals are scaled around 120-200px; the vertical bolt cell is stretched tall above the strike point.
+Gameplay rule: warning must be readable but elegant, with transparent center so actors remain visible. Impact can be brighter but must fade at edges.
+Composition: each asset fully separated from the #FF00FF background, generous padding, no cell-edge touching.
+Constraints: no text, no letters, no Chinese characters, no UI panel, no western magic rune, no sci-fi laser, no white full-screen flash, no photoreal storm photo, no watermark.

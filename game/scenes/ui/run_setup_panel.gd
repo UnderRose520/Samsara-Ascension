@@ -10,18 +10,27 @@ const DAO_HEART_CARD := preload("res://ui/components/dao_heart_card.tscn")
 
 @onready var panel: PanelContainer = $Panel
 @onready var backdrop: TextureRect = $Backdrop
-@onready var dimmer: ColorRect = $Dimmer
-@onready var start_button: Button = $Panel/Margin/Scroll/VBox/StartButton
-@onready var title_label: Label = $Panel/Margin/Scroll/VBox/Title
-@onready var detail_label: Label = $Panel/Margin/Scroll/VBox/Detail
-@onready var shard_label: Label = $Panel/Margin/Scroll/VBox/ShardLabel
-@onready var heart_demon_check: CheckButton = $Panel/Margin/Scroll/VBox/HeartDemonCheck
-@onready var points_label: Label = $Panel/Margin/Scroll/VBox/PointsLabel
-@onready var seed_input: LineEdit = $Panel/Margin/Scroll/VBox/SeedRow/SeedInput
-@onready var random_seed_button: Button = $Panel/Margin/Scroll/VBox/SeedRow/RandomSeedButton
-@onready var meta_button: Button = $Panel/Margin/Scroll/VBox/MetaButton
-@onready var hearts_box: HBoxContainer = $Panel/Margin/Scroll/VBox/Hearts
-@onready var vbox: VBoxContainer = $Panel/Margin/Scroll/VBox
+@onready var dimmer: TextureRect = $Dimmer
+@onready var start_button: Button = $Panel/Margin/Root/Footer/ButtonRow/StartButton
+@onready var title_label: Label = $Panel/Margin/Root/Scroll/VBox/Title
+@onready var run_preview: PanelContainer = $Panel/Margin/Root/Scroll/VBox/RunPreview
+@onready var preview_seal_glow: TextureRect = $Panel/Margin/Root/Scroll/VBox/RunPreview/Margin/Row/PreviewSealWrap/PreviewSealGlow
+@onready var preview_seal_icon: TextureRect = $Panel/Margin/Root/Scroll/VBox/RunPreview/Margin/Row/PreviewSealWrap/PreviewSealIcon
+@onready var preview_title: Label = $Panel/Margin/Root/Scroll/VBox/RunPreview/Margin/Row/PreviewText/PreviewTitle
+@onready var preview_desc: Label = $Panel/Margin/Root/Scroll/VBox/RunPreview/Margin/Row/PreviewText/PreviewDesc
+@onready var preview_enemy_stat: PanelContainer = $Panel/Margin/Root/Scroll/VBox/RunPreview/Margin/Row/PreviewText/PreviewStats/EnemyStat
+@onready var preview_trial_stat: PanelContainer = $Panel/Margin/Root/Scroll/VBox/RunPreview/Margin/Row/PreviewText/PreviewStats/TrialStat
+@onready var preview_reward_stat: PanelContainer = $Panel/Margin/Root/Scroll/VBox/RunPreview/Margin/Row/PreviewText/PreviewStats/RewardStat
+@onready var detail_label: Label = $Panel/Margin/Root/Scroll/VBox/Detail
+@onready var shard_label: Label = $Panel/Margin/Root/Scroll/VBox/ShardLabel
+@onready var heart_demon_check: Button = $Panel/Margin/Root/Scroll/VBox/HeartDemonCheck
+@onready var points_label: Label = $Panel/Margin/Root/Scroll/VBox/PointsLabel
+@onready var seed_input: LineEdit = $Panel/Margin/Root/Footer/SeedRow/SeedInput
+@onready var random_seed_button: Button = $Panel/Margin/Root/Footer/SeedRow/RandomSeedButton
+@onready var meta_button: Button = $Panel/Margin/Root/Footer/ButtonRow/MetaButton
+@onready var quit_game_button: Button = $Panel/Margin/Root/Footer/ButtonRow/QuitGameButton
+@onready var hearts_box: HBoxContainer = $Panel/Margin/Root/Scroll/VBox/Hearts
+@onready var vbox: VBoxContainer = $Panel/Margin/Root/Scroll/VBox
 
 var _selected: int = DaoHeartConfig.DaoHeart.ENLIGHTEN
 var _selected_path := CultivationPathRegistry.DEFAULT_PATH_ID
@@ -31,6 +40,7 @@ var _path_buttons: Dictionary = {}
 var _path_detail_label: Label
 var _paths_box: HBoxContainer
 var _couplet_labels: Array[Label] = []
+var _couplet_panels: Array[TextureRect] = []
 
 const HEART_DEFS := [
 	{
@@ -39,6 +49,10 @@ const HEART_DEFS := [
 		"title": "问道",
 		"subtitle": "平易入道",
 		"detail": "问道：敌人 -20% 真元，数量 -1，无心魔试炼台",
+		"preview": "敌势收敛，给新构筑更多试错空间。",
+		"enemy": "敌势 -20%",
+		"trial": "心魔 无",
+		"reward": "节奏 稳",
 	},
 	{
 		"heart": DaoHeartConfig.DaoHeart.ENLIGHTEN,
@@ -46,6 +60,10 @@ const HEART_DEFS := [
 		"title": "悟道",
 		"subtitle": "标准体验",
 		"detail": "悟道：标准体验，机缘房 20% 出现心魔试炼台",
+		"preview": "敌人与机缘保持标准节奏，适合稳定验证构筑。",
+		"enemy": "敌势 标准",
+		"trial": "心魔 20%",
+		"reward": "节奏 平衡",
 	},
 	{
 		"heart": DaoHeartConfig.DaoHeart.PROVE_DAO,
@@ -53,6 +71,10 @@ const HEART_DEFS := [
 		"title": "证道",
 		"subtitle": "极限试炼",
 		"detail": "证道：敌人 +20% 真元，数量 +1，必遇心魔试炼台",
+		"preview": "敌势更盛，心魔必至，适合冲击高风险高记忆点的一局。",
+		"enemy": "敌势 +20%",
+		"trial": "心魔 必遇",
+		"reward": "节奏 激进",
 	},
 ]
 
@@ -64,13 +86,19 @@ func _ready() -> void:
 	var setup_bg := AssetPaths.load_texture(AssetPaths.RUN_SETUP_BACKDROP)
 	if setup_bg:
 		backdrop.texture = setup_bg
+	UiHelpers.apply_modal_veil(dimmer, 0.52)
 	_fit_panel_to_viewport()
 	get_viewport().size_changed.connect(_fit_panel_to_viewport)
 	UiHelpers.apply_panel_polish(panel, false)
-	UiHelpers.decorate_modal_header($Panel/Margin/Scroll/VBox, title_label)
+	UiHelpers.decorate_modal_header($Panel/Margin/Root/Scroll/VBox, title_label)
+	_add_title_ornament()
+	_apply_run_preview_style()
+	_apply_button_chrome()
 	start_button.pressed.connect(_on_start_pressed)
 	meta_button.pressed.connect(_on_meta_pressed)
+	quit_game_button.pressed.connect(_on_quit_game_pressed)
 	random_seed_button.pressed.connect(_on_random_seed_pressed)
+	heart_demon_check.toggled.connect(func(_pressed: bool) -> void: _apply_heart_demon_button_state())
 	_spawn_heart_cards()
 	_spawn_path_picker()
 	_refresh_meta()
@@ -89,8 +117,8 @@ func _fit_panel_to_viewport() -> void:
 	var safe_margin := clampf(short_side * 0.06, 24.0, 72.0)
 	var available_width := maxf(viewport_size.x - safe_margin * 2.0, 360.0)
 	var available_height := maxf(viewport_size.y - safe_margin * 2.0, 420.0)
-	var max_panel_width := minf(920.0, viewport_size.x * 0.72)
-	var max_panel_height := minf(680.0, viewport_size.y * 0.94)
+	var max_panel_width := minf(980.0, viewport_size.x * 0.76)
+	var max_panel_height := minf(880.0, viewport_size.y * 0.92)
 	var panel_width := minf(max_panel_width, available_width)
 	var panel_height := minf(max_panel_height, available_height)
 	panel.offset_left = -panel_width * 0.5
@@ -100,6 +128,62 @@ func _fit_panel_to_viewport() -> void:
 	_layout_couplets(viewport_size, panel_width)
 
 
+func _add_title_ornament() -> void:
+	if vbox.get_node_or_null("SetupTitleOrnament") != null:
+		return
+	var ornament := TextureRect.new()
+	ornament.name = "SetupTitleOrnament"
+	ornament.custom_minimum_size = Vector2(0, 34)
+	ornament.texture = AssetPaths.load_texture(AssetPaths.SETUP_TITLE_ORNAMENT)
+	ornament.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	ornament.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	ornament.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if ornament.texture == null:
+		return
+	vbox.add_child(ornament)
+	vbox.move_child(ornament, title_label.get_index() + 1)
+
+
+func _apply_button_chrome() -> void:
+	UiHelpers.apply_button_asset(start_button, true)
+	UiHelpers.apply_button_asset(meta_button, false)
+	UiHelpers.apply_button_asset(quit_game_button, false)
+	UiHelpers.apply_button_asset(random_seed_button, false)
+	UiHelpers.apply_button_asset(heart_demon_check, false)
+	_apply_seed_input_chrome()
+	_apply_heart_demon_button_state()
+
+
+func _apply_run_preview_style() -> void:
+	UiHelpers.apply_panel_polish(run_preview)
+	run_preview.modulate = Color(0.88, 1.0, 0.94, 0.84)
+	for card in [preview_enemy_stat, preview_trial_stat, preview_reward_stat]:
+		UiHelpers.apply_card_polish(card)
+		card.modulate = Color(0.92, 1.0, 0.94, 0.74)
+		var label := card.get_node_or_null("Margin/Label") as Label
+		if label:
+			label.add_theme_constant_override("outline_size", 2)
+			label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.72))
+	for label in [preview_title, preview_desc]:
+		label.add_theme_constant_override("outline_size", 2)
+		label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.72))
+
+
+func _apply_seed_input_chrome() -> void:
+	if seed_input == null:
+		return
+	var normal := UiHelpers.make_button_texture_style(AssetPaths.BTN_SECONDARY, Color(0.62, 0.94, 0.86, 0.64), Vector2(24, 14))
+	var focus := UiHelpers.make_button_texture_style(AssetPaths.BTN_SECONDARY, Color(0.92, 1.08, 0.92, 0.88), Vector2(24, 14))
+	var readonly := UiHelpers.make_button_texture_style(AssetPaths.BTN_SECONDARY, Color(0.36, 0.42, 0.40, 0.50), Vector2(24, 14))
+	if normal.texture:
+		seed_input.add_theme_stylebox_override("normal", normal)
+		seed_input.add_theme_stylebox_override("focus", focus)
+		seed_input.add_theme_stylebox_override("read_only", readonly)
+	seed_input.add_theme_font_size_override("font_size", 14)
+	seed_input.add_theme_color_override("font_color", Color(0.92, 0.96, 0.86, 1.0))
+	seed_input.add_theme_color_override("font_placeholder_color", Color(0.56, 0.77, 0.70, 0.74))
+
+
 func _add_couplets() -> void:
 	_make_couplet("大道无形", -480.0)
 	_make_couplet("仙途无尽", 480.0)
@@ -107,6 +191,22 @@ func _add_couplets() -> void:
 
 
 func _make_couplet(text: String, x_offset: float) -> void:
+	var panel_tex := TextureRect.new()
+	panel_tex.name = "CoupletPanel_%d" % _couplet_panels.size()
+	panel_tex.texture = AssetPaths.load_texture(AssetPaths.COUPLET_PANEL_LEFT if _couplet_panels.is_empty() else AssetPaths.COUPLET_PANEL_RIGHT)
+	panel_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	panel_tex.stretch_mode = TextureRect.STRETCH_SCALE
+	panel_tex.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel_tex.anchor_left = 0.5
+	panel_tex.anchor_top = 0.5
+	panel_tex.anchor_right = 0.5
+	panel_tex.anchor_bottom = 0.5
+	panel_tex.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	panel_tex.grow_vertical = Control.GROW_DIRECTION_BOTH
+	add_child(panel_tex)
+	move_child(panel_tex, 2)
+	_couplet_panels.append(panel_tex)
+
 	var lbl := Label.new()
 	var vertical := ""
 	for i in text.length():
@@ -132,7 +232,7 @@ func _make_couplet(text: String, x_offset: float) -> void:
 	lbl.offset_top = -110.0
 	lbl.offset_bottom = 130.0
 	add_child(lbl)
-	move_child(lbl, 2)
+	move_child(lbl, panel_tex.get_index() + 1)
 	_couplet_labels.append(lbl)
 
 
@@ -146,13 +246,21 @@ func _layout_couplets(viewport_size: Vector2, panel_width: float) -> void:
 	var x_gap := clampf(side_space * 0.45, 42.0, 92.0)
 	for i in _couplet_labels.size():
 		var lbl := _couplet_labels[i]
+		var panel_tex := _couplet_panels[i] if i < _couplet_panels.size() else null
 		if lbl == null:
 			continue
 		lbl.visible = show
+		if panel_tex:
+			panel_tex.visible = show
 		if not show:
 			continue
 		var sign := -1.0 if i == 0 else 1.0
 		var center_x := sign * (panel_width * 0.5 + x_gap)
+		if panel_tex:
+			panel_tex.offset_left = center_x - 28.0
+			panel_tex.offset_right = center_x + 28.0
+			panel_tex.offset_top = -label_height * 0.5 - 8.0
+			panel_tex.offset_bottom = label_height * 0.5 + 8.0
 		lbl.offset_left = center_x - label_half_width
 		lbl.offset_right = center_x + label_half_width
 		lbl.offset_top = -label_height * 0.5
@@ -205,7 +313,7 @@ func _spawn_path_picker() -> void:
 
 	_paths_box = HBoxContainer.new()
 	_paths_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	_paths_box.add_theme_constant_override("separation", 8)
+	_paths_box.add_theme_constant_override("separation", 6)
 	vbox.add_child(_paths_box)
 	vbox.move_child(_paths_box, title.get_index() + 1)
 
@@ -221,13 +329,16 @@ func _spawn_path_picker() -> void:
 	for path in CultivationPathRegistry.get_all_paths():
 		var path_id := str(path.get("path_id", ""))
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(118, 34)
+		button.custom_minimum_size = Vector2(108, 50)
 		button.toggle_mode = true
-		button.text = str(path.get("name", path_id))
+		button.text = ""
+		UiHelpers.apply_button_asset(button, false)
+		button.add_theme_constant_override("h_separation", 0)
 		button.tooltip_text = "%s\n%s" % [
 			CultivationPathRegistry.format_summary(path_id),
 			str(path.get("description", "")),
 		]
+		_add_path_button_content(button, path_id, str(path.get("name", path_id)))
 		button.pressed.connect(_on_path_button_pressed.bind(path_id))
 		_paths_box.add_child(button)
 		_path_buttons[path_id] = button
@@ -243,7 +354,7 @@ func _refresh_meta() -> void:
 	heart_demon_check.visible = can_boost
 	heart_demon_check.disabled = not can_boost
 	if can_boost:
-		heart_demon_check.text = "心魔强化开局（消耗3碎片 · 仙品词条 · 敌人+10%）"
+		_apply_heart_demon_button_state()
 	else:
 		heart_demon_check.button_pressed = false
 
@@ -256,7 +367,41 @@ func _select(heart: int) -> void:
 		var on := int(HEART_DEFS[i]["heart"]) == heart
 		_heart_cards[i].set_selected(on)
 		if on:
-			detail_label.text = str(HEART_DEFS[i]["detail"])
+			var def: Dictionary = HEART_DEFS[i]
+			detail_label.text = str(def["detail"])
+			_update_run_preview(def)
+
+
+func _update_run_preview(def: Dictionary) -> void:
+	var icon_path: String = AssetPaths.DAO_HEART_ICONS.get(str(def.get("key", "enlighten")), AssetPaths.RUN_RESULT_VICTORY_SEAL)
+	var icon := AssetPaths.load_texture(icon_path)
+	preview_seal_icon.texture = icon
+	preview_seal_glow.texture = icon
+	var tint := _heart_preview_color(str(def.get("key", "enlighten")))
+	preview_seal_glow.modulate = Color(tint.r, tint.g, tint.b, 0.26)
+	preview_title.text = "%s · %s" % [str(def.get("title", "悟道")), str(def.get("subtitle", "标准体验"))]
+	preview_desc.text = str(def.get("preview", def.get("detail", "")))
+	_set_preview_stat(preview_enemy_stat, str(def.get("enemy", "敌势 标准")), tint)
+	_set_preview_stat(preview_trial_stat, str(def.get("trial", "心魔 20%")), tint)
+	_set_preview_stat(preview_reward_stat, str(def.get("reward", "节奏 平衡")), tint)
+
+
+func _set_preview_stat(card: PanelContainer, text: String, tint: Color) -> void:
+	if card == null:
+		return
+	var label := card.get_node_or_null("Margin/Label") as Label
+	if label:
+		label.text = text
+		label.add_theme_color_override("font_color", Color(tint.r, tint.g, tint.b, 0.92))
+
+
+func _heart_preview_color(key: String) -> Color:
+	match key:
+		"ask":
+			return Color(0.74, 1.0, 0.82, 1.0)
+		"prove":
+			return Color(1.0, 0.46, 0.36, 1.0)
+	return Color(0.62, 0.88, 1.0, 1.0)
 
 
 func _select_path(path_id: String) -> void:
@@ -267,21 +412,10 @@ func _select_path(path_id: String) -> void:
 		if button == null:
 			continue
 		button.set_pressed_no_signal(str(id) == _selected_path)
-		var sb := StyleBoxFlat.new()
 		var on := str(id) == _selected_path
-		sb.bg_color = Color(0.094, 0.243, 0.196, 0.96) if on else Color(0.051, 0.137, 0.114, 0.78)
-		sb.border_width_left = 1
-		sb.border_width_top = 1
-		sb.border_width_right = 1
-		sb.border_width_bottom = 1
-		sb.border_color = Color(0.95, 0.84, 0.5, 0.92) if on else Color(0.85, 0.78, 0.55, 0.35)
-		sb.corner_radius_top_left = 8
-		sb.corner_radius_top_right = 8
-		sb.corner_radius_bottom_left = 8
-		sb.corner_radius_bottom_right = 8
-		button.add_theme_stylebox_override("normal", sb)
-		button.add_theme_stylebox_override("pressed", sb)
-		button.add_theme_stylebox_override("hover", sb)
+		button.modulate = Color(1.12, 1.04, 0.86, 1.0) if on else Color(0.88, 1.0, 0.96, 0.92)
+		button.add_theme_color_override("font_color", Color(1.0, 0.86, 0.42, 1.0) if on else Color(0.84, 0.96, 0.88, 0.92))
+		_apply_path_button_state(button, on)
 	var weapon_id := str(path.get("weapon_id", WeaponRegistry.DEFAULT_WEAPON_ID))
 	_path_detail_label.text = "%s：%s / 本命器：%s\n%s" % [
 		str(path.get("name", _selected_path)),
@@ -293,6 +427,58 @@ func _select_path(path_id: String) -> void:
 
 func _on_path_button_pressed(path_id: String) -> void:
 	_select_path(path_id)
+
+
+func _add_path_button_content(button: Button, path_id: String, label_text: String) -> void:
+	var row := HBoxContainer.new()
+	row.name = "PathButtonContent"
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.set_anchors_preset(Control.PRESET_FULL_RECT)
+	row.offset_left = 12.0
+	row.offset_right = -12.0
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 6)
+	button.add_child(row)
+
+	var icon := TextureRect.new()
+	icon.name = "PathIcon"
+	icon.custom_minimum_size = Vector2(28, 28)
+	icon.texture = AssetPaths.load_texture(AssetPaths.path_icon(path_id))
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(icon)
+
+	var label := Label.new()
+	label.name = "PathLabel"
+	label.text = label_text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 13)
+	label.add_theme_constant_override("outline_size", 1)
+	label.add_theme_color_override("font_outline_color", Color(0.02, 0.012, 0.004, 0.82))
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(label)
+
+
+func _apply_path_button_state(button: Button, selected: bool) -> void:
+	var label := button.get_node_or_null("PathButtonContent/PathLabel") as Label
+	if label:
+		label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.42, 1.0) if selected else Color(0.78, 0.96, 0.86, 0.92))
+	var icon := button.get_node_or_null("PathButtonContent/PathIcon") as TextureRect
+	if icon:
+		icon.modulate = Color(1.0, 0.92, 0.64, 1.0) if selected else Color(0.72, 0.95, 0.86, 0.86)
+
+
+func _apply_heart_demon_button_state() -> void:
+	if heart_demon_check == null:
+		return
+	if heart_demon_check.button_pressed:
+		heart_demon_check.text = "开  心魔强化开局 · 消耗3碎片"
+		heart_demon_check.add_theme_color_override("font_color", Color(1.0, 0.55, 0.76, 1.0))
+	else:
+		heart_demon_check.text = "关  心魔强化开局 · 消耗3碎片"
+		heart_demon_check.add_theme_color_override("font_color", Color(0.78, 0.70, 0.62, 0.9))
 
 
 func _on_meta_pressed() -> void:
@@ -333,6 +519,10 @@ func _on_start_pressed() -> void:
 		RunContext.begin_run(_selected, _parse_seed_override(), use_boost, false, _selected_path)
 		EventBus.run_setup_confirmed.emit()
 	)
+
+
+func _on_quit_game_pressed() -> void:
+	get_tree().quit()
 
 
 func _hide_setup_layer() -> void:

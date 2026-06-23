@@ -1,0 +1,30 @@
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Icon runtime rules: transparent-source atlas on flat #FF00FF background.
+One centered emblem per cell, circular jade-seal or talisman language, readable at 48px and 96px.
+No square inventory panel, no item-card background, no thick metal frame, no 3D object lighting.
+No readable Chinese characters, letters, labels, or decorative text strokes.
+Each spell, status, weather, pet, and artifact icon must have a distinct silhouette before color is considered.
+Element color stays inside the emblem core; old-gold rim and dark-jade base stay consistent across all icons.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: pet and artifact HUD avatars, icon atlas.
+Grid: exactly 2 columns by 2 rows, one centered icon per cell, no visible grid lines or borders.
+Cell order: left to right, top to bottom.
+1. Huo Ying firefly spirit avatar, ember core and jade wings; same design as cell 2, only prepared for smaller output
+2. Huo Ying firefly spirit avatar, identical design to cell 1, slightly larger and more readable
+3. Xuanyu gourd cultivation emblem, dark jade gourd and old-gold cord; same design as cell 4, only prepared for smaller output
+4. Xuanyu gourd cultivation emblem, identical design to cell 3, slightly larger and more readable
+Style: clean HD Chinese xianxia HUD icon, circular jade-seal language, restrained old-gold rim, strong tiny-icon silhouette, readable at 48px and 96px.
+Icon language: flat emblem-like xianxia talisman and seal silhouettes, not rendered physical inventory objects.
+Rune strokes must be abstract marks only; icons must not include readable glyph text or written characters.
+Each cell should feel like the same icon family as the spell HUD icons. Pet and artifact cells are Chinese cultivation HUD emblems, not loot items. No gem socket, no inventory-item lighting, no black leather, no iron or steel frame, no Western amulet, no skull, no demonic glow.
+Constraints: no text, no letters, no Chinese characters, no labels, no UI card background, no square item panel, no western dark-fantasy item render, no thick metal frame, no photoreal 3D object.

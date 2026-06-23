@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://qareward1920"]
+
+[ext_resource type="Script" path="res://tools/qa_reward_cards_1920.gd" id="1_script"]
+
+[node name="QARewardCards1920" type="Node"]
+script = ExtResource("1_script")

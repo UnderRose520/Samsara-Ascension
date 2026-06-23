@@ -81,10 +81,10 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -184.0
+offset_left = -214.0
 offset_top = 22.0
 offset_right = -44.0
-offset_bottom = 84.0
+offset_bottom = 128.0
 grow_horizontal = 0
 theme_override_constants/margin_left = 0
 theme_override_constants/margin_top = 0
@@ -101,10 +101,10 @@ anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -180.0
-offset_right = -12.0
-offset_bottom = 180.0
+offset_left = -172.0
+offset_top = -160.0
+offset_right = -28.0
+offset_bottom = 160.0
 grow_horizontal = 0
 grow_vertical = 2
 mouse_filter = 2
@@ -116,7 +116,7 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 28.0
-offset_top = -286.0
+offset_top = -324.0
 offset_right = 260.0
 offset_bottom = -96.0
 grow_vertical = 0
@@ -143,54 +143,6 @@ theme_override_colors/font_color = Color(0.541, 0.498, 0.471, 0.65)
 theme_override_font_sizes/font_size = 9
 text = "操作提示"
 horizontal_alignment = 1
-
-[node name="LearnToastPanel" type="PanelContainer" parent="Root"]
-visible = false
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -260.0
-offset_top = -92.0
-offset_right = 260.0
-offset_bottom = -20.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Margin" type="MarginContainer" parent="Root/LearnToastPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 10
-
-[node name="Body" type="Control" parent="Root/LearnToastPanel/Margin"]
-layout_mode = 2
-
-[node name="ScrollBg" type="TextureRect" parent="Root/LearnToastPanel/Margin/Body"]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 5
-mouse_filter = 2
-
-[node name="LearnToast" type="Label" parent="Root/LearnToastPanel/Margin/Body"]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
-theme_override_font_sizes/font_size = 22
-text = ""
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
 
 [node name="JadeCodexOverlay" type="Control" parent="Root"]
 visible = false

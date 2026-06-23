@@ -1,7 +1,7 @@
 batch,item_type,item_id,name,goal,acceptance
-0,path,sword,剑修,验证近战身份和剑芒天象联动,玩家3分钟内能说出自己是剑修且不是远程法修
-0,path,caster,法修,保留远程手感并验证元素弹道联动,玩家能通过法珠和属性弹理解法修身份
-0,path,talisman,符修,验证投符落地和延迟引爆,玩家能感到符修是布场而不是普通远程
+0,path,sword,剑修,深化近战身份和剑芒天象联动,玩家3分钟内能说出自己是剑修且不是远程法修
+0,path,caster,法修,深化远程法珠手感并验证元素弹道联动,玩家能通过法珠蓄光/属性弹/元素音色理解法修身份
+0,path,talisman,符修,深化符箓布势和延迟引爆,玩家能感到符修是布场而不是普通远程
 0,weapon,qing_feng_sword,青锋剑,验证三段斩和近中距离,第三段剑芒能触发至少1个天象连锁
 0,weapon,starter_orb,素玉法珠,验证远程法媒,火弹能点燃裂地或雷弹能接入积水导电
 0,weapon,san_cai_flag,三才符旗,验证符阵布场,落符位置有明确视觉反馈
@@ -15,8 +15,8 @@ batch,item_type,item_id,name,goal,acceptance
 0,event,battle_gift,天地馈赠,验证低谷补救,玩家濒死时看到机会而不是被系统硬救
 0,feedback,hit_heavy,重命中反馈,验证每一下重击都能被感知,第三段普攻或重击必须有停顿/震屏/大飘字之一
 0,feedback,chain_trigger,连锁触发反馈,验证隐藏连锁真的爽,首次连锁必须有画面短亮和发现标签
-0,boss,fire_furnace_guard,火纹炉卫,验证Boss武器/阶段/传承闭环,击败后玩家知道自己夺得了什么传承
-0,death,death_regret,死亡遗憾镜头,验证死亡能制造再来一把,死亡后玩家能说出自己差在哪里
+0,boss,fire_furnace_guard,火纹炉卫,验证Boss武器/阶段/传承/法宝碎片闭环,击败后玩家知道自己夺得了什么传承或碎片来源
+0,death,death_regret,死亡遗憾镜头,验证慢动作冻结/遗憾标注/遗言/角色倒下能制造再来一把,死亡后玩家能说出自己差在哪里
 1,path,body,体修,扩展近战硬碰节奏,换道途后玩家明显改变距离选择
 1,path,alchemy,丹修,扩展资源转化和毒雾玩法,玩家能通过毒雾和回复形成不同节奏
 1,path,soul,邪修,扩展代价和召魂玩法,玩家能感到强但有风险

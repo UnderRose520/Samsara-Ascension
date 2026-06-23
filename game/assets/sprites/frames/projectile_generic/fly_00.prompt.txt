@@ -1,0 +1,32 @@
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Icon runtime rules: transparent-source atlas on flat #FF00FF background.
+One centered emblem per cell, circular jade-seal or talisman language, readable at 48px and 96px.
+No square inventory panel, no item-card background, no thick metal frame, no 3D object lighting.
+No readable Chinese characters, letters, labels, or decorative text strokes.
+Each spell, status, weather, pet, and artifact icon must have a distinct silhouette before color is considered.
+Element color stays inside the emblem core; old-gold rim and dark-jade base stay consistent across all icons.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: runtime projectile and impact VFX atlas for combat sprites.
+Grid: exactly 4 columns by 6 rows, one centered VFX frame per cell, no visible grid lines.
+Rows 1-6 are projectile fly loops for: fire, thunder, ice, water, generic jade qi, chaos soul.
+Each row has frames 00-03, compact forward-motion variation, readable at 16px.
+After generation the same source will also define matching impact frames by row, so each projectile must contain enough elemental identity for a small burst version.
+Row 1: fire - fire orange-red talisman bolt and flame impact; first four cells are fly_00..03, then reuse the same visual language for the matching impact sequence in the later half.
+Row 2: thunder - blue-white thunder needle projectile and electric impact; first four cells are fly_00..03, then reuse the same visual language for the matching impact sequence in the later half.
+Row 3: ice - cold cyan black-ice shard projectile and frost impact; first four cells are fly_00..03, then reuse the same visual language for the matching impact sequence in the later half.
+Row 4: water - cyan water bead projectile and splash impact; first four cells are fly_00..03, then reuse the same visual language for the matching impact sequence in the later half.
+Row 5: generic - neutral jade qi bead projectile and soft ink impact; first four cells are fly_00..03, then reuse the same visual language for the matching impact sequence in the later half.
+Row 6: chaos - violet soul void pearl projectile and broken oath impact; first four cells are fly_00..03, then reuse the same visual language for the matching impact sequence in the later half.
+Style: 2D dark Chinese ink-wash xianxia VFX, black ink silhouette first, tiny saturated elemental core second, crisp alpha-ready edge.
+Gameplay rule: high saturation only in the projectile core or spark tips; no full-cell glow.
+Avoid: full-screen explosion, smoke cloud filling the cell, western magic rune, sci-fi laser, photoreal render, text, numbers, watermark.

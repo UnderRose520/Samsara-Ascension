@@ -13,6 +13,7 @@ const WeaponRegistry = preload("res://systems/equipment/weapon_registry.gd")
 const CultivationPathRegistry = preload("res://systems/realm/cultivation_path_registry.gd")
 const WeaponModCatalog = preload("res://systems/equipment/weapon_mod_catalog.gd")
 const CsvLoader = preload("res://systems/affix/csv_loader.gd")
+const EnemySpawnRegistry = preload("res://systems/combat/enemy_spawn_registry.gd")
 
 
 
@@ -98,6 +99,14 @@ var last_death_summary: Dictionary = {}
 var run_highlights: Array[Dictionary] = []
 var weather_kills_this_room := 0
 var rooms_without_weather_kill := 0
+var current_run_id := ""
+var _run_recorded := false
+var _run_weather_seen: Array[String] = []
+var _run_terrain_seen: Array[String] = []
+var _run_stages_seen: Array[String] = []
+var _run_affix_snapshots: Array[Dictionary] = []
+var _run_enemy_kills: Dictionary = {}
+var _run_hidden_chains: Array[String] = []
 
 var _death_line_pool: Array[Dictionary] = []
 
@@ -213,6 +222,7 @@ func begin_run(
 	weapon_mods.clear()
 
 	reset_run_highlights()
+	reset_run_recording()
 
 	set_cultivation_path(path_id, false)
 
@@ -249,6 +259,8 @@ func start_run(seed_override: int = -1) -> void:
 	gold = GameConstants.STARTING_GOLD + int(MetaUpgradeRegistry.get_total("start_gold"))
 
 	run_active = true
+	_run_recorded = false
+	current_run_id = "%d_%d" % [seed_value, Time.get_unix_time_from_system()]
 
 	current_stage = 0
 
@@ -773,6 +785,8 @@ func _emit_dao_momentum_changed() -> void:
 
 
 func finalize_run_meta(victory: bool) -> void:
+	if _run_recorded:
+		return
 
 	if heart_demon_shards_earned > 0:
 
@@ -789,6 +803,82 @@ func finalize_run_meta(victory: bool) -> void:
 	else:
 
 		SaveManager.add_reincarnation_points(20 + rooms_cleared * 2)
+	SaveManager.record_run_result(build_run_record(victory))
+	_run_recorded = true
+
+
+func build_run_record(victory: bool) -> Dictionary:
+	var death := last_death_summary.duplicate(true)
+	if not victory and death.is_empty():
+		death = build_death_summary()
+	var timestamp := Time.get_unix_time_from_system()
+	var build_snapshot := {
+		"run_id": current_run_id,
+		"timestamp_unix": timestamp,
+		"seed": seed_value,
+		"path_id": cultivation_path_id,
+		"path_name": cultivation_path_name,
+		"weapon_id": weapon_id,
+		"weapon_name": weapon_display_name,
+		"weapon_mods": weapon_mods.duplicate(true),
+		"affixes": _run_affix_snapshots.duplicate(true),
+		"realm_level": realm_level,
+	}
+	return {
+		"run_id": current_run_id,
+		"timestamp_unix": timestamp,
+		"seed": seed_value,
+		"victory": victory,
+		"rooms_cleared": rooms_cleared,
+		"gold": gold,
+		"realm_level": realm_level,
+		"realm_name": realm_name(),
+		"dao_heart": dao_heart,
+		"cultivation_path_id": cultivation_path_id,
+		"cultivation_path_name": cultivation_path_name,
+		"weapon_id": weapon_id,
+		"weapon_name": weapon_display_name,
+		"weapon_mods": weapon_mods.duplicate(true),
+		"affixes": _run_affix_snapshots.duplicate(true),
+		"best_combo": peak_combo_count,
+		"dao_peak": int(round(peak_dao_momentum)),
+		"dao_max": int(dao_momentum_max),
+		"weather_seen": _run_weather_seen.duplicate(true),
+		"terrain_seen": _run_terrain_seen.duplicate(true),
+		"stages_seen": _run_stages_seen.duplicate(true),
+		"enemy_kills": _run_enemy_kills.duplicate(true),
+		"hidden_chains": _run_hidden_chains.duplicate(true),
+		"dao_tradition_id": dao_tradition_awakened_this_run,
+		"highlight": get_best_run_highlight(),
+		"death_summary": death,
+		"build": build_snapshot,
+	}
+
+
+func reset_run_recording() -> void:
+	current_run_id = ""
+	_run_recorded = false
+	_run_weather_seen.clear()
+	_run_terrain_seen.clear()
+	_run_stages_seen.clear()
+	_run_affix_snapshots.clear()
+	_run_enemy_kills.clear()
+	_run_hidden_chains.clear()
+
+
+func get_current_build_snapshot() -> Dictionary:
+	return {
+		"run_id": current_run_id,
+		"timestamp_unix": Time.get_unix_time_from_system(),
+		"seed": seed_value,
+		"path_id": cultivation_path_id,
+		"path_name": cultivation_path_name,
+		"weapon_id": weapon_id,
+		"weapon_name": weapon_display_name,
+		"weapon_mods": weapon_mods.duplicate(true),
+		"affixes": _run_affix_snapshots.duplicate(true),
+		"realm_level": realm_level,
+	}
 
 
 func reset_run_highlights() -> void:
@@ -839,6 +929,51 @@ func record_run_highlight(id: String, title: String, detail: String, priority: i
 			run_highlights[existing_index] = row
 	else:
 		run_highlights.append(row)
+
+
+func record_room_for_codex(room: Dictionary, stage: Dictionary) -> void:
+	var weather_id := str(room.get("weather_id", stage.get("weather_id", WeatherSystem.current_weather_id)))
+	_append_unique(_run_weather_seen, weather_id)
+	var stage_id := str(stage.get("id", stage.get("stage_id", stage.get("name", ""))))
+	_append_unique(_run_stages_seen, stage_id)
+	var weights: Dictionary = room.get("terrain_feature_weights", {})
+	for terrain_id in weights.keys():
+		if float(weights.get(terrain_id, 0.0)) > 0.0:
+			_append_unique(_run_terrain_seen, str(terrain_id))
+	if room.has("layout_profile"):
+		var profile: Dictionary = room.get("layout_profile", {})
+		var profile_weights: Dictionary = profile.get("terrain_feature_weights", {})
+		for terrain_id in profile_weights.keys():
+			if float(profile_weights.get(terrain_id, 0.0)) > 0.0:
+				_append_unique(_run_terrain_seen, str(terrain_id))
+	if _run_terrain_seen.is_empty():
+		var terrain_type := str(room.get("terrain_type", ""))
+		_append_unique(_run_terrain_seen, terrain_type)
+
+
+func record_affix_for_codex(affix_id: String) -> void:
+	if affix_id.is_empty():
+		return
+	var found := false
+	for entry in _run_affix_snapshots:
+		if str(entry.get("id", "")) == affix_id:
+			found = true
+			break
+	if not found:
+		_run_affix_snapshots.append({"id": affix_id, "quality": _affix_quality_from_player(affix_id), "sealed": false})
+
+
+func record_enemy_kill_for_codex(enemy: Node) -> void:
+	var enemy_id := _enemy_codex_id(enemy)
+	if enemy_id.is_empty():
+		return
+	_run_enemy_kills[enemy_id] = int(_run_enemy_kills.get(enemy_id, 0)) + 1
+
+
+func record_hidden_chain_for_codex(chain_id: String) -> void:
+	if chain_id.is_empty():
+		return
+	_append_unique(_run_hidden_chains, chain_id)
 
 
 func begin_weather_kill_room() -> void:
@@ -978,6 +1113,49 @@ func _pick_death_line(regret: String, progress_level: String) -> Dictionary:
 	return candidates[0]
 
 
+func _current_codex_payload() -> Dictionary:
+	return {
+		"run_id": current_run_id,
+		"seed": seed_value,
+		"timestamp_unix": Time.get_unix_time_from_system(),
+	}
+
+
+func _append_unique(list: Array, value: String) -> void:
+	var clean := value.strip_edges()
+	if clean.is_empty() or clean in list:
+		return
+	list.append(clean)
+
+
+func _enemy_codex_id(enemy: Node) -> String:
+	if enemy == null:
+		return ""
+	if enemy.has_method("get_codex_id"):
+		return str(enemy.call("get_codex_id"))
+	if enemy.has_method("get_enemy_id"):
+		return str(enemy.call("get_enemy_id"))
+	if enemy.has_method("get_display_name"):
+		var display_name := str(enemy.call("get_display_name"))
+		var row := EnemySpawnRegistry.get_enemy_row_by_name(display_name)
+		return str(row.get("enemy_id", ""))
+	return ""
+
+
+func _affix_quality_from_player(affix_id: String) -> int:
+	var player := EntityCache.get_player()
+	if player == null or not player.has_node("AffixHolder"):
+		return 0
+	var holder: Node = player.get_node("AffixHolder")
+	for tag in holder.equipped:
+		if str(tag.id) == affix_id:
+			return int(tag.quality)
+	for tag in holder.sealed_affixes:
+		if str(tag.id) == affix_id:
+			return int(tag.quality)
+	return 0
+
+
 
 
 
@@ -990,7 +1168,12 @@ func _ready() -> void:
 	EventBus.hidden_chain_discovered.connect(_on_hidden_chain_discovered)
 	EventBus.dao_tradition_awakened.connect(_on_dao_tradition_awakened)
 	EventBus.unity_burst_requested.connect(_on_unity_burst_requested)
-	EventBus.room_entered.connect(func(_room: Dictionary, _stage: Dictionary) -> void: begin_weather_kill_room())
+	EventBus.room_entered.connect(func(room: Dictionary, stage: Dictionary) -> void:
+		begin_weather_kill_room()
+		record_room_for_codex(room, stage)
+	)
+	EventBus.affix_acquired.connect(record_affix_for_codex)
+	EventBus.enemy_killed.connect(record_enemy_kill_for_codex)
 
 
 func _on_combo_milestone(count: int) -> void:
@@ -1003,6 +1186,7 @@ func _on_combo_milestone(count: int) -> void:
 
 
 func _on_hidden_chain_discovered(chain_id: String, display_name: String, payload: Dictionary) -> void:
+	record_hidden_chain_for_codex(chain_id)
 	var hint := str(payload.get("hint", "隐藏连锁被这一世亲手点亮。"))
 	record_run_highlight("hidden_%s" % chain_id, "连锁发现：%s" % display_name, hint, 95)
 

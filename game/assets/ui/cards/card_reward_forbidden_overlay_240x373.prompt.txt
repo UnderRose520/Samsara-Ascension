@@ -1,0 +1,18 @@
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: transparent reward card state overlay, normalized to 240x373 runtime UI.
+Subject: transparent forbidden temptation overlay, purple-red reverse-flow cracks and oath sparks only around outer edge.
+Style: dark ink xianxia UI overlay, edge-only visual state, no frame replacement, no opaque center.
+Layout contract: all cracks, chains, dust, seals, and particles stay within the outer 12-18 percent of the card; center text and icon zones remain transparent and readable.
+Composition: one centered vertical card-sized overlay on solid #FF00FF background, edge ornament only.
+Constraints: no text, no numbers, no character, no full card background fill, no western chains, no skull, no bright center glow, no watermark.

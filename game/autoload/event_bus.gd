@@ -3,6 +3,7 @@ extends Node
 signal damage_dealt(result: Dictionary)
 signal feedback_anchor_requested(anchor_id: String, payload: Dictionary)
 signal player_hp_changed(current: float, maximum: float)
+signal boss_health_changed(display_name: String, current: float, maximum: float, phase_index: int, phase_count: int, phase_name: String)
 signal combo_updated(count: int)
 signal enemy_killed(enemy: Node)
 signal player_died

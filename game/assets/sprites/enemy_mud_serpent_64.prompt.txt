@@ -1,0 +1,31 @@
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Actor runtime rules: transparent-source sprite on perfectly flat #FF00FF background only.
+3/4 top-down full body, compact readable silhouette, visible head-torso-feet or exact creature body shape.
+Subject fills the central 58-66 percent with generous padding; no portrait crop, no circular avatar, no badge frame, no HP ring, no status icon, no baked shadow circle.
+Use dark ink body mass plus one restrained jade, old-gold, or elemental accent marking the threat part only.
+64px test: recognizable as this exact role as a black silhouette plus one accent color.
+For chibi: same combat identity in compact proportions, not cute mascot, not giant-head sticker.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: 2D game actor sprite source for runtime resizing to 64px.
+Subject: low S-shaped mud serpent, broad flat head, wet clay ridges, poison-mud mouth, body thick enough to read at 64px, not dragon.
+View: 3/4 top-down, full body visible, ground contact anchor, hover center, or bottom anchor clear as appropriate, readable as a tiny 64px unit.
+Style: clean hand-painted 2D sprite, dark ink outline, Chinese xianxia silhouette, old-gold/jade rim light, compact shape.
+Accent: earth old-gold clay ridges with very small cyan wet mouth glint. The accent must mark the gameplay threat part only.
+Silhouette contract: low S-shaped mud serpent, broad flat head, thick readable body, wet clay ridges, not dragon-like.
+Gameplay signal contract: old-gold clay ridge marks with only a very small cyan wet mouth glint.
+Animation-readiness contract: tongue flick idle, S-slide, mud spit windup. Make the pose suitable for deterministic idle/walk/combat frame variants.
+Composition: one isolated full-body character centered on the canvas, body fills the central 62 percent, generous magenta padding.
+Contrast: use a readable dark silhouette with cold jade rim light so the sprite survives downscaling to 64px on dark maps.
+64px silhouette test: the actor must still be recognizable as this exact role when viewed as a black shape plus one accent color.
+Constraints: no background, no shadow, no UI, no text, no labels, no western armor, no gothic demon design, no photoreal portrait, no anime bust crop, no extra characters, no props detached far from body.
+Avoid specifically: Chinese dragon, thin ordinary snake line, bright green poison, large mud puddle hiding body.

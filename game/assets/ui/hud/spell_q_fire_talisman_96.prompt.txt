@@ -1,11 +1,39 @@
-Use case: game UI icon atlas.
-Asset type: clean HD 2D combat HUD spell icons for a xianxia roguelite.
-Primary request: create a 2x2 icon atlas on a perfectly flat solid #FF00FF chroma-key background, one centered spell icon per quadrant with generous padding.
-Icon 1 top-left: Q active spell, fiery talisman bolt, orange-red flame drop wrapped by a small gold rune stroke, readable at 48px.
-Icon 2 top-right: E active spell, jade sword array, three cold cyan sword lights crossing over a dark jade seal, sharp and elegant.
-Icon 3 bottom-left: R active spell, ultimate thunder-ice fan, blue-white thunder fan arc with a small violet core, decisive finisher feeling.
-Icon 4 bottom-right: locked spell slot, dim sealed jade ring with a small cracked lock talisman, low saturation but still readable.
-Style/medium: clean hand-painted HD game UI asset, dark ink jade, restrained cold gold, high contrast silhouettes, no pixel art, no beige parchment.
-Composition/framing: exact 2 by 2 grid; each icon centered in its quadrant; no borders, no guide lines, no square cards, no text, no letters, no watermark.
-Constraints: background must be perfectly uniform #FF00FF; do not use #FF00FF inside the icons; keep every icon fully inside its cell with visible magenta margin; no cast shadow outside the icon glow.
-Avoid: text, letters, Chinese characters, noisy texture, thick frames, sci-fi metal, purple-dominant palette, icons touching cell edges.
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Icon runtime rules: transparent-source atlas on flat #FF00FF background.
+One centered emblem per cell, circular jade-seal or talisman language, readable at 48px and 96px.
+No square inventory panel, no item-card background, no thick metal frame, no 3D object lighting.
+No readable Chinese characters, letters, labels, or decorative text strokes.
+Each spell, status, weather, pet, and artifact icon must have a distinct silhouette before color is considered.
+Element color stays inside the emblem core; old-gold rim and dark-jade base stay consistent across all icons.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: combat spell HUD icons, icon atlas.
+Grid: exactly 4 columns by 4 rows, one centered icon per cell, no visible grid lines or borders.
+Cell order: left to right, top to bottom.
+1. fiery talisman bolt, orange-red flame drop wrapped by old-gold rune stroke
+2. jade sword array, three cyan sword lights crossing over a dark jade seal
+3. thunder ice folding fan, blue-white fan arc with violet thunder core
+4. locked jade seal, dim cracked round seal and small lock silhouette
+5. fire talisman bolt, compact flame talisman projectile icon
+6. jade sword thrust, single sharp jade sword ray icon
+7. protective qi talisman, circular guard seal icon
+8. soul summoning lantern, violet soul orb icon
+9. thunder pool strike, compact blue-white thunder impact icon
+10. thunder chain link, short linked lightning sigil icon
+11. black-ice folding fan, cold cyan fan icon
+12. black-ice lance, cold cyan ice spear icon
+13. jade renewal art, green revival leaf talisman icon
+Style: clean HD Chinese xianxia HUD icon, circular jade-seal language, restrained old-gold rim, strong tiny-icon silhouette, readable at 48px and 96px.
+Icon language: flat emblem-like xianxia talisman and seal silhouettes, not rendered physical inventory objects.
+Rune strokes must be abstract marks only; icons must not include readable glyph text or written characters.
+Cells 14, 15, and 16 must be completely empty flat #FF00FF background only, no mist, no ornament, no icon-like shape.
+Constraints: no text, no letters, no Chinese characters, no labels, no UI card background, no square item panel, no western dark-fantasy item render, no thick metal frame, no photoreal 3D object.

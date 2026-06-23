@@ -1,0 +1,13 @@
+Gameplay systems QA
+===================
+Checking long-term run records and codex
+Checking EventSelector
+Checking BattleEventDirector
+Checking HiddenChainDetector
+Checking boss phase gates
+Checking RunContext summaries and highlights
+Checking identity and weapon routes
+Checking enemy projectile semantics
+Checking enemy projectile runtime hit route
+Gameplay systems QA passed
+Exit code: 0

@@ -7,7 +7,9 @@ signal selected(mode_id: String)
 const UiTokens := preload("res://ui/theme/ui_tokens.gd")
 const UiAnimations := preload("res://ui/ui_animations.gd")
 const HudStyles := preload("res://ui/hud_styles.gd")
+const AssetPaths := preload("res://assets/asset_paths.gd")
 
+@onready var _frame_bg: TextureRect = %FrameBg
 @onready var _icon: TextureRect = %Icon
 @onready var _title: Label = %Title
 @onready var _subtitle: Label = %Subtitle
@@ -23,6 +25,8 @@ func _ready() -> void:
 	mouse_exited.connect(_on_hover_out)
 	_set_children_mouse_ignore(self)
 	UiAnimations.bind_hover_lift(self, 3.0)
+	_frame_bg.texture = AssetPaths.load_texture(AssetPaths.DAO_HEART_CARD_FRAME)
+	_frame_bg.visible = _frame_bg.texture != null
 
 
 func setup(id: String, title: String, subtitle: String, icon_path: String) -> void:
@@ -44,6 +48,8 @@ func _set_selected(on: bool) -> void:
 	add_theme_stylebox_override("panel", HudStyles.decision_card(accent, on))
 	_glow.visible = on
 	_glow.color = Color(1.0, 0.85, 0.42, 0.14 if on else 0.0)
+	if _frame_bg:
+		_frame_bg.modulate = Color(1.08, 1.03, 0.86, 0.88) if on else Color(0.86, 1.0, 0.94, 0.72)
 
 
 func _set_children_mouse_ignore(node: Node) -> void:

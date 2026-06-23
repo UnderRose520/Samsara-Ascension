@@ -6,10 +6,11 @@ const UiHelpers = preload("res://ui/ui_helpers.gd")
 const UiTokens = preload("res://ui/theme/ui_tokens.gd")
 const UiFlyEffects = preload("res://vfx/ui_fly_effects.gd")
 const AssetPaths = preload("res://assets/asset_paths.gd")
+const ElementUtils = preload("res://core/utils/element_utils.gd")
 const AFFIX_CARD_SCENE = preload("res://ui/components/affix_card.tscn")
 
 @onready var panel: PanelContainer = $Panel
-@onready var dimmer: ColorRect = $Dimmer
+@onready var dimmer: TextureRect = $Dimmer
 @onready var title_label: Label = $Panel/Margin/VBox/Title
 @onready var gold_label: Label = $Panel/Margin/VBox/GoldLabel
 @onready var cards_box: HBoxContainer = $Panel/Margin/VBox/Cards
@@ -29,8 +30,15 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	panel.visible = false
 	dimmer.visible = false
+	UiHelpers.apply_modal_veil(dimmer, 0.72)
 	UiHelpers.apply_panel_polish(panel)
 	UiHelpers.decorate_modal_header($Panel/Margin/VBox, title_label)
+	UiHelpers.apply_button_asset(reroll_button, false)
+	UiHelpers.apply_button_asset(skip_button, false)
+	reroll_button.icon = AssetPaths.load_texture(AssetPaths.ICON_REROLL)
+	reroll_button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	skip_button.icon = AssetPaths.load_texture(AssetPaths.ICON_SKIP)
+	skip_button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	EventBus.affix_choice_requested.connect(_on_choice_requested)
 	EventBus.gold_changed.connect(_on_gold_changed)
 	reroll_button.pressed.connect(_on_reroll_pressed)
@@ -115,6 +123,8 @@ func _refresh_ui() -> void:
 
 func _update_action_buttons() -> void:
 	var gold: int = int(_context.get("gold", 0))
+	reroll_button.visible = _action_nodes.is_empty()
+	skip_button.visible = _action_nodes.is_empty()
 	reroll_button.text = "重随 (%d 灵石)" % RunContext.get_reroll_cost()
 	reroll_button.disabled = gold < RunContext.get_reroll_cost()
 	if _context.get("opening_choice", false):
@@ -173,49 +183,87 @@ func _open_full_slot_actions(tag, payload) -> void:
 		int(summary.get("sealed_used", 0)),
 		int(summary.get("sealed_max", 0)),
 	]
+	var actions_panel := PanelContainer.new()
+	actions_panel.name = "FullSlotActionsPanel"
+	actions_panel.custom_minimum_size = Vector2(760, 438)
+	actions_panel.add_theme_stylebox_override("panel", UiHelpers.make_ninepatch_panel_style())
+	cards_box.add_child(actions_panel)
+	_action_nodes.append(actions_panel)
+	var actions_margin := MarginContainer.new()
+	actions_margin.name = "FullSlotMargin"
+	actions_margin.add_theme_constant_override("margin_left", 24)
+	actions_margin.add_theme_constant_override("margin_top", 20)
+	actions_margin.add_theme_constant_override("margin_right", 24)
+	actions_margin.add_theme_constant_override("margin_bottom", 20)
+	actions_panel.add_child(actions_margin)
 	var actions := VBoxContainer.new()
+	actions.name = "FullSlotActions"
 	actions.add_theme_constant_override("separation", 8)
 	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	cards_box.add_child(actions)
-	_action_nodes.append(actions)
+	actions_margin.add_child(actions)
 	var hint := Label.new()
+	hint.name = "FullSlotHint"
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.text = "生效槽已满。可替换一个已有词条、封印新词条留待之后，或分解为灵石。"
 	hint.add_theme_color_override("font_color", UiTokens.TEXT_SECONDARY)
 	actions.add_child(hint)
 	for i in holder.equipped.size():
-		var replace := Button.new()
-		replace.custom_minimum_size = Vector2(520, 40)
-		replace.theme_type_variation = &"Primary"
-		replace.text = "替换：%s" % holder.get_affix_label(i)
+		var replace := _make_full_slot_action_button(
+			"替换：%s" % holder.get_affix_label(i),
+			_tag_icon_path(holder.equipped[i]),
+			true
+		)
+		replace.name = "ReplaceAffixButton_%d" % i
 		replace.pressed.connect(_on_replace_affix_pressed.bind(i, tag, payload))
 		actions.add_child(replace)
-	var seal := Button.new()
-	seal.custom_minimum_size = Vector2(520, 40)
-	seal.theme_type_variation = &"Secondary"
-	seal.text = "封印新词条（暂不生效）"
+	var seal := _make_full_slot_action_button("封印新词条（暂不生效）", AssetPaths.status_icon("shield"), false)
+	seal.name = "SealAffixButton"
 	seal.disabled = not holder.can_seal()
 	seal.pressed.connect(_on_seal_affix_pressed.bind(tag, payload))
 	actions.add_child(seal)
-	var dissolve := Button.new()
-	dissolve.custom_minimum_size = Vector2(520, 40)
-	dissolve.theme_type_variation = &"Secondary"
-	dissolve.text = "分解新词条（+%d 灵石）" % holder.dissolve_value(tag)
+	var dissolve := _make_full_slot_action_button("分解新词条（+%d 灵石）" % holder.dissolve_value(tag), AssetPaths.ICON_SPIRIT_STONE, false)
+	dissolve.name = "DissolveAffixButton"
 	dissolve.pressed.connect(_on_dissolve_affix_pressed.bind(tag))
 	actions.add_child(dissolve)
-	var back := Button.new()
-	back.custom_minimum_size = Vector2(520, 40)
-	back.theme_type_variation = &"Secondary"
-	back.text = "返回选择"
+	var back := _make_full_slot_action_button("返回选择", AssetPaths.ICON_SKIP, false)
+	back.name = "RewardBackButton"
 	back.pressed.connect(_return_to_offer_cards)
 	actions.add_child(back)
+	_update_action_buttons()
+
+
+func _make_full_slot_action_button(text: String, icon_path: String, primary: bool) -> Button:
+	var button := Button.new()
+	button.custom_minimum_size = Vector2(560, 42)
+	button.theme_type_variation = &"Primary" if primary else &"Secondary"
+	button.text = text
+	UiHelpers.apply_button_asset(button, primary)
+	button.icon = AssetPaths.load_texture(icon_path)
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	return button
+
+
+func _tag_icon_path(tag) -> String:
+	if tag == null:
+		return AssetPaths.status_icon("promoted")
+	var element_key := ElementUtils.key(int(tag.element))
+	if not element_key.is_empty():
+		return str(AssetPaths.ELEMENT_ICONS.get(element_key, AssetPaths.ELEMENT_ICONS["none"]))
+	return AssetPaths.status_icon("promoted")
 
 
 func _clear_full_slot_actions() -> void:
 	for node in _action_nodes:
 		if is_instance_valid(node):
-			node.queue_free()
+			var parent := node.get_parent()
+			if parent != null:
+				parent.remove_child(node)
+			node.free()
 	_action_nodes.clear()
+	if reroll_button != null:
+		reroll_button.visible = true
+	if skip_button != null:
+		skip_button.visible = true
 
 
 func _return_to_offer_cards() -> void:
@@ -287,6 +335,8 @@ func _play_pickup_fx(card: Control, tag) -> void:
 
 
 func _on_reroll_pressed() -> void:
+	if _closing:
+		return
 	EventBus.affix_reroll_requested.emit()
 
 

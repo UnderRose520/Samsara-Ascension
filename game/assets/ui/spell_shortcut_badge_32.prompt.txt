@@ -1,0 +1,1 @@
+derived from image2 raw hud_spell_slot_ready_72; runtime 32x32 shortcut key badge, no baked text

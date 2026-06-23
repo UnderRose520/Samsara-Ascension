@@ -1,12 +1,27 @@
-Clean hand-painted HD 2D top-down Chinese xianxia cultivation fantasy combat arena background.
-Foundation-only ground layer for a survivors-like roguelite battle, 16:9 composition, readable at 1280x720.
-Theme: 筑基灵窟: wet cavern stone, deep teal shadows, jade mineral veins, reflective shallow ground, quiet playable center.
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Map runtime rules: exact overhead top-down 2D game ground, no horizon, no walls pretending to be arena borders.
+Playable center 70-75 percent must remain matte, low-noise, low-contrast dark ink-stone.
+All cracks, sigils, fog, veins, ruins, lamps, water highlights, and story detail stay in the outer 20 percent.
+No central magic circle, target ring, door, chest, pillar, tree canopy, tall prop, character, projectile, UI, text, or collidable-looking object baked into the background.
+Tileset source: top row exactly four swatches only: floor, floor_alt, blocker, decoration; lower 75 percent must be plain filler with no extra tile concepts.
+Terrain props: flat low ground details only, centered per cell, no tall rocks, walls, pillars, or trees.
+Runtime map rule: foundation-only top-down battle background for a survivors-like roguelite.
+Design for a 1920x1080 16:9 top-down game screen; keep the playable center readable after downscaling.
+The central 70-75 percent is clean playable ground: flat, low-contrast, matte dark ink-stone, no bright veins, no circles, no sigils, no cracks, no fog patches, no visual hazards.
+All story detail, glow, mist, cracks, ritual marks, ruins, water highlights, and atmosphere must stay in the outer 20 percent border.
+No characters, enemies, pets, bosses, weapons, projectiles, UI, text, labels, doors, chests, pickups, tall props, buildings, castle walls, gothic ruins, European battlements, tree canopies, forest walls, or large collidable-looking objects.
+Camera: exact overhead/top-down 2D game background, no horizon, no portrait composition, no huge central target marker.
 
-Gameplay composition:
-- center 60 percent is broad, quiet, low-noise playable space
-- darker atmospheric edges carry most story detail
-- embedded low terrain detail only: subtle cracks, qi veins, stains, low floor pattern
-- no collidable props, no tall objects, no trees, no pillars, no doors, no gates, no chests
-- no characters, no enemies, no pets, no projectiles, no UI, no text, no labels, no ritual target circle
-
-Art direction:玄玉鎏金·五行秘境, dark ink jade base, restrained ritual gold, soft painterly material, low visual noise, elegant but functional.
+Asset type: runtime combat map background, 16:9.
+Stage: 筑基灵窟 / foundation_cavern.
+Theme: wet black-jade foundation cavern floor, smooth worn stone, very subtle wet sheen only near outer edges, center dry-looking and matte, mineral veins like Chinese ink brush cracks only at border.
+Accent: cold cyan water and muted jade mineral glow.
+Style details: Chinese ink-wash top-down game ground, black jade material, brush texture, elegant xianxia cultivation atmosphere.
+Gameplay readability: low-noise center, high-quality edges, no baked actors or collidable props.

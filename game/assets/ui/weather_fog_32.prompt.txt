@@ -1,0 +1,43 @@
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Icon runtime rules: transparent-source atlas on flat #FF00FF background.
+One centered emblem per cell, circular jade-seal or talisman language, readable at 48px and 96px.
+No square inventory panel, no item-card background, no thick metal frame, no 3D object lighting.
+No readable Chinese characters, letters, labels, or decorative text strokes.
+Each spell, status, weather, pet, and artifact icon must have a distinct silhouette before color is considered.
+Element color stays inside the emblem core; old-gold rim and dark-jade base stay consistent across all icons.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: legacy quality frames, talent scroll surfaces, fallback weather icons, and HUD panel, icon atlas.
+Grid: exactly 5 columns by 4 rows, one centered icon per cell, no visible grid lines or borders.
+Cell order: left to right, top to bottom.
+1. legacy common quality frame, quiet gray-jade edge and dark open center
+2. legacy rare quality frame, cyan jade edge and dark open center
+3. legacy epic quality frame, violet jade edge and dark open center
+4. legacy legendary quality frame, restrained old-gold edge and dark open center
+5. legacy Dao quality frame, white-gold orbit edge and black-jade open center
+6. talent scroll card surface, black-jade scroll plaque, no beige parchment, no text
+7. highlighted talent scroll card surface, cold jade edge pulse, no text
+8. legacy HUD panel background, translucent black-jade tall plaque, quiet center
+9. thunderstorm weather icon, blue-white storm cloud thunder seal
+10. small fallback clear weather icon, jade-gold sun dot
+11. small fallback rain weather icon, cyan rain drop dot
+12. small fallback thunder weather icon, blue-white lightning dot
+13. small fallback fire weather icon, orange-red sun flame dot
+14. small fallback wind weather icon, jade wind curl dot
+15. small fallback fog weather icon, pale mist bead
+16. small fallback snow weather icon, cyan frost bead
+17. small fallback sand weather icon, old-gold dust bead
+Style: clean HD Chinese xianxia HUD icon, circular jade-seal language, restrained old-gold rim, strong tiny-icon silhouette, readable at 48px and 96px.
+Icon language: flat emblem-like xianxia talisman and seal silhouettes, not rendered physical inventory objects.
+Rune strokes must be abstract marks only; icons must not include readable glyph text or written characters.
+Frames and scroll surfaces must keep a transparent center or dark readable center, with ornament only around edges. Small fallback weather icons must be simple jade-seal dots. No words, no beige parchment, no western card frame.
+Constraints: no text, no letters, no Chinese characters, no labels, no UI card background, no square item panel, no western dark-fantasy item render, no thick metal frame, no photoreal 3D object.

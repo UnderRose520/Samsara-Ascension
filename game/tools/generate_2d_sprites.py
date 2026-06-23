@@ -33,6 +33,16 @@ TOKENS = {
     "quality.common": "#B0B0B0",
     "quality.rare": "#4E9AF1",
     "quality.epic": "#A855F7",
+    # --- Ink-Pixel Hybrid palette (玄玉鎏金) ---
+    "ink.dark": "#0a0f0f",
+    "ink.mid": "#1a2428",
+    "ink.light": "#2a3638",
+    "ink.gold": "#c4a86a",
+    "ink.jade": "#3d7a6e",
+    "ink.thunder": "#5b8cce",
+    "ink.fire": "#d4743e",
+    "ink.frost": "#d8e8f0",
+    "ink.blood": "#8b2020",
     "quality.legendary": "#F59E0B",
     "quality.dao": "#EF4444",
     "state.hp": "#E85D5D",
@@ -1339,6 +1349,414 @@ def gen_pet_huo_ying() -> None:
     buf = new_canvas(32, 32, (0, 0, 0, 0))
     _draw_pixel_sprite(buf, art, palette, 2)
     save_rgba(buf, SPRITE_OUT / "pet_huo_ying_32.png")
+
+
+# ---------------------------------------------------------------------------
+# Ink-Pixel Hybrid assets (水墨像素融合风)
+# ---------------------------------------------------------------------------
+
+def gen_ink_pixel_player() -> None:
+    """64×64 ink-pixel cultivator silhouette with golden meridian lines."""
+    palette = {
+        "K": hex_to_rgba(TOKENS["ink.dark"]),    # 墨玄 - silhouette body
+        "D": hex_to_rgba(TOKENS["ink.mid"]),     # 淡墨 - edge/robe
+        "T": hex_to_rgba(TOKENS["ink.light"]),   # 雾灰 - flowing robe tips
+        "G": hex_to_rgba(TOKENS["ink.gold"]),     # 冷金 - meridian lines
+        "J": hex_to_rgba(TOKENS["ink.jade"]),     # 玉青 - spiritual energy
+        "B": hex_to_rgba(TOKENS["ink.thunder"]),  # 雷蓝 - sword glow
+        "R": hex_to_rgba(TOKENS["ink.fire"]),     # 炎橙 - sword body
+        "W": hex_to_rgba(TOKENS["ink.frost"]),    # 霜白 - eyes/highlight
+    }
+    # 16×16 template, 4x scale = 64×64
+    # Character: sword cultivator standing, right hand holding sword, left hand in sword seal
+    art = """
+......WK......
+.....WKKW.....
+....KKKKKK....
+....KGGGKK....
+.....KGGK.....
+....RGGGGR....
+...RRGBGGR....
+...R.KKKK.R...
+..TT.KGGK.TT..
+..T..KG.GK..T.
+.....K..K.....
+....KK..KK....
+....KK..KK....
+...DDDDDDDD...
+...DDD..DDD...
+...TT....TT...
+"""
+    buf = new_canvas(64, 64, (0, 0, 0, 0))
+    _draw_pixel_sprite(buf, art, palette, 4)
+    save_rgba(buf, SPRITE_OUT / "player_ink_pixel_64.png")
+
+    # 128×128 variant (2x of the 64px version)
+    buf128 = new_canvas(128, 128, (0, 0, 0, 0))
+    _draw_pixel_sprite(buf128, art, palette, 8)
+    save_rgba(buf128, SPRITE_OUT / "player_ink_pixel_128.png")
+
+
+def gen_ink_pixel_enemy_variants() -> None:
+    """Ink-pixel enemy sprites: berserker, archer, bomber, elite."""
+    enemies = {
+        "berserker": ("""
+....RRRR....
+...RRRRRR...
+..RRRRRRRR..
+..RRWWWWRR..
+..RRRRRRRR..
+...RRRRRR...
+....RRRR....
+....RR.RR...
+....RR.RR...
+....RR.RR...
+""", {
+            "R": hex_to_rgba(TOKENS["ink.dark"]),
+            "W": hex_to_rgba(TOKENS["ink.fire"]),
+            "G": hex_to_rgba(TOKENS["ink.gold"]),
+        }),
+        "archer": ("""
+....DDDD....
+...DDDDDD...
+..DDDDDDDD..
+..DDJJJJDD..
+..DDDDDDDD..
+...DD..DD...
+....DDDD....
+....DDDD....
+....DD.DD...
+....DD.DD...
+""", {
+            "D": hex_to_rgba(TOKENS["ink.mid"]),
+            "J": hex_to_rgba(TOKENS["ink.jade"]),
+            "G": hex_to_rgba(TOKENS["ink.gold"]),
+        }),
+        "bomber": ("""
+....BBBB....
+...BBBBBB...
+..BBBBBBBB..
+..BBYYYYBB..
+..BBBBBBBB..
+...BBBBBB...
+....BBBB....
+....BB.BB...
+....BB.BB...
+....BB.BB...
+""", {
+            "B": hex_to_rgba(TOKENS["ink.thunder"]),
+            "Y": hex_to_rgba(TOKENS["ink.fire"]),
+            "G": hex_to_rgba(TOKENS["ink.gold"]),
+        }),
+        "elite": ("""
+...GKKKKG...
+..GKKKKKKG..
+..KKKKKKKK..
+..KKWWWKKK..
+..KKKKKKKK..
+..GKKKKKKG..
+...GKKKKG...
+....KK.KK...
+....KK.KK...
+....KK.KK...
+""", {
+            "K": hex_to_rgba(TOKENS["ink.dark"]),
+            "G": hex_to_rgba(TOKENS["ink.gold"]),
+            "W": hex_to_rgba(TOKENS["ink.frost"]),
+        }),
+    }
+    for name, (art, pal) in enemies.items():
+        buf = new_canvas(64, 64, (0, 0, 0, 0))
+        _draw_pixel_sprite(buf, art, pal, 4)
+        save_rgba(buf, SPRITE_OUT / f"enemy_ink_{name}_64.png")
+
+
+def gen_ink_pixel_projectiles() -> None:
+    """Ink-pixel projectile sprites: talisman, ink drop, lightning stroke."""
+    projectiles = {
+        "talisman": ("""
+..G..
+.GGG.
+GJGJG
+.GGG.
+..G..
+""", {
+            "G": hex_to_rgba(TOKENS["ink.gold"]),
+            "J": hex_to_rgba(TOKENS["ink.jade"]),
+        }),
+        "ink_drop": ("""
+..K..
+.KKK.
+KKKKK
+KKKKK
+.KKK.
+..K..
+""", {
+            "K": hex_to_rgba(TOKENS["ink.dark"]),
+        }),
+        "lightning": ("""
+..B..
+.BBB.
+BBBBB
+.BBB.
+..B..
+""", {
+            "B": hex_to_rgba(TOKENS["ink.thunder"]),
+        }),
+        "fire_bolt": ("""
+..R..
+.RRR.
+RRRRR
+.RRR.
+..R..
+""", {
+            "R": hex_to_rgba(TOKENS["ink.fire"]),
+        }),
+        "frost_shard": ("""
+..W..
+.WWW.
+WWWWW
+.WWW.
+..W..
+""", {
+            "W": hex_to_rgba(TOKENS["ink.frost"]),
+        }),
+    }
+    for name, (art, pal) in projectiles.items():
+        buf = new_canvas(16, 16, (0, 0, 0, 0))
+        _draw_pixel_sprite(buf, art, pal, 2)
+        save_rgba(buf, SPRITE_OUT / f"projectile_ink_{name}_16.png")
+
+
+def gen_ink_pixel_pet() -> None:
+    """32×32 ink-pixel fire pet (jade firefly)."""
+    palette = {
+        "J": hex_to_rgba(TOKENS["ink.jade"]),
+        "G": hex_to_rgba(TOKENS["ink.gold"]),
+        "K": hex_to_rgba(TOKENS["ink.dark"]),
+    }
+    art = """
+....JJJJ....
+...JJJJJJ...
+..JJJGGJJJ..
+..JJJJJJJJ..
+...JJJJJJ...
+....JJJJ....
+...JJ..JJ...
+...JJ..JJ...
+"""
+    buf = new_canvas(32, 32, (0, 0, 0, 0))
+    _draw_pixel_sprite(buf, art, palette, 2)
+    save_rgba(buf, SPRITE_OUT / "pet_ink_jade_32.png")
+
+
+MAP_OUT = ROOT / "assets" / "maps"
+
+
+def _ink_wash_background(w: int, h: int, base_color: RGBA, accent_color: RGBA,
+                          crack_color: RGBA, stage_seed: int = 0) -> List[List[RGBA]]:
+    """Generate an ink-wash style background with procedural noise and cracks."""
+    import random
+    rng = random.Random(stage_seed)
+    buf = new_canvas(w, h, base_color)
+
+    # Ink wash gradient: darker at edges, lighter in center
+    cx, cy = w // 2, h // 2
+    max_dist = (cx ** 2 + cy ** 2) ** 0.5
+    for y in range(h):
+        for x in range(w):
+            dist = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+            t = dist / max_dist
+            # Darken edges
+            edge_darken = int(t * 40)
+            r = max(0, base_color[0] - edge_darken)
+            g = max(0, base_color[1] - edge_darken)
+            b = max(0, base_color[2] - edge_darken)
+            # Add subtle ink variation
+            noise = rng.randint(-8, 8)
+            r = max(0, min(255, r + noise))
+            g = max(0, min(255, g + noise))
+            b = max(0, min(255, b + noise))
+            set_px(buf, x, y, (r, g, b, 255))
+
+    # Ink cracks / veins (like the existing map style)
+    for _ in range(12):
+        x = rng.randint(0, w - 1)
+        y = rng.randint(0, h - 1)
+        length = rng.randint(40, 120)
+        angle = rng.uniform(0, 6.28)
+        for step in range(length):
+            nx = int(x + step * 0.8 * __import__('math').cos(angle))
+            ny = int(y + step * 0.8 * __import__('math').sin(angle))
+            # Crack with slight randomness
+            nx += rng.randint(-2, 2)
+            ny += rng.randint(-2, 2)
+            thickness = max(1, 3 - step // 30)
+            for dy in range(-thickness, thickness + 1):
+                for dx in range(-thickness, thickness + 1):
+                    alpha = max(0, 180 - step * 2)
+                    set_px(buf, nx + dx, ny + dy,
+                           (crack_color[0], crack_color[1], crack_color[2], alpha))
+            angle += rng.uniform(-0.3, 0.3)
+
+    # Accent glow spots (jade/gold energy pools)
+    for _ in range(6):
+        gx = rng.randint(w // 4, 3 * w // 4)
+        gy = rng.randint(h // 4, 3 * h // 4)
+        gr = rng.randint(15, 40)
+        for dy in range(-gr, gr + 1):
+            for dx in range(-gr, gr + 1):
+                d = (dx ** 2 + dy ** 2) ** 0.5
+                if d < gr:
+                    alpha = int(60 * (1.0 - d / gr))
+                    set_px(buf, gx + dx, gy + dy,
+                           (accent_color[0], accent_color[1], accent_color[2], alpha))
+
+    return buf
+
+
+def gen_ink_pixel_maps() -> None:
+    """Generate ink-pixel style map backgrounds for all 4 stages."""
+    stages = [
+        ("qi_refining_verdant", (18, 32, 28), (61, 122, 110), (90, 160, 140), 42),
+        ("golden_core_demon", (25, 18, 14), (212, 116, 62), (196, 168, 106), 77),
+        ("nascent_soul_ruins", (20, 22, 30), (91, 140, 206), (160, 180, 210), 123),
+        ("tribulation_thunder", (14, 16, 24), (196, 168, 106), (91, 140, 206), 256),
+    ]
+    MAP_OUT.mkdir(parents=True, exist_ok=True)
+    for stage_id, base, accent, crack, seed in stages:
+        stage_dir = MAP_OUT / stage_id
+        stage_dir.mkdir(parents=True, exist_ok=True)
+        bg = _ink_wash_background(1280, 720, base, accent, crack, seed)
+        save_rgba(bg, stage_dir / "room_background_ink.png")
+        # Tileset: 128×128 (4×4 grid of 32px tiles) with ink texture
+        tile_buf = new_canvas(128, 128, (0, 0, 0, 0))
+        tile_rng = random.Random(seed + 100)
+        tile_colors = [
+            base,
+            (base[0] + 8, base[1] + 8, base[2] + 8, 255),
+            (base[0] - 5, base[1] - 5, base[2] - 5, 255),
+            (accent[0] // 3 + base[0] // 3 * 2,
+             accent[1] // 3 + base[1] // 3 * 2,
+             accent[2] // 3 + base[2] // 3 * 2, 255),
+        ]
+        for ty in range(4):
+            for tx in range(4):
+                tc = tile_colors[(tx + ty) % len(tile_colors)]
+                for dy in range(32):
+                    for dx in range(32):
+                        noise = tile_rng.randint(-6, 6)
+                        r = max(0, min(255, tc[0] + noise))
+                        g = max(0, min(255, tc[1] + noise))
+                        b = max(0, min(255, tc[2] + noise))
+                        set_px(tile_buf, tx * 32 + dx, ty * 32 + dy, (r, g, b, 255))
+        save_rgba(tile_buf, stage_dir / "tileset_ink.png")
+
+
+def gen_ink_pixel_talent_icons() -> None:
+    """Generate ink-pixel talent/breakthrough selection icons."""
+    icons = {
+        "attack": {
+            "bg": hex_to_rgba(TOKENS["ink.dark"]),
+            "fg": hex_to_rgba(TOKENS["ink.fire"]),
+            "accent": hex_to_rgba(TOKENS["ink.gold"]),
+            "symbol": """
+....GG....
+...GGGG...
+..GRRRRG..
+..RRRRRR..
+..RRRRRR..
+..GRRRRG..
+...GGGG...
+....GG....
+""",
+        },
+        "defense": {
+            "bg": hex_to_rgba(TOKENS["ink.dark"]),
+            "fg": hex_to_rgba(TOKENS["ink.jade"]),
+            "accent": hex_to_rgba(TOKENS["ink.gold"]),
+            "symbol": """
+...GGGG...
+..GJJJG..
+..JJJJJ..
+..JGGGJ..
+..JJJJJ..
+..GJJJG..
+...GGGG...
+""",
+        },
+        "spirit": {
+            "bg": hex_to_rgba(TOKENS["ink.dark"]),
+            "fg": hex_to_rgba(TOKENS["ink.thunder"]),
+            "accent": hex_to_rgba(TOKENS["ink.gold"]),
+            "symbol": """
+....GG....
+...GBBG...
+..GBBBBG..
+..BBBBBB..
+..GBBBBG..
+...GBBG...
+....GG....
+""",
+        },
+        "utility": {
+            "bg": hex_to_rgba(TOKENS["ink.dark"]),
+            "fg": hex_to_rgba(TOKENS["ink.frost"]),
+            "accent": hex_to_rgba(TOKENS["ink.gold"]),
+            "symbol": """
+...GGGG...
+..GWWWWG..
+..WWWWWW..
+..WGGGW..
+..WWWWWW..
+..GWWWWG..
+...GGGG...
+""",
+        },
+        "realm": {
+            "bg": hex_to_rgba(TOKENS["ink.dark"]),
+            "fg": hex_to_rgba(TOKENS["ink.gold"]),
+            "accent": hex_to_rgba(TOKENS["ink.jade"]),
+            "symbol": """
+....GG....
+...GJJG...
+..GJJJJG..
+..JJJJJJ..
+..GJJJJG..
+...GJJG...
+....GG....
+""",
+        },
+    }
+    UI_OUT.mkdir(parents=True, exist_ok=True)
+    for name, cfg in icons.items():
+        buf = new_canvas(64, 64, cfg["bg"])
+        # Draw circular bg with slight gradient
+        for y in range(64):
+            for x in range(64):
+                d = ((x - 32) ** 2 + (y - 32) ** 2) ** 0.5
+                if d < 28:
+                    edge_fade = max(0.0, 1.0 - (d / 28.0) ** 2)
+                    r = int(cfg["bg"][0] * (0.6 + 0.4 * edge_fade))
+                    g = int(cfg["bg"][1] * (0.6 + 0.4 * edge_fade))
+                    b = int(cfg["bg"][2] * (0.6 + 0.4 * edge_fade))
+                    set_px(buf, x, y, (r, g, b, 255))
+        # Draw symbol
+        palette = {
+            "G": cfg["accent"],
+            "R": cfg["fg"],
+            "J": cfg["fg"],
+            "B": cfg["fg"],
+            "W": cfg["fg"],
+        }
+        _draw_pixel_sprite(buf, cfg["symbol"], palette, 4)
+        # Gold ring border
+        for y in range(64):
+            for x in range(64):
+                d = ((x - 32) ** 2 + (y - 32) ** 2) ** 0.5
+                if 27 <= d <= 29:
+                    set_px(buf, x, y, cfg["accent"])
+        save_rgba(buf, UI_OUT / f"talent_icon_ink_{name}_64.png")
 
 
 def main() -> int:

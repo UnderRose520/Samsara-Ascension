@@ -1,4 +1,7 @@
-[gd_resource type="Theme" load_steps=17 format=3]
+[gd_resource type="Theme" load_steps=21 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/ui/btn_primary_gold_360x48.png" id="1_primary_btn"]
+[ext_resource type="Texture2D" path="res://assets/ui/btn_secondary_360x40.png" id="2_secondary_btn"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.014, 0.024, 0.03, 0.93)
@@ -209,6 +212,30 @@ corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn_primary_asset"]
+texture = ExtResource("1_primary_btn")
+texture_margin_left = 24.0
+texture_margin_top = 16.0
+texture_margin_right = 24.0
+texture_margin_bottom = 16.0
+modulate_color = Color(1, 1, 1, 0.96)
+content_margin_left = 16.0
+content_margin_top = 9.0
+content_margin_right = 16.0
+content_margin_bottom = 9.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn_secondary_asset"]
+texture = ExtResource("2_secondary_btn")
+texture_margin_left = 24.0
+texture_margin_top = 14.0
+texture_margin_right = 24.0
+texture_margin_bottom = 14.0
+modulate_color = Color(1, 1, 1, 0.88)
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+
 [resource]
 default_font_size = 15
 Button/colors/font_color = Color(0.96, 0.93, 0.84, 1)
@@ -219,7 +246,7 @@ Button/constants/outline_size = 1
 Button/colors/font_outline_color = Color(0, 0, 0, 0.48)
 Button/styles/disabled = SubResource("StyleBoxFlat_btn_secondary_disabled")
 Button/styles/hover = SubResource("StyleBoxFlat_btn_secondary_hover")
-Button/styles/normal = SubResource("StyleBoxFlat_btn_secondary_normal")
+Button/styles/normal = SubResource("StyleBoxTexture_btn_secondary_asset")
 Button/styles/pressed = SubResource("StyleBoxFlat_btn_secondary_pressed")
 CheckButton/colors/font_color = Color(0.88, 0.84, 0.74, 1)
 CheckButton/colors/font_disabled_color = Color(0.45, 0.42, 0.38, 1)
@@ -244,7 +271,7 @@ Primary/colors/font_hover_color = Color(0.04, 0.03, 0.015, 1)
 Primary/colors/font_pressed_color = Color(0.04, 0.03, 0.015, 1)
 Primary/styles/disabled = SubResource("StyleBoxFlat_btn_primary_disabled")
 Primary/styles/hover = SubResource("StyleBoxFlat_btn_primary_hover")
-Primary/styles/normal = SubResource("StyleBoxFlat_btn_primary_normal")
+Primary/styles/normal = SubResource("StyleBoxTexture_btn_primary_asset")
 Primary/styles/pressed = SubResource("StyleBoxFlat_btn_primary_pressed")
 PrimaryButton/colors/font_color = Color(0.06, 0.04, 0.02, 1)
 PrimaryButton/colors/font_disabled_color = Color(0.45, 0.42, 0.38, 1)
@@ -252,7 +279,7 @@ PrimaryButton/colors/font_hover_color = Color(0.04, 0.03, 0.015, 1)
 PrimaryButton/colors/font_pressed_color = Color(0.04, 0.03, 0.015, 1)
 PrimaryButton/styles/disabled = SubResource("StyleBoxFlat_btn_primary_disabled")
 PrimaryButton/styles/hover = SubResource("StyleBoxFlat_btn_primary_hover")
-PrimaryButton/styles/normal = SubResource("StyleBoxFlat_btn_primary_normal")
+PrimaryButton/styles/normal = SubResource("StyleBoxTexture_btn_primary_asset")
 PrimaryButton/styles/pressed = SubResource("StyleBoxFlat_btn_primary_pressed")
 ProgressBar/styles/background = SubResource("StyleBoxFlat_progress_bg")
 ProgressBar/styles/fill = SubResource("StyleBoxFlat_progress_fill")
@@ -262,7 +289,7 @@ Secondary/colors/font_hover_color = Color(0.98, 0.96, 0.88, 1)
 Secondary/colors/font_pressed_color = Color(0.98, 0.92, 0.78, 1)
 Secondary/styles/disabled = SubResource("StyleBoxFlat_btn_secondary_disabled")
 Secondary/styles/hover = SubResource("StyleBoxFlat_btn_secondary_hover")
-Secondary/styles/normal = SubResource("StyleBoxFlat_btn_secondary_normal")
+Secondary/styles/normal = SubResource("StyleBoxTexture_btn_secondary_asset")
 Secondary/styles/pressed = SubResource("StyleBoxFlat_btn_secondary_pressed")
 SecondaryButton/colors/font_color = Color(0.96, 0.93, 0.84, 1)
 SecondaryButton/colors/font_disabled_color = Color(0.47, 0.43, 0.39, 1)
@@ -270,5 +297,5 @@ SecondaryButton/colors/font_hover_color = Color(0.98, 0.96, 0.88, 1)
 SecondaryButton/colors/font_pressed_color = Color(0.98, 0.92, 0.78, 1)
 SecondaryButton/styles/disabled = SubResource("StyleBoxFlat_btn_secondary_disabled")
 SecondaryButton/styles/hover = SubResource("StyleBoxFlat_btn_secondary_hover")
-SecondaryButton/styles/normal = SubResource("StyleBoxFlat_btn_secondary_normal")
+SecondaryButton/styles/normal = SubResource("StyleBoxTexture_btn_secondary_asset")
 SecondaryButton/styles/pressed = SubResource("StyleBoxFlat_btn_secondary_pressed")

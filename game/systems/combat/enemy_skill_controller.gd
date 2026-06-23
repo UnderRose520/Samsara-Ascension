@@ -89,6 +89,21 @@ func get_windup_progress() -> float:
 	return 1.0 - (_windup / total)
 
 
+func debug_force_windup(skill_type: String = "melee", progress: float = 0.58) -> void:
+	var duration := 1.2
+	_windup_skill = {
+		"id": "debug_visual_windup",
+		"name": "蓄势",
+		"type": skill_type,
+		"windup": duration,
+		"range": 96.0,
+		"damage": 0.0,
+		"cooldown": 999.0,
+	}
+	_windup_scale = 1.0
+	_windup = duration * clampf(1.0 - progress, 0.05, 0.95)
+
+
 func tick(delta: float, player: Node2D) -> void:
 	for skill_id in _cooldowns.keys():
 		_cooldowns[skill_id] = maxf(float(_cooldowns[skill_id]) - delta, 0.0)
@@ -211,7 +226,7 @@ func _show_windup_telegraph(skill: Dictionary, player: Node2D) -> void:
 			length = 64.0
 			width = 16.0
 			color = Color(1.0, 0.62, 0.28, 1.0)
-	VfxManager.spawn_enemy_attack_telegraph(owner_body.global_position, dir, length, duration, width, color)
+	VfxManager.spawn_enemy_attack_telegraph(owner_body.global_position, dir, length, duration, width, color, skill_type)
 
 
 func _execute_skill(skill: Dictionary, player: Node2D) -> void:
@@ -239,6 +254,7 @@ func _execute_skill(skill: Dictionary, player: Node2D) -> void:
 func _fire_projectiles(skill: Dictionary, player: Node2D) -> void:
 	if player == null or owner_body == null:
 		return
+	var semantics := _projectile_semantics(skill)
 	var base_dir := (player.global_position - owner_body.global_position).normalized()
 	if base_dir == Vector2.ZERO:
 		base_dir = Vector2.DOWN
@@ -258,10 +274,26 @@ func _fire_projectiles(skill: Dictionary, player: Node2D) -> void:
 			"damage": float(skill.get("damage", 10.0)),
 			"speed": float(skill.get("speed", 240.0)),
 			"radius": 5.5 if count == 1 else 4.5,
-			"color": Color(1.0, 0.35, 0.35) if count == 1 else Color(1.0, 0.55, 0.2),
+			"color": semantics.get("color", Color(1.0, 0.35, 0.35) if count == 1 else Color(1.0, 0.55, 0.2)),
+			"element": str(semantics.get("element", "")),
+			"status_on_hit": str(semantics.get("status", "")),
+			"status_duration": float(semantics.get("status_duration", 0.0)),
+			"source_tag": "enemy_%s_%s" % [str(skill.get("id", "projectile")), str(semantics.get("weapon_id", "weapon"))],
 		})
 
 
+func _projectile_semantics(skill: Dictionary) -> Dictionary:
+	if owner_body and owner_body.has_method("get_enemy_projectile_semantics"):
+		return owner_body.get_enemy_projectile_semantics(skill)
+	var skill_id := str(skill.get("id", ""))
+	match skill_id:
+		"blade_arc":
+			return {"element": "thunder", "status": "", "status_duration": 0.0, "color": Color(0.55, 0.9, 1.0), "weapon_id": "wind_blade"}
+		"burst", "boss_rain":
+			return {"element": "fire", "status": "burn", "status_duration": 2.0, "color": Color(1.0, 0.35, 0.18), "weapon_id": "furnace_core"}
+	return {"element": "fire", "status": "", "status_duration": 0.0, "color": Color(1.0, 0.35, 0.35), "weapon_id": "generic"}
+
+
 func _hit_player(player: Node2D, amount: float) -> void:
-	if player.has_method("receive_enemy_projectile"):
-		player.receive_enemy_projectile(amount)
+	if player.has_method("receive_contact_damage"):
+		player.receive_contact_damage(amount)

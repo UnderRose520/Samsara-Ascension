@@ -1,0 +1,29 @@
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: runtime enemy projectile trail atlas for a top-down 2D combat arena.
+Grid: exactly 4 columns by 2 rows, one horizontal projectile trail per cell, no visible grid lines or borders.
+Cell order: left to right, top to bottom.
+1. generic enemy projectile trail: dark jade qi comet tail, soft black ink taper, tiny cold jade core streak
+2. fire enemy projectile trail: orange-red talisman ember brush tail, black ink smoke edge, restrained hot core
+3. thunder enemy projectile trail: blue-white lightning needle tail, broken ink fork, tiny old-gold spark flecks
+4. ice enemy projectile trail: cyan black-ice shard tail, frost brush splinters, cold jade rim
+5. water enemy projectile trail: cyan water-ink ribbon tail, soft splash beads, no western wave icon
+6. wood poison enemy projectile trail: jade-green vine qi tail, venom ink droplets, sharp but not UI-like
+7. earth enemy projectile trail: old-gold dust talisman tail, black stone grit, heavy grounded taper
+8. chaos soul enemy projectile trail: violet soul-smoke tail, broken oath ink wisps, small saturated core only
+Visual language: fast hostile spell tails in dark Chinese ink-wash xianxia style, made for tiny enemy bullets and boss barrages.
+Runtime use: each trail is drawn behind an enemy projectile sprite at 24-72px length, rotated along projectile direction; left side should be the fading tail and right side the hot leading edge.
+Style: black ink silhouette first, small saturated elemental core second, cold jade rim and old-gold talisman dust only where semantically useful.
+Gameplay rule: high saturation must remain in the narrow core or spark tips; trails must support readability without becoming red danger telegraphs or player skill effects.
+Composition: each trail occupies the central 70-84 percent of its cell width, thin vertical profile, feathered transparent edges, no cell-edge touching.
+Constraints: no text, no letters, no character, no weapon, no item icon, no UI panel, no circular badge, no western magic rune, no sci-fi laser beam, no full-cell glow, no watermark.

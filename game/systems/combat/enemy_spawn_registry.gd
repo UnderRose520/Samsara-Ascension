@@ -21,6 +21,11 @@ static func get_enemy_row(enemy_id: String) -> Dictionary:
 	return (_enemies_by_id.get(enemy_id, {}) as Dictionary).duplicate()
 
 
+static func get_enemy_row_by_name(display_name: String) -> Dictionary:
+	_ensure_loaded()
+	return (_enemies_by_name.get(display_name, {}) as Dictionary).duplicate()
+
+
 static func get_stat_mults(enemy_id: String) -> Dictionary:
 	var row := get_enemy_row(enemy_id)
 	return {

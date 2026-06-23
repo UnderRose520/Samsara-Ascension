@@ -137,8 +137,9 @@
 
 ## 设计文档
 
-- **GDD 玩法：** 仓库根目录 `GDD_轮回仙途_v6.0.md`
-- **UI/UX 美术：** [`docs/UIUX_轮回仙途_v1.0.md`](../docs/UIUX_轮回仙途_v1.0.md)（Token、组件、全界面规范）
+- **GDD 玩法：** 仓库根目录 `GDD_轮回仙途_v7.0.md`
+- **UI/UX 美术主方向：** [`docs/UIUX_全新暗色水墨五行粒子_v1.0.md`](../docs/UIUX_全新暗色水墨五行粒子_v1.0.md)（1920×1080 暗色水墨五行粒子总纲）
+- **UI 细节库：** `docs/mimo_ui_*` 只吸收卡牌/图标/飞白边框/粒子分层等细节，不作为主风格替代。
 - **实现日志：** [`docs/implementation-log.md`](../docs/implementation-log.md)（近期功能与架构变更）
 - **索敌 / 自动攻击：** [`docs/features/combat-targeting-priority.md`](../docs/features/combat-targeting-priority.md)
 - **种子复现：** [`docs/features/seed-reproducibility.md`](../docs/features/seed-reproducibility.md)

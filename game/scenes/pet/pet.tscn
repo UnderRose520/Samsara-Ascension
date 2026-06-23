@@ -10,5 +10,3 @@ script = ExtResource("1")
 texture_filter = 0
 script = ExtResource("2")
 texture_path = "res://assets/sprites/pet_huo_ying_32.png"
-fallback_radius = 6.0
-fallback_color = Color(1, 0.55, 0.2, 1)

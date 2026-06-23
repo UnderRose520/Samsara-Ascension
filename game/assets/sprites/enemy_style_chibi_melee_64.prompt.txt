@@ -1,0 +1,7 @@
+Unified runtime art target for Samsara Ascension.
+Style: 2D dark Chinese ink xianxia, black jade base, cold jade rim light, restrained old gold linework, high-saturation five-element particles only on gameplay signal parts.
+Avoid: western fantasy, Diablo-like dark item render, photorealism, anime portrait mismatch, beige parchment dominance, purple-only palette, UI text, labels, watermark.
+
+Asset: enemy runtime sprite `enemy_style_chibi_melee` at 64x64.
+Subject: chibi melee enemy fallback.
+View: 3/4 top-down, readable at 64px, transparent PNG.

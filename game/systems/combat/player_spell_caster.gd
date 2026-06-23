@@ -181,6 +181,7 @@ func get_spell_slots_state() -> Dictionary:
 		var synergy_count := int(counts.get(element_key, 0)) if unlocked else 0
 		out[slot] = {
 			"name": _format_spell_state_name(str(spell.get("name", slot)), branch_id, element_key, synergy_count),
+			"spell_id": spell_id,
 			"unlocked": unlocked,
 			"cd_remaining": cd,
 			"cd_total": total,

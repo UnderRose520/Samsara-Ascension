@@ -1,5 +1,18 @@
-High quality xianxia game run setup background, 16:9 hand-painted HD.
-Scene: an inner cultivation court with a circular jade fate compass embedded in dark stone, cloud shadows, quiet incense smoke, bronze and jade ritual details, distant immortal gate.
-Composition: calm readable interface backdrop with the center and right side deliberately open for three choice cards and loadout controls. No text, no UI, no characters, no monsters, no weapons in foreground.
-Color: deep ink teal and black jade, moon white highlights, restrained cold gold lines, tiny five-element glows only as subtle environmental accents.
-Avoid: busy pattern, readable symbols, labels, signs, page-like beige paper look, huge bright central glow.
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+UI backdrop rules: 16:9 Chinese xianxia ink backdrop with central 55-65 percent dark negative space for panels.
+Architecture, lamps, wheels, pools, clouds, and glow must frame side and top edges, not sit behind text panels.
+Use Chinese ritual roofs, jade shrines, bronze lamps, and ink mist; no sharp cathedral spires, castle towers, gothic arches, or giant black triangular silhouettes.
+No characters, monsters, readable text, labels, UI buttons, or central emblem competing with the actual interface.
+
+Asset type: 16:9 UI backdrop for a Chinese xianxia roguelite.
+Subject: inner cultivation court, faint flat low-contrast jade fate compass mostly hidden under outer floor edges, incense mist, Chinese ritual architecture, open center for selection panel, not a bright central emblem.
+Composition: UI safe area leaves the central 55-65 percent as dark, soft, low-detail negative space for panels and text. Main architecture, lamps, doors, wheels, pools, clouds, mist, and bright accents frame the left, right, and top edges, not behind the center panel.
+Mood: dark atmospheric edges, elegant black-jade and old-gold xianxia mood.
+Constraints: no characters, no monsters, no UI text, no labels, no western castle, no gothic dungeon.

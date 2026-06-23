@@ -6,10 +6,17 @@ const AssetPaths = preload("res://assets/asset_paths.gd")
 const MAX_BURST_POOL := 40
 const IMPACT_FPS := 14.0
 const IMPACT_SCALE := Vector2(2.0, 2.0)
+const IMPACT_TIER_SCALE := {
+	1: Vector2(1.18, 1.18),
+	2: Vector2(1.55, 1.55),
+	3: Vector2(1.95, 1.95),
+}
 const GOLD_REWARD_TARGET_SCREEN := Vector2(126.0, 72.0)
 const GOLD_REWARD_COLOR := Color(1.0, 0.84, 0.22, 1.0)
 
 var _burst_pool: Array = []
+var _gold_reward_mote_spawn_count := 0
+var _gold_reward_mote_texture_hits := 0
 
 
 class SpawnTelegraph:
@@ -21,6 +28,7 @@ class SpawnTelegraph:
 	var radius := 34.0
 	var elite := false
 	var reduced_motion := false
+	var texture: Texture2D
 
 	func _process(delta: float) -> void:
 		elapsed += delta
@@ -31,25 +39,11 @@ class SpawnTelegraph:
 	func _draw() -> void:
 		var t := clampf(elapsed / maxf(duration, 0.01), 0.0, 1.0)
 		var pulse := 0.35 if reduced_motion else sin(t * PI)
-		var alpha := 0.22 + pulse * 0.55
-		var inset := 10.0 if reduced_motion else lerpf(20.0, 6.0, t)
-		var half := radius - inset
-		var line_color := Color(color.r, color.g, color.b, alpha)
-		var hot_color := Color(1.0, 0.88, 0.38, alpha * 0.85) if elite else line_color
-		var corner := 10.0
-		var points := [
-			Vector2(-half, -half), Vector2(half, -half),
-			Vector2(half, half), Vector2(-half, half),
-		]
-		for p in points:
-			var sx := 1.0 if p.x < 0.0 else -1.0
-			var sy := 1.0 if p.y < 0.0 else -1.0
-			draw_line(p, p + Vector2(sx * corner, 0), line_color, 2.0)
-			draw_line(p, p + Vector2(0, sy * corner), line_color, 2.0)
-		draw_line(Vector2(-5, -half - 7), Vector2(5, -half - 7), hot_color, 1.5)
-		draw_line(Vector2(-5, half + 7), Vector2(5, half + 7), hot_color, 1.5)
-		draw_line(Vector2(-half - 7, -5), Vector2(-half - 7, 5), hot_color, 1.5)
-		draw_line(Vector2(half + 7, -5), Vector2(half + 7, 5), hot_color, 1.5)
+		var alpha := 0.10 + pulse * 0.22
+		if texture:
+			var size := radius * (2.15 if elite else 1.85)
+			var rect := Rect2(Vector2(-size * 0.5, -size * 0.5), Vector2(size, size))
+			draw_texture_rect(texture, rect, false, Color(1.0, 1.0, 1.0, alpha))
 
 
 class AttackTelegraph:
@@ -63,6 +57,8 @@ class AttackTelegraph:
 	var width := 10.0
 	var label := ""
 	var reduced_motion := false
+	var texture: Texture2D
+	var kind := "line"
 
 	func _process(delta: float) -> void:
 		elapsed += delta
@@ -75,36 +71,67 @@ class AttackTelegraph:
 		if dir == Vector2.ZERO:
 			dir = Vector2.RIGHT
 		var t := clampf(elapsed / maxf(duration, 0.01), 0.0, 1.0)
-		var alpha := 0.48 if reduced_motion else lerpf(0.72, 0.08, t)
-		var side := dir.orthogonal()
-		var start := dir * 18.0
-		var end := dir * length
-		var line_color := Color(color.r, color.g, color.b, alpha)
-		var hot_color := Color(1.0, 0.82, 0.36, alpha)
-		draw_line(start, end, line_color, width)
-		draw_line(start + side * (width * 0.9), end + side * (width * 0.9), hot_color, 1.8)
-		draw_line(start - side * (width * 0.9), end - side * (width * 0.9), hot_color, 1.8)
-		for i in 3:
-			var p := start.lerp(end, 0.38 + float(i) * 0.18)
-			draw_line(p - dir * 10.0 + side * 6.0, p + dir * 10.0, hot_color, 2.0)
-			draw_line(p - dir * 10.0 - side * 6.0, p + dir * 10.0, hot_color, 2.0)
+		var alpha := 0.18 if reduced_motion else lerpf(0.22, 0.03, t)
+		if texture:
+			draw_set_transform(Vector2.ZERO, dir.angle(), Vector2.ONE)
+			if kind == "melee":
+				var size := maxf(66.0, length * 0.92)
+				draw_texture_rect(
+					texture,
+					Rect2(Vector2(24.0, -size * 0.5), Vector2(size, size)),
+					false,
+					Color(1.0, 1.0, 1.0, alpha)
+				)
+			else:
+				var lane_h := maxf(12.0, width * (2.6 if kind == "dash" else 2.0))
+				if kind == "sniper":
+					lane_h = maxf(9.0, width * 1.85)
+				draw_texture_rect(
+					texture,
+					Rect2(Vector2(24.0, -lane_h * 0.5), Vector2(maxf(72.0, length * 0.94), lane_h)),
+					false,
+					Color(1.0, 1.0, 1.0, alpha)
+				)
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 class GoldRewardMote:
-	extends Node2D
+	extends Sprite2D
 
-	var color := GOLD_REWARD_COLOR
+	func _ready() -> void:
+		apply_texture()
 
-	func _draw() -> void:
-		var points := PackedVector2Array([
-			Vector2(0, -7),
-			Vector2(6, 0),
-			Vector2(0, 8),
-			Vector2(-6, 0),
-		])
-		draw_colored_polygon(points, Color(color.r, color.g, color.b, 0.86))
-		draw_polyline(PackedVector2Array([points[0], points[1], points[2], points[3], points[0]]), Color(1.0, 0.96, 0.62, 0.95), 1.4)
-		draw_line(Vector2(-3, 0), Vector2(4, 0), Color(1.0, 0.96, 0.62, 0.75), 1.2)
+	func apply_texture() -> void:
+		texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		if texture == null:
+			texture = AssetPaths.load_texture(AssetPaths.ICON_SPIRIT_STONE)
+		modulate = Color(1.0, 0.88, 0.42, 0.74)
+
+	func has_texture() -> bool:
+		return texture != null
+
+
+class ReducedImpactMark:
+	extends Sprite2D
+
+	var color := Color.WHITE
+	var duration := 0.18
+	var elapsed := 0.0
+	var radius := 18.0
+	var tier := 1
+	var element := ""
+	var status := ""
+
+	func _ready() -> void:
+		texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+
+	func _process(delta: float) -> void:
+		elapsed += delta
+		var t := clampf(elapsed / maxf(duration, 0.01), 0.0, 1.0)
+		modulate.a = 0.42 * (1.0 - t)
+		scale = Vector2.ONE * (0.95 + float(tier - 1) * 0.18 + t * 0.12)
+		if elapsed >= duration:
+			queue_free()
 
 
 func should_reduce_motion() -> bool:
@@ -120,10 +147,33 @@ func spawn_world(global_pos: Vector2, preset: String, color: Color) -> void:
 	_spawn_burst(parent, global_pos, preset, color)
 
 
-func spawn_enemy_telegraph(global_pos: Vector2, elite := false, duration := 0.55) -> void:
+func spawn_world_semantic(global_pos: Vector2, preset: String, color: Color, element: String = "", status: String = "", tier: int = 1) -> void:
+	if global_pos == Vector2.INF:
+		return
 	var parent := _world_parent()
 	if parent == null:
 		return
+	var resolved_tier := clampi(tier, 1, 3)
+	var toned_color := VfxLibrary.ink_vfx_color(color, preset, element, status, resolved_tier)
+	if preset == "hit":
+		if should_reduce_motion():
+			_spawn_reduced_impact(parent, global_pos, toned_color, resolved_tier, element, status)
+			return
+		if _spawn_impact_sequence(parent, global_pos, toned_color, false, element, status, resolved_tier):
+			return
+	if should_reduce_motion():
+		return
+	_spawn_burst(parent, global_pos, preset, color, false, element, status, resolved_tier)
+
+
+func spawn_hit_feedback(global_pos: Vector2, element: String, status: String, color: Color, tier: int = 1) -> void:
+	spawn_world_semantic(global_pos, "hit", color, element, status, tier)
+
+
+func spawn_enemy_telegraph(global_pos: Vector2, elite := false, duration := 0.55) -> Node2D:
+	var parent := _world_parent()
+	if parent == null:
+		return null
 	var marker := SpawnTelegraph.new()
 	marker.name = "EnemySpawnTelegraph"
 	marker.global_position = global_pos
@@ -131,14 +181,16 @@ func spawn_enemy_telegraph(global_pos: Vector2, elite := false, duration := 0.55
 	marker.duration = minf(duration, 0.38) if marker.reduced_motion else duration
 	marker.elite = elite
 	marker.color = Color(1.0, 0.28, 0.18, 1.0)
+	marker.texture = AssetPaths.load_texture(AssetPaths.enemy_spawn_telegraph(elite))
 	marker.z_index = 4
 	parent.add_child(marker)
+	return marker
 
 
-func spawn_enemy_attack_telegraph(global_pos: Vector2, direction: Vector2, length := 180.0, duration := 0.38, width := 8.0, color := Color(1.0, 0.38, 0.24, 1.0)) -> void:
+func spawn_enemy_attack_telegraph(global_pos: Vector2, direction: Vector2, length := 180.0, duration := 0.38, width := 8.0, color := Color(1.0, 0.38, 0.24, 1.0), kind := "line") -> Node2D:
 	var parent := _world_parent()
 	if parent == null:
-		return
+		return null
 	var marker := AttackTelegraph.new()
 	marker.name = "EnemyAttackTelegraph"
 	marker.global_position = global_pos
@@ -148,8 +200,11 @@ func spawn_enemy_attack_telegraph(global_pos: Vector2, direction: Vector2, lengt
 	marker.duration = minf(duration, 0.28) if marker.reduced_motion else duration
 	marker.width = width
 	marker.color = color
+	marker.kind = kind
+	marker.texture = AssetPaths.load_texture(AssetPaths.enemy_attack_telegraph(kind))
 	marker.z_index = 5
 	parent.add_child(marker)
+	return marker
 
 
 func spawn_gold_reward_feedback(global_pos: Vector2, amount: int, target_screen_pos := GOLD_REWARD_TARGET_SCREEN) -> void:
@@ -160,9 +215,11 @@ func spawn_gold_reward_feedback(global_pos: Vector2, amount: int, target_screen_
 		return
 	var target := _screen_to_world(target_screen_pos)
 	_spawn_gold_reward_text(parent, global_pos, amount)
+	_gold_reward_mote_spawn_count = 0
+	_gold_reward_mote_texture_hits = 0
 	if should_reduce_motion():
 		return
-	var count := clampi(int(ceilf(float(amount) / 8.0)), 3, 7)
+	var count := clampi(int(ceilf(float(amount) / 12.0)), 3, 5)
 	for i in range(count):
 		_spawn_gold_reward_mote(parent, global_pos, target, i, count)
 
@@ -182,7 +239,8 @@ func spawn_damage(result: Dictionary) -> void:
 	var pos: Vector2 = result.get("world_position", Vector2.ZERO)
 	if pos == Vector2.ZERO:
 		return
-	spawn_world(pos, VfxLibrary.preset_for_damage(result), VfxLibrary.color_for_damage(result))
+	var tier := 2 if bool(result.get("is_crit", false)) or bool(result.get("is_combo", false)) else 1
+	spawn_world_semantic(pos, VfxLibrary.preset_for_damage(result), VfxLibrary.color_for_damage(result), str(result.get("element", "")), str(result.get("status", "")), tier)
 
 
 func flash_control(control: CanvasItem, color: Color, duration: float = 0.12) -> void:
@@ -213,45 +271,61 @@ func _spawn_gold_reward_text(parent: Node, global_pos: Vector2, amount: int) -> 
 	var label := Label.new()
 	label.name = "GoldRewardText"
 	label.text = "+%d 灵石" % amount
-	label.position = global_pos + Vector2(-34.0, -54.0)
+	label.position = global_pos + Vector2(-28.0, -46.0)
 	label.z_index = 40
-	label.add_theme_font_size_override("font_size", 18)
-	label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.36, 1.0))
+	label.add_theme_font_size_override("font_size", 13)
+	label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.30, 0.78))
 	label.add_theme_color_override("font_outline_color", Color(0.13, 0.08, 0.02, 0.95))
-	label.add_theme_constant_override("outline_size", 4)
+	label.add_theme_constant_override("outline_size", 3)
 	parent.add_child(label)
 	var tween := label.create_tween()
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	tween.tween_property(label, "position", label.position + Vector2(0, -18), 0.42).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(label, "modulate:a", 0.0, 0.42).set_delay(0.72)
+	tween.tween_property(label, "position", label.position + Vector2(0, -12), 0.36).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(label, "modulate:a", 0.0, 0.32).set_delay(0.48)
 	tween.tween_callback(label.queue_free)
 
 
 func _spawn_gold_reward_mote(parent: Node, start: Vector2, target: Vector2, index: int, count: int) -> void:
 	var mote := GoldRewardMote.new()
 	mote.name = "GoldRewardMote"
+	mote.apply_texture()
+	_gold_reward_mote_spawn_count += 1
+	if mote.has_texture():
+		_gold_reward_mote_texture_hits += 1
 	var spread := float(index) - float(count - 1) * 0.5
-	var start_offset := Vector2(spread * 10.0, -18.0 - float(index % 3) * 8.0)
+	var start_offset := Vector2(spread * 7.0, -14.0 - float(index % 3) * 5.0)
 	mote.global_position = start + start_offset
 	mote.z_index = 39
-	mote.scale = Vector2.ONE * (0.75 + float(index % 2) * 0.16)
+	mote.scale = Vector2.ONE * (0.42 + float(index % 2) * 0.10)
 	parent.add_child(mote)
 	var travel := 0.58 + float(index) * 0.035
 	var tween := mote.create_tween()
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.tween_interval(float(index) * 0.025)
 	tween.tween_property(mote, "global_position", target + Vector2(spread * 3.0, float(index % 2) * 4.0), travel).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	tween.parallel().tween_property(mote, "scale", Vector2.ONE * 0.28, travel).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.parallel().tween_property(mote, "scale", Vector2.ONE * 0.18, travel).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tween.parallel().tween_property(mote, "modulate:a", 0.08, 0.18).set_delay(maxf(travel - 0.18, 0.0))
 	tween.tween_callback(mote.queue_free)
 
 
-func _spawn_burst(parent: Node, pos: Vector2, preset: String, color: Color, local := false) -> void:
-	if preset == "hit" and _spawn_impact_sequence(parent, pos, color, local):
+func get_gold_reward_mote_spawn_count() -> int:
+	return _gold_reward_mote_spawn_count
+
+
+func get_gold_reward_mote_texture_hit_count() -> int:
+	return _gold_reward_mote_texture_hits
+
+
+func _spawn_burst(parent: Node, pos: Vector2, preset: String, color: Color, local := false, element: String = "", status: String = "", tier: int = 1) -> void:
+	if preset == "hit" and _spawn_impact_sequence(parent, pos, color, local, element, status, tier):
 		return
-	var entry := _acquire_burst_entry(preset, color)
-	var holder: Node2D = entry["holder"]
-	var particles: CPUParticles2D = entry["particles"]
+	var entry := _acquire_burst_entry(preset, color, element, status, tier)
+	if entry.is_empty():
+		return
+	var holder := _entry_holder(entry)
+	var particles := _entry_particles(entry)
+	if holder == null or particles == null:
+		return
 	if local:
 		holder.position = pos
 	else:
@@ -260,33 +334,65 @@ func _spawn_burst(parent: Node, pos: Vector2, preset: String, color: Color, loca
 	particles.restart()
 	particles.emitting = true
 	var wait := particles.lifetime + 0.15
+	var token := int(entry.get("token", 0))
 	get_tree().create_timer(wait).timeout.connect(func() -> void:
-		_release_burst_entry(entry)
+		_release_burst_entry(entry, token)
 	)
 
 
-func _acquire_burst_entry(preset: String, color: Color) -> Dictionary:
+func _acquire_burst_entry(preset: String, color: Color, element: String = "", status: String = "", tier: int = 1) -> Dictionary:
+	_prune_invalid_burst_entries()
 	for entry in _burst_pool:
-		if not entry.get("in_use", false):
+		var holder := _entry_holder(entry)
+		var particles := _entry_particles(entry)
+		if holder == null or particles == null:
+			continue
+		if not bool(entry.get("in_use", false)):
 			entry["in_use"] = true
-			_reconfigure_burst(entry["particles"], preset, color)
+			entry["token"] = int(entry.get("token", 0)) + 1
+			_reconfigure_burst(particles, preset, color, element, status, tier)
 			return entry
 	if _burst_pool.size() >= MAX_BURST_POOL:
-		var oldest: Dictionary = _burst_pool[0]
-		if oldest.get("holder") and is_instance_valid(oldest["holder"]):
-			oldest["holder"].queue_free()
-		_burst_pool.remove_at(0)
-	var particles := VfxLibrary.create_burst(preset, color)
+		return {}
+	var particles := VfxLibrary.create_burst(preset, color, element, status, tier)
 	var holder := Node2D.new()
 	holder.name = "VfxBurst"
 	holder.add_child(particles)
-	var entry := {"holder": holder, "particles": particles, "in_use": true}
+	var entry := {"holder": holder, "particles": particles, "in_use": true, "token": 1}
 	_burst_pool.append(entry)
 	return entry
 
 
-func _reconfigure_burst(particles: CPUParticles2D, preset: String, color: Color) -> void:
-	var fresh := VfxLibrary.create_burst(preset, color)
+func _prune_invalid_burst_entries() -> void:
+	_burst_pool = _burst_pool.filter(func(entry: Dictionary) -> bool:
+		return _entry_holder(entry) != null and _entry_particles(entry) != null
+	)
+
+
+func _entry_holder(entry: Dictionary) -> Node2D:
+	var value: Variant = entry.get("holder")
+	if value == null or not is_instance_valid(value):
+		return null
+	var holder := value as Node2D
+	if holder == null or holder.is_queued_for_deletion():
+		return null
+	return holder
+
+
+func _entry_particles(entry: Dictionary) -> CPUParticles2D:
+	var value: Variant = entry.get("particles")
+	if value == null or not is_instance_valid(value):
+		return null
+	var particles := value as CPUParticles2D
+	if particles == null or particles.is_queued_for_deletion():
+		return null
+	return particles
+
+
+func _reconfigure_burst(particles: CPUParticles2D, preset: String, color: Color, element: String = "", status: String = "", tier: int = 1) -> void:
+	if particles == null or not is_instance_valid(particles):
+		return
+	var fresh := VfxLibrary.create_burst(preset, color, element, status, tier)
 	particles.amount = fresh.amount
 	particles.lifetime = fresh.lifetime
 	particles.spread = fresh.spread
@@ -296,21 +402,48 @@ func _reconfigure_burst(particles: CPUParticles2D, preset: String, color: Color)
 	particles.scale_amount_min = fresh.scale_amount_min
 	particles.scale_amount_max = fresh.scale_amount_max
 	particles.color = fresh.color
+	particles.texture = fresh.texture
 	particles.one_shot = true
 	particles.explosiveness = fresh.explosiveness
 	particles.direction = fresh.direction
 	fresh.queue_free()
 
 
-func _release_burst_entry(entry: Dictionary) -> void:
+func _release_burst_entry(entry: Dictionary, token: int) -> void:
+	if entry.is_empty() or not _burst_pool.has(entry):
+		return
+	if token != int(entry.get("token", -1)) or not bool(entry.get("in_use", false)):
+		return
 	entry["in_use"] = false
-	var holder: Node2D = entry.get("holder")
-	if holder and is_instance_valid(holder) and holder.get_parent():
+	var holder := _entry_holder(entry)
+	if holder == null:
+		_burst_pool.erase(entry)
+		entry.erase("holder")
+		entry.erase("particles")
+		return
+	if holder.get_parent():
 		holder.get_parent().remove_child(holder)
 
 
-func _spawn_impact_sequence(parent: Node, pos: Vector2, color: Color, local := false) -> bool:
-	var frames := _load_impact_frames(color)
+func _spawn_reduced_impact(parent: Node, pos: Vector2, color: Color, tier: int, element: String = "", status: String = "") -> void:
+	var mark := ReducedImpactMark.new()
+	mark.name = "ReducedImpactMark"
+	mark.global_position = pos
+	mark.color = color
+	mark.tier = clampi(tier, 1, 3)
+	mark.element = element
+	mark.status = status
+	var frames := _load_impact_frames(color, element, status)
+	if frames.is_empty():
+		return
+	mark.texture = frames[0]
+	mark.modulate = Color(color.r, color.g, color.b, 0.44)
+	mark.z_index = 6
+	parent.add_child(mark)
+
+
+func _spawn_impact_sequence(parent: Node, pos: Vector2, color: Color, local := false, element: String = "", status: String = "", tier: int = 1) -> bool:
+	var frames := _load_impact_frames(color, element, status)
 	if frames.is_empty():
 		return false
 	var holder := Node2D.new()
@@ -322,7 +455,7 @@ func _spawn_impact_sequence(parent: Node, pos: Vector2, color: Color, local := f
 	var sprite := Sprite2D.new()
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	sprite.z_index = 6
-	sprite.scale = IMPACT_SCALE
+	sprite.scale = IMPACT_TIER_SCALE.get(clampi(tier, 1, 3), IMPACT_SCALE)
 	sprite.texture = frames[0]
 	holder.add_child(sprite)
 	parent.add_child(holder)
@@ -336,9 +469,9 @@ func _spawn_impact_sequence(parent: Node, pos: Vector2, color: Color, local := f
 	return true
 
 
-func _load_impact_frames(color: Color) -> Array[Texture2D]:
+func _load_impact_frames(color: Color, element: String = "", status: String = "") -> Array[Texture2D]:
 	var frames: Array[Texture2D] = []
-	for path in AssetPaths.impact_frame_paths_for_color(color):
+	for path in AssetPaths.impact_frame_paths_for_semantics(element, status, color):
 		var tex := AssetPaths.load_texture(path)
 		if tex:
 			frames.append(tex)

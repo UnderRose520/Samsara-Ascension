@@ -2,6 +2,7 @@ extends Node2D
 
 const CsvLoader = preload("res://systems/affix/csv_loader.gd")
 const GameConstants = preload("res://core/constants/game_constants.gd")
+const AssetPaths = preload("res://assets/asset_paths.gd")
 
 @onready var body_visual: Sprite2D = get_node_or_null("BodyVisual") as Sprite2D
 
@@ -17,6 +18,12 @@ var _visual_facing := Vector2.RIGHT
 var _coord_hit_window := 0.0
 var _coord_hit_enemies: Dictionary = {}
 var _coord_momentum_awarded := false
+var _shadow_visual: Sprite2D
+var _aura_visual: Sprite2D
+var _fallback_visual: Sprite2D
+var _pet_aura_texture_hits := 0
+var _pet_shadow_texture_hits := 0
+var _pet_fallback_texture_hits := 0
 
 
 func _ready() -> void:
@@ -26,7 +33,10 @@ func _ready() -> void:
 			break
 	add_to_group("pet")
 	visible = false
+	_ensure_support_visuals()
+	_apply_body_sprite()
 	_use_sprite = body_visual != null and body_visual.texture != null
+	_apply_support_visuals()
 	_update_animation_state()
 	EventBus.pet_acquired.connect(_on_pet_acquired)
 	EventBus.pet_coord_hit.connect(_on_pet_coord_hit)
@@ -40,6 +50,62 @@ func _on_pet_acquired(_pet_id: String) -> void:
 func bind_player(player: CharacterBody2D) -> void:
 	owner_player = player
 	visible = RunContext.pet_acquired
+	_apply_support_visuals()
+
+
+func _apply_body_sprite() -> void:
+	if body_visual == null:
+		return
+	if body_visual.has_method("set_texture_path"):
+		body_visual.set_texture_path(AssetPaths.PET_HUO_YING)
+	elif ResourceLoader.exists(AssetPaths.PET_HUO_YING):
+		body_visual.texture = load(AssetPaths.PET_HUO_YING)
+	body_visual.scale = Vector2(1.25, 1.25)
+
+
+func _ensure_support_visuals() -> void:
+	_shadow_visual = get_node_or_null("PetInkShadow") as Sprite2D
+	if _shadow_visual == null:
+		_shadow_visual = Sprite2D.new()
+		_shadow_visual.name = "PetInkShadow"
+		_shadow_visual.z_index = -3
+		_shadow_visual.position = Vector2(0.0, 8.0)
+		add_child(_shadow_visual)
+		move_child(_shadow_visual, 0)
+	_aura_visual = get_node_or_null("PetDaoAura") as Sprite2D
+	if _aura_visual == null:
+		_aura_visual = Sprite2D.new()
+		_aura_visual.name = "PetDaoAura"
+		_aura_visual.z_index = -2
+		add_child(_aura_visual)
+		move_child(_aura_visual, min(1, get_child_count() - 1))
+	_fallback_visual = get_node_or_null("PetFallbackVisual") as Sprite2D
+	if _fallback_visual == null:
+		_fallback_visual = Sprite2D.new()
+		_fallback_visual.name = "PetFallbackVisual"
+		_fallback_visual.z_index = 1
+		add_child(_fallback_visual)
+
+
+func _apply_support_visuals() -> void:
+	if _shadow_visual:
+		_shadow_visual.texture = AssetPaths.load_texture(AssetPaths.combat_action_fx("actor_presence_shadow"))
+		_shadow_visual.scale = Vector2(0.23, 0.14)
+		_shadow_visual.modulate = Color(0.05, 0.025, 0.015, 0.34)
+		_shadow_visual.visible = _shadow_visual.texture != null
+		_pet_shadow_texture_hits = int(_shadow_visual.texture != null)
+	if _aura_visual:
+		_aura_visual.texture = AssetPaths.load_texture(AssetPaths.combat_action_fx("player_dao_aura"))
+		_aura_visual.scale = Vector2(0.18, 0.18)
+		_aura_visual.modulate = Color(1.0, 0.55, 0.16, 0.0)
+		_aura_visual.visible = _aura_visual.texture != null
+		_pet_aura_texture_hits = int(_aura_visual.texture != null)
+	if _fallback_visual:
+		_fallback_visual.texture = AssetPaths.load_texture(AssetPaths.HUD_PET_HUO_YING_AVATAR_64)
+		_fallback_visual.scale = Vector2(0.38, 0.38)
+		_fallback_visual.modulate = Color(1, 1, 1, 0.92)
+		_fallback_visual.visible = _fallback_visual.texture != null and not _use_sprite
+		_pet_fallback_texture_hits = int(_fallback_visual.texture != null)
 
 
 func get_coord_cd_remaining() -> float:
@@ -68,7 +134,7 @@ func try_coordinated_skill(direction: Vector2) -> bool:
 func _physics_process(delta: float) -> void:
 	if not RunContext.pet_acquired or owner_player == null:
 		return
-	global_position = owner_player.global_position + Vector2(-28, -8)
+	global_position = owner_player.global_position + _pet_follow_offset()
 	_passive_cd = maxf(_passive_cd - delta, 0.0)
 	_coord_cd = maxf(_coord_cd - delta, 0.0)
 	_coord_hit_window = maxf(_coord_hit_window - delta, 0.0)
@@ -78,8 +144,8 @@ func _physics_process(delta: float) -> void:
 		_passive_attack()
 	elif owner_player.velocity.length_squared() > 1.0:
 		_update_visual_facing(owner_player.velocity)
+	_update_support_visual_state(delta)
 	_update_animation_state()
-	queue_redraw()
 
 
 func _passive_attack() -> void:
@@ -111,7 +177,11 @@ func _spawn_projectile(direction: Vector2, damage: float, radius: float, source_
 		"owner": owner_player,
 		"speed": -1.0,
 		"radius": radius,
+		"color": Color(1.0, 0.45, 0.15),
+		"element": "fire",
 		"source_tag": source_tag,
+		"status_on_hit": "burn",
+		"status_duration": 1.5,
 	})
 
 
@@ -165,19 +235,46 @@ func _update_visual_facing(direction: Vector2) -> void:
 	_apply_visual_facing()
 
 
+func _pet_follow_offset() -> Vector2:
+	var velocity := owner_player.velocity if owner_player != null else Vector2.ZERO
+	if velocity.length_squared() <= 16.0:
+		return Vector2(-58.0, -18.0)
+	var dir := velocity.normalized()
+	return -dir * 62.0 + Vector2(0.0, -14.0)
+
+
 func _apply_visual_facing() -> void:
 	if body_visual == null or absf(_visual_facing.x) < 0.05:
 		return
 	body_visual.flip_h = _visual_facing.x < 0.0
+	if _fallback_visual:
+		_fallback_visual.flip_h = _visual_facing.x < 0.0
 
 
-func _draw() -> void:
-	if not RunContext.pet_acquired:
-		return
-	if _use_sprite:
-		return
-	var radius := 6.0 + _pulse * 10.0
-	var color := Color(1.0, 0.55, 0.2)
-	if _pulse > 0.0:
-		color = Color(1.0, 0.85, 0.3)
-	draw_circle(Vector2.ZERO, radius, color)
+func _update_support_visual_state(delta: float) -> void:
+	var active := RunContext.pet_acquired
+	if _shadow_visual:
+		_shadow_visual.visible = active and _shadow_visual.texture != null
+		_shadow_visual.scale = Vector2(0.23 + _pulse * 0.05, 0.14 + _pulse * 0.03)
+	if _aura_visual:
+		_aura_visual.visible = active and _aura_visual.texture != null
+		_aura_visual.rotation += delta * (1.0 + _pulse * 2.5)
+		_aura_visual.scale = Vector2.ONE * (0.17 + _pulse * 0.09)
+		var aura_alpha := 0.18 if _coord_cd <= 0.0 else 0.08
+		if _pulse > 0.0:
+			aura_alpha = 0.38 + _pulse * 0.20
+		_aura_visual.modulate = Color(1.0, 0.62, 0.18, aura_alpha)
+	if _fallback_visual:
+		_fallback_visual.visible = active and _fallback_visual.texture != null and not _use_sprite
+
+
+func get_pet_aura_texture_hit_count() -> int:
+	return _pet_aura_texture_hits
+
+
+func get_pet_shadow_texture_hit_count() -> int:
+	return _pet_shadow_texture_hits
+
+
+func get_pet_fallback_texture_hit_count() -> int:
+	return _pet_fallback_texture_hits

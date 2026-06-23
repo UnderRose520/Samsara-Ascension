@@ -61,15 +61,16 @@ func apply_polish() -> void:
 	_apply_rune_slot_styles()
 	objective_panel.add_theme_stylebox_override("panel", HudStyles.objective_panel(stage_accent))
 	_apply_texture(objective_frame, AssetPaths.HUD_LEFT_OBJECTIVE_CARD, 1.0)
-	build_badge_frame.visible = false
-	combat_divider.visible = false
+	_apply_texture(build_badge_frame, AssetPaths.HUD_LEFT_BUILD_BADGE, 0.58)
+	_apply_texture(combat_divider, AssetPaths.HUD_LEFT_SECTION_DIVIDER, 0.72)
 	_apply_objective_progress_style()
 	_apply_combo_track_style()
 	_apply_readability_polish()
 	var scroll_tex := AssetPaths.load_texture(AssetPaths.HUD_LEFT_PANEL_FRAME)
 	if scroll_tex and panel_frame:
 		panel_frame.texture = scroll_tex
-		panel_frame.modulate = Color(1.0, 1.0, 1.0, 0.18)
+		panel_frame.modulate = Color(1.0, 1.0, 1.0, 0.34)
+		panel_frame.visible = true
 	var gold_tex := AssetPaths.load_texture(AssetPaths.ICON_SPIRIT_STONE)
 	if gold_tex:
 		gold_icon.texture = gold_tex
@@ -82,7 +83,7 @@ func _layout_decorations() -> void:
 	panel_frame.offset_top = 0
 	panel_frame.offset_right = 0
 	panel_frame.offset_bottom = 0
-	panel_frame.visible = false
+	panel_frame.visible = panel_frame.texture != null
 	_layout_full_rect_texture(objective_frame)
 	_layout_full_rect_texture(build_badge_frame)
 	accent_stripe.visible = false
@@ -138,6 +139,8 @@ func apply_stage_accent(stage_index: int) -> void:
 	_apply_rune_slot_styles()
 	_apply_objective_progress_style()
 	accent_stripe.visible = false
+	if panel_frame:
+		panel_frame.self_modulate = Color(stage_accent.r, stage_accent.g, stage_accent.b, 0.9)
 
 
 func update_combo_badge(count: int) -> void:

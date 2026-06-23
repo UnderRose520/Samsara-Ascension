@@ -1,4 +1,18 @@
-High quality xianxia roguelite run result background, 16:9 hand-painted HD.
-Scene: a dark reincarnation pool inside an ancient jade shrine, faint soul ribbons over still water, bronze fate wheels, broken talismans, distant moonlight through mist.
-Composition: dramatic but readable end-of-run screen backdrop, center reserved for a large result panel, left and right edges carry atmosphere. No text, no logo, no buttons, no characters, no skulls, no gore.
-Style: dark ink jade, restrained ritual gold, moon white reflections, subtle crimson fate marks; elegant and replay-focused, not horror-dominant.
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+UI backdrop rules: 16:9 Chinese xianxia ink backdrop with central 55-65 percent dark negative space for panels.
+Architecture, lamps, wheels, pools, clouds, and glow must frame side and top edges, not sit behind text panels.
+Use Chinese ritual roofs, jade shrines, bronze lamps, and ink mist; no sharp cathedral spires, castle towers, gothic arches, or giant black triangular silhouettes.
+No characters, monsters, readable text, labels, UI buttons, or central emblem competing with the actual interface.
+
+Asset type: 16:9 UI backdrop for a Chinese xianxia roguelite.
+Subject: reincarnation pool inside ancient jade shrine, pool rim and bronze fate wheel silhouettes frame lower and side edges, center remains calm dark water with minimal reflection, faint soul ribbons.
+Composition: UI safe area leaves the central 55-65 percent as dark, soft, low-detail negative space for panels and text. Main architecture, lamps, doors, wheels, pools, clouds, mist, and bright accents frame the left, right, and top edges, not behind the center panel.
+Mood: dark atmospheric edges, elegant black-jade and old-gold xianxia mood.
+Constraints: no characters, no monsters, no UI text, no labels, no western castle, no gothic dungeon.

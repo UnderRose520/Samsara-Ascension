@@ -90,3 +90,18 @@ func get_hp_row() -> Control:
 
 func get_draw_bar() -> CanvasItem:
 	return hp_bar if bar_kind == BarKind.HP else mana_bar
+
+
+func get_track_texture_hit_count() -> int:
+	if bar_kind == BarKind.HP and hp_bar != null and hp_bar.has_method("get_track_texture_hit_count"):
+		return int(hp_bar.call("get_track_texture_hit_count"))
+	return 1 if frame_bg != null and frame_bg.texture != null else 0
+
+
+func get_fill_texture_hit_count() -> int:
+	if bar_kind == BarKind.HP and hp_bar != null and hp_bar.has_method("get_fill_texture_hit_count"):
+		return int(hp_bar.call("get_fill_texture_hit_count"))
+	var fill_style := mana_bar.get_theme_stylebox("fill") if mana_bar != null else null
+	if fill_style is StyleBoxTexture and (fill_style as StyleBoxTexture).texture != null:
+		return 1
+	return 0

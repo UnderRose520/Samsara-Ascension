@@ -26,9 +26,6 @@ const UI_EMPTY := "无"
 @onready var companion_artifact_panel: HudCompanionArtifactPanel = $Root/CompanionArtifactPanel
 @onready var jade_codex_overlay: HudJadeCodexOverlay = $Root/JadeCodexOverlay
 @onready var hint_label: Label = $Root/HintLabel
-@onready var learn_toast: Label = $Root/LearnToastPanel/Margin/Body/LearnToast
-@onready var learn_toast_panel: PanelContainer = $Root/LearnToastPanel
-@onready var learn_toast_bg: TextureRect = $Root/LearnToastPanel/Margin/Body/ScrollBg
 
 const LEARN_TOAST_COLORS := {
 	"spell": Color(1.0, 0.843, 0.0),
@@ -36,7 +33,6 @@ const LEARN_TOAST_COLORS := {
 	"skill": Color(0.65, 1.0, 0.75),
 }
 
-var _learn_toast_timer := 0.0
 var _last_hp := -1.0
 var _low_hp_tween: Tween
 var _combo_count := 0
@@ -50,12 +46,21 @@ var _horde_next_wave_in := 0.0
 var _horde_active := false
 var _horde_result_shown := false
 var _codex_pause_owner := false
+var _boss_objective_mode := false
+var _boss_alive := false
+var _boss_name := ""
+var _boss_phase_index := 0
+var _boss_phase_count := 1
+var _boss_phase_name := ""
+var _boss_flash_timer := 0.0
+var _boss_phase_tick_layer: Control
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_to_group("hud")
 	EventBus.player_hp_changed.connect(_on_hp_changed)
+	EventBus.boss_health_changed.connect(_on_boss_health_changed)
 	EventBus.combo_updated.connect(_on_combo_updated)
 	EventBus.affix_acquired.connect(func(_id): _refresh_affixes())
 	EventBus.all_enemies_cleared.connect(_on_wave_cleared)
@@ -76,6 +81,7 @@ func _ready() -> void:
 	EventBus.learn_feedback.connect(_on_learn_feedback)
 	EventBus.pet_coord_feedback.connect(_on_pet_coord_feedback)
 	EventBus.perfect_dodge_triggered.connect(_on_perfect_dodge_feedback)
+	EventBus.feedback_anchor_requested.connect(_on_feedback_anchor_requested)
 	EventBus.run_started.connect(_on_run_started)
 	EventBus.weapon_changed.connect(_on_weapon_changed)
 	EventBus.dao_momentum_changed.connect(_on_dao_momentum_changed)
@@ -86,9 +92,8 @@ func _ready() -> void:
 	_refresh_pet_label()
 	_refresh_active_spell_slots()
 	_refresh_seed_label()
-	learn_toast_panel.visible = false
-	_apply_toast_polish()
 	_apply_top_objective_style()
+	_ensure_boss_phase_tick_layer()
 	_on_realm_changed(RunContext.realm_level, RunContext.affix_slot_max())
 	_refresh_meta_labels()
 	_refresh_dao_progress()
@@ -157,6 +162,7 @@ func _build_codex_snapshot() -> Dictionary:
 	var dao_detail := {}
 	var combo_display := {}
 	var player := _get_player()
+	var lifetime := SaveManager.get_lifetime_summary()
 	var holder: Node = null
 	if player != null and player.has_node("AffixHolder"):
 		holder = player.get_node("AffixHolder")
@@ -192,6 +198,11 @@ func _build_codex_snapshot() -> Dictionary:
 		"artifact_state": _build_artifact_codex_state(),
 		"weapon_mods": _build_weapon_mod_lines(),
 		"stats_items": _build_codex_stats_items(),
+		"lifetime_items": _build_codex_lifetime_items(lifetime),
+		"last_life": lifetime.get("latest_run", {}),
+		"best_life": lifetime.get("best_run", {}),
+		"build_record": RunContext.get_current_build_snapshot(),
+		"lifetime_summary": SaveManager.format_lifetime_summary(),
 		"strategy_items": _build_codex_strategy_items(),
 		"weather": _codex_weather_summary(),
 		"highlight": RunContext.get_best_run_highlight(),
@@ -210,13 +221,7 @@ func _format_affix_tags(tags: Array) -> PackedStringArray:
 
 
 func _quality_label(quality) -> String:
-	match int(quality):
-		0: return "凡"
-		1: return "灵"
-		2: return "仙"
-		3: return "天"
-		4: return "道"
-	return "凡"
+	return UiHelpers.quality_name(int(quality)).replace("品", "")
 
 
 func _build_pet_codex_state() -> Dictionary:
@@ -311,6 +316,19 @@ func _build_codex_stats_items() -> Array:
 	]
 
 
+func _build_codex_lifetime_items(lifetime: Dictionary) -> Array:
+	return [
+		{"label": "前世", "value": str(int(lifetime.get("runs_total", 0)))},
+		{"label": "胜局", "value": str(int(lifetime.get("victories", 0)))},
+		{"label": "斩魔总数", "value": str(int(lifetime.get("lifetime_kills", 0)))},
+		{"label": "最佳房间", "value": str(int(lifetime.get("best_rooms_cleared", 0)))},
+		{"label": "最佳连击", "value": str(int(lifetime.get("best_combo", 0)))},
+		{"label": "敌录", "value": str(int(lifetime.get("enemy_count", 0)))},
+		{"label": "天象", "value": str(int(lifetime.get("weather_count", 0)))},
+		{"label": "连锁札记", "value": str(int(lifetime.get("hidden_chain_count", 0)))},
+	]
+
+
 func _build_codex_strategy_items() -> Array:
 	return [
 		{
@@ -354,17 +372,10 @@ func _codex_weather_summary() -> String:
 	return "%s / %s" % [weather_name, terrain]
 
 
-func _apply_toast_polish() -> void:
-	UiHelpers.apply_panel_polish(learn_toast_panel, false)
-	var toast_tex := AssetPaths.load_texture(AssetPaths.SCROLL_TOAST)
-	if toast_tex and learn_toast_bg:
-		learn_toast_bg.texture = toast_tex
-		learn_toast_bg.visible = true
-
-
 func _apply_top_objective_style() -> void:
 	if top_objective_anchor:
 		top_objective_anchor.visible = false
+		top_objective_anchor.modulate = Color.WHITE
 	var bg := StyleBoxFlat.new()
 	bg.bg_color = Color(0.0, 0.0, 0.0, 0.46)
 	bg.corner_radius_top_left = 2
@@ -377,9 +388,26 @@ func _apply_top_objective_style() -> void:
 	top_objective_text.clip_text = true
 
 
+func _ensure_boss_phase_tick_layer() -> void:
+	if top_objective_progress == null or _boss_phase_tick_layer != null:
+		return
+	_boss_phase_tick_layer = Control.new()
+	_boss_phase_tick_layer.name = "BossPhaseTicks"
+	_boss_phase_tick_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_boss_phase_tick_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	top_objective_progress.add_child(_boss_phase_tick_layer)
+	_boss_phase_tick_layer.visible = false
+
+
 func _show_top_objective(title: String, kills: int, quota: int, time_left: String, wave: int, next_wave_in: float) -> void:
 	if top_objective_anchor == null:
 		return
+	_boss_objective_mode = false
+	_boss_alive = false
+	top_objective_anchor.modulate = Color.WHITE
+	top_objective_progress.custom_minimum_size = Vector2(0, 4)
+	top_objective_progress.add_theme_stylebox_override("fill", HudStyles.objective_bar_fill(UiTokens.ACCENT_GOLD))
+	_clear_boss_phase_ticks()
 	top_objective_anchor.visible = quota > 0
 	if quota <= 0:
 		return
@@ -397,6 +425,150 @@ func _show_top_objective(title: String, kills: int, quota: int, time_left: Strin
 func _hide_top_objective() -> void:
 	if top_objective_anchor:
 		top_objective_anchor.visible = false
+		top_objective_anchor.modulate = Color.WHITE
+	_clear_boss_phase_ticks()
+
+
+func _show_boss_objective_placeholder(display_name: String) -> void:
+	_boss_objective_mode = true
+	_boss_alive = false
+	_boss_name = display_name
+	_boss_phase_index = 0
+	_boss_phase_count = 1
+	_boss_phase_name = "降临"
+	if top_objective_anchor == null:
+		return
+	top_objective_anchor.visible = true
+	top_objective_anchor.modulate = Color.WHITE
+	top_objective_progress.custom_minimum_size = Vector2(0, 8)
+	top_objective_text.text = "BOSS · %s · 降临中" % display_name
+	top_objective_progress.max_value = 1.0
+	top_objective_progress.value = 1.0
+	top_objective_progress.add_theme_stylebox_override("fill", HudStyles.objective_bar_fill(UiTokens.ACCENT_GOLD_SOFT))
+	_clear_boss_phase_ticks()
+
+
+func _on_boss_health_changed(display_name: String, current: float, maximum: float, phase_index: int, phase_count: int, phase_name: String) -> void:
+	if maximum <= 0.0 or display_name.is_empty():
+		_reset_boss_objective()
+		return
+	var was_alive := _boss_alive
+	_boss_objective_mode = true
+	_boss_alive = current > 0.01
+	_boss_name = display_name
+	_boss_phase_index = clampi(phase_index, 0, maxi(phase_count - 1, 0))
+	_boss_phase_count = maxi(phase_count, 1)
+	_boss_phase_name = phase_name
+	if current <= 0.01 and was_alive:
+		_pulse_boss_objective(UiTokens.ACCENT_GOLD)
+	if top_objective_anchor == null:
+		return
+	var ratio := clampf(current / maxf(maximum, 1.0), 0.0, 1.0)
+	var phase_text := phase_name if not phase_name.is_empty() else "阶段 %d/%d" % [_boss_phase_index + 1, _boss_phase_count]
+	top_objective_anchor.visible = true
+	top_objective_progress.custom_minimum_size = Vector2(0, 8)
+	top_objective_progress.max_value = maximum
+	top_objective_progress.value = clampf(current, 0.0, maximum)
+	top_objective_progress.add_theme_stylebox_override("fill", HudStyles.objective_bar_fill(_boss_bar_color(ratio)))
+	top_objective_text.text = "BOSS · %s · %s · 命元 %.0f/%.0f" % [display_name, phase_text, current, maximum]
+	_render_boss_phase_ticks(_boss_phase_count, _boss_phase_index)
+	_refresh_boss_wave_label(current, maximum)
+
+
+func _boss_bar_color(ratio: float) -> Color:
+	if ratio <= 0.28:
+		return UiTokens.ACCENT_BLOOD
+	if ratio <= 0.55:
+		return UiTokens.ELEM_CHAOS
+	return UiTokens.ACCENT_GOLD
+
+
+func _refresh_boss_wave_label(current: float, maximum: float) -> void:
+	if character_panel == null:
+		return
+	var phase_text := _boss_phase_name if not _boss_phase_name.is_empty() else "阶段 %d/%d" % [_boss_phase_index + 1, _boss_phase_count]
+	character_panel.wave_label.text = "%s / %s %.0f%%" % [
+		_boss_name,
+		phase_text,
+		(current / maxf(maximum, 1.0)) * 100.0,
+	]
+
+
+func _render_boss_phase_ticks(phase_count: int, phase_index: int) -> void:
+	_ensure_boss_phase_tick_layer()
+	if _boss_phase_tick_layer == null:
+		return
+	_clear_boss_phase_ticks()
+	if phase_count <= 1:
+		return
+	_boss_phase_tick_layer.visible = true
+	for i in range(1, phase_count):
+		var tick := ColorRect.new()
+		tick.name = "PhaseTick%d" % i
+		var passed := i <= phase_index
+		tick.color = Color(UiTokens.ACCENT_BLOOD.r, UiTokens.ACCENT_BLOOD.g, UiTokens.ACCENT_BLOOD.b, 0.86) if passed else Color(0.02, 0.02, 0.02, 0.78)
+		var x := float(i) / float(phase_count)
+		tick.anchor_left = x
+		tick.anchor_right = x
+		tick.anchor_top = 0.0
+		tick.anchor_bottom = 1.0
+		tick.offset_left = -1.0
+		tick.offset_right = 1.0
+		tick.offset_top = -1.0
+		tick.offset_bottom = 1.0
+		tick.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_boss_phase_tick_layer.add_child(tick)
+
+
+func _clear_boss_phase_ticks() -> void:
+	if _boss_phase_tick_layer == null:
+		return
+	for child in _boss_phase_tick_layer.get_children():
+		_boss_phase_tick_layer.remove_child(child)
+		child.free()
+	_boss_phase_tick_layer.visible = false
+
+
+func _reset_boss_objective() -> void:
+	_boss_objective_mode = false
+	_boss_alive = false
+	_boss_name = ""
+	_boss_phase_index = 0
+	_boss_phase_count = 1
+	_boss_phase_name = ""
+	_boss_flash_timer = 0.0
+	if top_objective_progress:
+		top_objective_progress.custom_minimum_size = Vector2(0, 4)
+	if top_objective_anchor:
+		top_objective_anchor.modulate = Color.WHITE
+	_hide_top_objective()
+
+
+func _pulse_boss_objective(color: Color = UiTokens.ACCENT_BLOOD) -> void:
+	if top_objective_anchor == null or not _boss_objective_mode:
+		return
+	_boss_flash_timer = 0.42
+	if not VfxManager.should_reduce_motion():
+		VfxManager.flash_control(top_objective_anchor, color.lightened(0.18), 0.18)
+
+
+func _tick_boss_objective(delta: float) -> void:
+	if _boss_flash_timer <= 0.0 or top_objective_anchor == null:
+		return
+	_boss_flash_timer = maxf(_boss_flash_timer - delta, 0.0)
+	var t := _boss_flash_timer / 0.42
+	top_objective_anchor.modulate = Color.WHITE.lerp(Color(1.18, 0.72, 0.78, 1.0), t)
+	if _boss_flash_timer <= 0.0:
+		top_objective_anchor.modulate = Color.WHITE
+
+
+func _on_feedback_anchor_requested(anchor_id: String, payload: Dictionary) -> void:
+	if anchor_id == "boss_phase_break":
+		_pulse_boss_objective(Color(1.0, 0.35, 0.22))
+		if combat_rail:
+			combat_rail.push_action(_short_feedback(str(payload.get("label", "Boss破势"))), UiTokens.ACCENT_BLOOD)
+	elif anchor_id == "boss_inheritance" and combat_rail:
+		combat_rail.push_action(_short_feedback(str(payload.get("label", "Boss传承"))), UiTokens.ACCENT_GOLD)
 
 
 func _get_player() -> Node:
@@ -409,6 +581,7 @@ func get_build_fly_target_global() -> Vector2:
 
 func _on_run_started(_seed: int) -> void:
 	EntityCache.invalidate_player()
+	_reset_boss_objective()
 	_refresh_seed_label()
 	_on_weapon_changed(RunContext.get_weapon())
 
@@ -538,6 +711,10 @@ func _format_horde_time(seconds: float) -> String:
 
 func _refresh_wave_label() -> void:
 	var wave_label := character_panel.wave_label
+	if _boss_objective_mode:
+		character_panel.hide_objective()
+		wave_label.text = _room_title if not _room_title.is_empty() else _boss_name
+		return
 	if _horde_active and _horde_quota > 0:
 		var title := _room_title if not _room_title.is_empty() else "魔劫"
 		_refresh_hp_caption()
@@ -558,7 +735,8 @@ func _refresh_wave_label() -> void:
 func _on_weather_changed(weather_id: String, weather_name: String) -> void:
 	weather_panel.set_weather(
 		AssetPaths.load_texture(AssetPaths.weather_icon(weather_id)),
-		_format_weather_text(weather_name)
+		_format_weather_text(weather_name),
+		weather_id
 	)
 
 
@@ -574,14 +752,18 @@ func _on_room_entered(room: Dictionary, stage: Dictionary) -> void:
 	character_panel.title_label.text = str(stage.get("name", "轮回仙途"))
 	character_panel.apply_stage_accent(int(stage.get("stage_index", 0)))
 	var label := "%s / %s" % [stage.get("name", ""), room.get("label", "")]
+	var boss_name := ""
 	if str(room.get("type", "")) == "boss":
-		var boss_name := str(room.get("boss_name", room.get("label", "关底")))
+		boss_name = str(room.get("boss_name", room.get("label", "关底")))
 		var is_first_boss := int(stage.get("stage_index", 0)) == 1
 		label = "BOSS / %s" % boss_name
 		if is_first_boss:
 			label += " / 结缘关"
 	elif str(room.get("type", "")) == "event":
 		label = "机缘房"
+		_reset_boss_objective()
+	else:
+		_reset_boss_objective()
 	_room_title = label
 	_combat_wave = 0
 	_horde_active = false
@@ -591,7 +773,10 @@ func _on_room_entered(room: Dictionary, stage: Dictionary) -> void:
 	_horde_next_wave_in = 0.0
 	_horde_result_shown = false
 	character_panel.hide_objective()
-	_hide_top_objective()
+	if boss_name.is_empty():
+		_hide_top_objective()
+	else:
+		_show_boss_objective_placeholder(boss_name)
 	character_panel.wave_label.text = label
 	call_deferred("_refresh_weather_text")
 
@@ -722,7 +907,7 @@ func _refresh_meta_labels() -> void:
 
 
 func _process(delta: float) -> void:
-	_tick_learn_toast(delta)
+	_tick_boss_objective(delta)
 	if not RunContext.pet_acquired:
 		return
 	var pet := get_tree().get_first_node_in_group("pet")
@@ -779,42 +964,11 @@ func _on_learn_feedback(text: String, accent: String = "spell") -> void:
 	if text.is_empty():
 		return
 	var color: Color = LEARN_TOAST_COLORS.get(accent, LEARN_TOAST_COLORS["spell"])
-	learn_toast.text = text
-	learn_toast.add_theme_color_override("font_color", color)
-	_position_learn_toast(accent)
-	learn_toast_panel.visible = true
-	UiAnimations.toast_pop(learn_toast_panel)
-	UiAnimations.pulse_gold(learn_toast, 1)
-	_learn_toast_timer = 2.5 if accent == "skill" else 3.2
+	if combat_rail:
+		combat_rail.push_action(_short_feedback(text.replace("\n", " ")), color)
 	if accent in ["spell", "rebind"]:
 		_refresh_active_spell_slots()
 		skill_dock.pulse()
-
-
-func _position_learn_toast(accent: String) -> void:
-	learn_toast.add_theme_font_size_override("font_size", 15 if accent == "skill" else 14)
-	if accent == "skill":
-		learn_toast_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
-		learn_toast_panel.offset_left = 16.0
-		learn_toast_panel.offset_top = 342.0
-		learn_toast_panel.offset_right = 292.0
-		learn_toast_panel.offset_bottom = 394.0
-	else:
-		learn_toast_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
-		learn_toast_panel.offset_left = 20.0
-		learn_toast_panel.offset_top = 292.0
-		learn_toast_panel.offset_right = 320.0
-		learn_toast_panel.offset_bottom = 342.0
-
-
-func _tick_learn_toast(delta: float) -> void:
-	if _learn_toast_timer <= 0.0:
-		if learn_toast_panel.visible:
-			learn_toast_panel.visible = false
-		return
-	_learn_toast_timer = maxf(_learn_toast_timer - delta, 0.0)
-	if _learn_toast_timer < 0.9:
-		learn_toast_panel.modulate.a = clampf(_learn_toast_timer / 0.9, 0.0, 1.0)
 
 
 func _refresh_affixes() -> void:

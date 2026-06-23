@@ -40,12 +40,15 @@ static func _apply_modal_open(node: Control, dimmer: CanvasItem) -> void:
 	node.pivot_offset = node.size * 0.5
 	node.modulate.a = 0.0
 	node.scale = Vector2.ONE
+	var dimmer_target_alpha := 1.0
+	if dimmer:
+		dimmer_target_alpha = dimmer.modulate.a
 	var tw := node.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tw.tween_property(node, "modulate:a", 1.0, MODAL_IN)
 	if dimmer:
 		dimmer.modulate.a = 0.0
-		tw.tween_property(dimmer, "modulate:a", 1.0, MODAL_IN)
+		tw.tween_property(dimmer, "modulate:a", dimmer_target_alpha, MODAL_IN)
 
 
 static func _apply_modal_close(node: Control, dimmer: CanvasItem, on_finished: Callable) -> void:
@@ -58,7 +61,10 @@ static func _apply_modal_close(node: Control, dimmer: CanvasItem, on_finished: C
 	tw.chain().tween_callback(func() -> void:
 		reset_modal(node)
 		if dimmer:
-			dimmer.modulate = Color.WHITE
+			if dimmer.has_meta("modal_veil_alpha"):
+				dimmer.modulate = Color(1.0, 1.0, 1.0, float(dimmer.get_meta("modal_veil_alpha")))
+			else:
+				dimmer.modulate = Color.WHITE
 		if on_finished.is_valid():
 			on_finished.call()
 	)

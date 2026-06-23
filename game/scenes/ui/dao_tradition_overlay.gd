@@ -7,22 +7,28 @@ const AssetPaths = preload("res://assets/asset_paths.gd")
 @onready var glow: ColorRect = $Glow
 @onready var frame: TextureRect = $Frame
 @onready var patterns: Control = $Patterns
+@onready var pattern_nodes: Array[TextureRect] = [
+	$Patterns/TopLeftPattern,
+	$Patterns/TopRightPattern,
+	$Patterns/BottomLeftPattern,
+	$Patterns/BottomRightPattern,
+]
 
 var _end_ms := 0
 var _awaken_tween: Tween
 var _time_scale_modified := false
 var _pattern_color := Color(1.0, 0.78, 0.24, 0.9)
 var _pattern_style := "fire"
+var _pattern_texture_hits := 0
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	banner.visible = false
-	subtitle.visible = false
-	glow.modulate.a = 0.0
-	patterns.visible = false
-	patterns.draw.connect(_draw_patterns)
-	frame.texture = AssetPaths.load_texture(AssetPaths.MODAL_TITLE_BAR)
+	_apply_top_band_layout()
+	frame.texture = AssetPaths.load_texture(AssetPaths.DIVIDER_GOLD)
+	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	frame.stretch_mode = TextureRect.STRETCH_SCALE
+	_hide_all_visuals()
 	EventBus.dao_tradition_awakened.connect(_on_awakened)
 	EventBus.run_completed.connect(_force_cleanup)
 
@@ -34,9 +40,12 @@ func _on_awakened(tradition: Dictionary) -> void:
 	_restore_time_scale()
 	_pattern_style = _style_for_tradition(tradition)
 	_pattern_color = _color_for_style(_pattern_style)
+	_apply_pattern_texture(_pattern_style)
 	glow.color = _pattern_color
+	frame.modulate = Color(_pattern_color.r, _pattern_color.g, _pattern_color.b, 0.0)
 	banner.text = "%s成道" % _short_dao_name(str(tradition.get("name", "道统")))
 	subtitle.text = "%s · %s" % [tradition.get("title", ""), tradition.get("description", "")]
+	frame.visible = true
 	banner.visible = true
 	subtitle.visible = true
 	patterns.visible = true
@@ -48,11 +57,12 @@ func _on_awakened(tradition: Dictionary) -> void:
 	_end_ms = Time.get_ticks_msec() + 3000
 	_awaken_tween = create_tween().set_parallel(true)
 	_awaken_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_awaken_tween.tween_property(frame, "modulate:a", 0.72, 0.18)
 	_awaken_tween.tween_property(banner, "modulate:a", 1.0, 0.2)
 	_awaken_tween.tween_property(subtitle, "modulate:a", 1.0, 0.25)
 	_awaken_tween.tween_property(patterns, "modulate:a", 1.0, 0.35)
 	_awaken_tween.tween_property(banner, "scale", Vector2(1.06, 1.06), 0.28).set_trans(Tween.TRANS_BACK)
-	_awaken_tween.tween_property(glow, "modulate:a", 0.55, 0.25)
+	_awaken_tween.tween_property(glow, "modulate:a", 0.06, 0.25)
 	if not VfxManager.should_reduce_motion():
 		Engine.time_scale = 0.3
 		_time_scale_modified = true
@@ -70,52 +80,63 @@ func _process(_delta: float) -> void:
 
 
 func _finish_overlay() -> void:
-	if _end_ms <= 0:
-		return
 	_end_ms = 0
 	if _awaken_tween and _awaken_tween.is_running():
 		_awaken_tween.kill()
 	_awaken_tween = null
+	_hide_all_visuals()
+	_restore_time_scale()
+
+
+func _hide_all_visuals() -> void:
+	_apply_top_band_layout()
 	banner.visible = false
 	subtitle.visible = false
+	frame.visible = false
 	patterns.visible = false
+	banner.modulate.a = 0.0
+	subtitle.modulate.a = 0.0
+	frame.modulate.a = 0.0
+	patterns.modulate.a = 0.0
 	glow.modulate.a = 0.0
-	_restore_time_scale()
+
+
+func _apply_top_band_layout() -> void:
+	_set_top_band_rect(banner, -320.0, 146.0, 640.0, 40.0)
+	_set_top_band_rect(frame, -210.0, 194.0, 420.0, 4.0)
+	_set_top_band_rect(subtitle, -340.0, 204.0, 680.0, 24.0)
+
+
+func _set_top_band_rect(control: Control, left: float, top: float, width: float, height: float) -> void:
+	if control == null:
+		return
+	control.anchor_left = 0.5
+	control.anchor_top = 0.0
+	control.anchor_right = 0.5
+	control.anchor_bottom = 0.0
+	control.offset_left = left
+	control.offset_top = top
+	control.offset_right = left + width
+	control.offset_bottom = top + height
 
 
 func _force_cleanup(_victory: bool = false) -> void:
 	_finish_overlay()
 
 
-func _draw_patterns() -> void:
-	var rect := get_viewport().get_visible_rect()
-	var corners := [
-		Vector2(44, 44),
-		Vector2(rect.size.x - 44, 44),
-		Vector2(44, rect.size.y - 44),
-		Vector2(rect.size.x - 44, rect.size.y - 44),
-	]
-	for corner in corners:
-		_draw_corner_pattern(corner, rect.size * 0.5)
+func _apply_pattern_texture(style: String) -> void:
+	_pattern_texture_hits = 0
+	var texture := AssetPaths.load_texture(AssetPaths.combat_action_fx("dao_pattern_%s" % style))
+	if texture == null and style != "fire":
+		texture = AssetPaths.load_texture(AssetPaths.combat_action_fx("dao_pattern_fire"))
+	for node in pattern_nodes:
+		node.texture = texture
+		node.modulate = Color(1.0, 1.0, 1.0, 0.0 if texture == null else 0.92)
+		_pattern_texture_hits += int(texture != null)
 
 
-func _draw_corner_pattern(origin: Vector2, center: Vector2) -> void:
-	var dir := (center - origin).normalized()
-	var side := dir.orthogonal()
-	for i in 5:
-		var length := 54.0 + float(i) * 22.0
-		var start := origin + side * (float(i) - 2.0) * 8.0
-		var mid := start + dir * length * 0.58 + side * sin(float(i) * 1.7) * 18.0
-		var end := start + dir * length
-		var color := _pattern_color
-		color.a = 0.78 - float(i) * 0.08
-		patterns.draw_polyline(PackedVector2Array([start, mid, end]), color, 3.0)
-		if _pattern_style == "thunder":
-			patterns.draw_line(mid, mid + side * 18.0, Color(0.8, 0.95, 1.0, 0.62), 2.0)
-		elif _pattern_style == "wood":
-			patterns.draw_circle(mid, 4.0, Color(0.55, 1.0, 0.58, 0.45))
-		elif _pattern_style == "water":
-			patterns.draw_arc(mid, 12.0 + float(i) * 2.0, 0.0, PI * 1.3, 18, Color(0.55, 0.85, 1.0, 0.38), 1.5)
+func get_pattern_texture_hit_count() -> int:
+	return _pattern_texture_hits
 
 
 func _style_for_tradition(tradition: Dictionary) -> String:

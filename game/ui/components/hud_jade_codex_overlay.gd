@@ -6,7 +6,7 @@ const UiTokens = preload("res://ui/theme/ui_tokens.gd")
 
 signal close_requested
 
-const TABS := ["词条", "道统", "灵宠", "本命器", "统计", "自动策略"]
+const TABS := ["词条", "道统", "灵宠", "本命器", "战绩", "自动策略"]
 const TAB_AFFIX := 0
 const TAB_DAO := 1
 const TAB_PET := 2
@@ -32,6 +32,11 @@ var _snapshot := {
 	"artifact_state": {},
 	"weapon_mods": PackedStringArray(),
 	"stats_items": [],
+	"lifetime_items": [],
+	"last_life": {},
+	"best_life": {},
+	"build_record": {},
+	"lifetime_summary": "",
 	"strategy_items": [],
 	"weather": "",
 }
@@ -40,6 +45,21 @@ var _active_tab := TAB_AFFIX
 var _tab_rects: Array = []
 var _pet_texture: Texture2D
 var _artifact_texture: Texture2D
+var _panel_texture: Texture2D
+var _divider_texture: Texture2D
+var _tab_texture: Texture2D
+var _section_texture: Texture2D
+var _dao_pattern_texture: Texture2D
+var _dao_thunder_texture: Texture2D
+var _status_badge_texture: Texture2D
+var _seal_base_texture: Texture2D
+var _cooldown_sweep_texture: Texture2D
+var _resource_track_texture: Texture2D
+var _shortcut_badge_texture: Texture2D
+var _rune_textures := {}
+var _pattern_texture_hits := 0
+var _badge_texture_hits := 0
+var _progress_texture_hits := 0
 
 
 func _ready() -> void:
@@ -47,8 +67,27 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	focus_mode = Control.FOCUS_ALL
 	visible = false
-	_pet_texture = AssetPaths.load_texture(AssetPaths.HUD_PET_HUO_YING_AVATAR)
-	_artifact_texture = AssetPaths.load_texture(AssetPaths.HUD_ARTIFACT_XUANYU_GOURD)
+	_pet_texture = AssetPaths.load_texture(AssetPaths.HUD_PET_HUO_YING_AVATAR_96)
+	_artifact_texture = AssetPaths.load_texture(AssetPaths.HUD_ARTIFACT_XUANYU_GOURD_96)
+	_panel_texture = AssetPaths.load_texture(AssetPaths.PANEL_NINEPATCH)
+	_divider_texture = AssetPaths.load_texture(AssetPaths.DIVIDER_GOLD)
+	_tab_texture = AssetPaths.load_texture(AssetPaths.BTN_SECONDARY)
+	_section_texture = AssetPaths.load_texture(AssetPaths.HUD_LEFT_OBJECTIVE_CARD)
+	_dao_pattern_texture = AssetPaths.load_texture(AssetPaths.combat_action_fx("dao_pattern_five"))
+	_dao_thunder_texture = AssetPaths.load_texture(AssetPaths.combat_action_fx("dao_pattern_thunder"))
+	_status_badge_texture = AssetPaths.load_texture(AssetPaths.combat_action_fx("status_badge_backing"))
+	_seal_base_texture = AssetPaths.load_texture(AssetPaths.HUD_AUTO_SEAL_BASE)
+	_cooldown_sweep_texture = AssetPaths.load_texture(AssetPaths.spell_cooldown_sweep())
+	_resource_track_texture = AssetPaths.load_texture(AssetPaths.HUD_LEFT_RESOURCE_TRACK)
+	_shortcut_badge_texture = AssetPaths.load_texture(AssetPaths.spell_shortcut_badge())
+	_rune_textures = {
+		"fire": AssetPaths.load_texture(AssetPaths.HUD_AFFIX_RUNE_FIRE),
+		"thunder": AssetPaths.load_texture(AssetPaths.HUD_AFFIX_RUNE_THUNDER),
+		"water": AssetPaths.load_texture(AssetPaths.HUD_AFFIX_RUNE_WATER),
+		"wood": AssetPaths.load_texture(AssetPaths.HUD_AFFIX_RUNE_WOOD),
+		"earth": AssetPaths.load_texture(AssetPaths.HUD_AFFIX_RUNE_EARTH),
+		"seal": AssetPaths.load_texture(AssetPaths.HUD_AFFIX_RUNE_SEAL),
+	}
 
 
 func set_snapshot(snapshot: Dictionary) -> void:
@@ -112,6 +151,11 @@ func _notification(what: int) -> void:
 
 func _draw() -> void:
 	var font := get_theme_default_font()
+	if font == null:
+		return
+	_pattern_texture_hits = 0
+	_badge_texture_hits = 0
+	_progress_texture_hits = 0
 	var panel := _main_panel_rect()
 	var header_rect := Rect2(panel.position, Vector2(panel.size.x, 126.0))
 	var content := Rect2(
@@ -145,19 +189,9 @@ func _main_panel_rect() -> Rect2:
 
 
 func _draw_panel(panel: Rect2) -> void:
-	draw_rect(panel, Color(0.012, 0.026, 0.028, 0.985), true)
-	draw_rect(panel.grow(-1.0), Color(UiTokens.ACCENT_GOLD.r, UiTokens.ACCENT_GOLD.g, UiTokens.ACCENT_GOLD.b, 0.58), false, 1.0)
-	draw_line(panel.position + Vector2(24, 86), panel.position + Vector2(panel.size.x - 24, 86), Color(UiTokens.ACCENT_JADE.r, UiTokens.ACCENT_JADE.g, UiTokens.ACCENT_JADE.b, 0.16), 1.0)
-	var corner := 24.0
-	var c := Color(UiTokens.ACCENT_GOLD.r, UiTokens.ACCENT_GOLD.g, UiTokens.ACCENT_GOLD.b, 0.72)
-	draw_line(panel.position + Vector2(12, 12), panel.position + Vector2(corner + 12, 12), c, 1.5)
-	draw_line(panel.position + Vector2(12, 12), panel.position + Vector2(12, corner + 12), c, 1.5)
-	draw_line(panel.position + Vector2(panel.size.x - 12, 12), panel.position + Vector2(panel.size.x - corner - 12, 12), c, 1.5)
-	draw_line(panel.position + Vector2(panel.size.x - 12, 12), panel.position + Vector2(panel.size.x - 12, corner + 12), c, 1.5)
-	draw_line(panel.position + Vector2(12, panel.size.y - 12), panel.position + Vector2(corner + 12, panel.size.y - 12), c, 1.5)
-	draw_line(panel.position + Vector2(12, panel.size.y - 12), panel.position + Vector2(12, panel.size.y - corner - 12), c, 1.5)
-	draw_line(panel.position + Vector2(panel.size.x - 12, panel.size.y - 12), panel.position + Vector2(panel.size.x - corner - 12, panel.size.y - 12), c, 1.5)
-	draw_line(panel.position + Vector2(panel.size.x - 12, panel.size.y - 12), panel.position + Vector2(panel.size.x - 12, panel.size.y - corner - 12), c, 1.5)
+	_draw_ink_panel(panel, Color(0.74, 0.98, 0.90, 0.70))
+	if _divider_texture:
+		draw_texture_rect(_divider_texture, Rect2(panel.position + Vector2(30, 80), Vector2(panel.size.x - 60.0, 6.0)), false, Color(0.95, 0.82, 0.54, 0.74))
 
 
 func _draw_header(font: Font, rect: Rect2) -> void:
@@ -182,11 +216,7 @@ func _draw_tabs(font: Font, panel: Rect2) -> void:
 		_tab_rects.append(rect)
 		var active := i == _active_tab
 		var accent := UiTokens.ACCENT_GOLD if active else UiTokens.ACCENT_JADE
-		draw_rect(rect, Color(0.03, 0.07, 0.066, 0.68 if active else 0.32), true)
-		if active:
-			draw_line(rect.position + Vector2(8, rect.size.y - 2), rect.position + Vector2(rect.size.x - 8, rect.size.y - 2), accent, 2.0)
-		else:
-			draw_line(rect.position + Vector2(12, rect.size.y - 2), rect.position + Vector2(rect.size.x - 12, rect.size.y - 2), Color(accent.r, accent.g, accent.b, 0.26), 1.0)
+		_draw_codex_tab(rect, active, accent)
 		_draw_centered(font, TABS[i], rect.get_center() + Vector2(0, 5), accent if active else UiTokens.TEXT_SECONDARY, 12)
 
 
@@ -309,15 +339,36 @@ func _draw_stats_page(font: Font, content: Rect2) -> void:
 	_draw_section_title(font, "本局记录", "当前战斗摘要", left, UiTokens.ACCENT_JADE)
 	_draw_wrapped(font, str(_snapshot.get("stats", "")), left.position + Vector2(18, 70), left.size.x - 36.0, UiTokens.TEXT_PRIMARY, 14)
 	_draw_wrapped(font, "天气：" + str(_snapshot.get("weather", "天象未明")), left.position + Vector2(18, 132), left.size.x - 36.0, UiTokens.ELEM_THUNDER, 13)
-	_draw_stats_grid(font, center)
+	_draw_wrapped(font, str(_snapshot.get("lifetime_summary", "")), left.position + Vector2(18, 194), left.size.x - 36.0, UiTokens.ACCENT_GOLD, 13)
+	_draw_stats_grid(font, center, "lifetime_items")
 	_draw_detail_surface(right, UiTokens.ACCENT_GOLD)
-	_draw_section_title(font, "高光", "这一世最值得记住的瞬间", right, UiTokens.ACCENT_GOLD)
-	var highlight := _dict("highlight")
-	if highlight.is_empty():
-		_draw_wrapped(font, "暂无高光记录。继续推进房间、连击、道统或隐藏连锁会写入这里。", right.position + Vector2(18, 74), right.size.x - 36.0, UiTokens.TEXT_SECONDARY, 13)
+	_draw_section_title(font, "最近前世", "前世碑与本局构筑", right, UiTokens.ACCENT_GOLD)
+	var last_life := _dict("last_life")
+	if last_life.is_empty():
+		_draw_wrapped(font, "暂无前世记录。本局结算后会刻入前世碑。", right.position + Vector2(18, 74), right.size.x - 36.0, UiTokens.TEXT_SECONDARY, 13)
 	else:
-		_draw_text(font, str(highlight.get("title", "高光")), right.position + Vector2(18, 74), UiTokens.ACCENT_GOLD, 18)
-		_draw_wrapped(font, str(highlight.get("detail", "")), right.position + Vector2(18, 116), right.size.x - 36.0, UiTokens.TEXT_PRIMARY, 13)
+		var result_label := "飞升" if bool(last_life.get("victory", false)) else "道消"
+		_draw_text(font, "%s · 种子 %d" % [result_label, int(last_life.get("seed", 0))], right.position + Vector2(18, 74), UiTokens.ACCENT_GOLD, 17)
+		_draw_wrapped(font, "房间 %d · 最高连击 %d · 道势 %d/%d" % [
+			int(last_life.get("rooms_cleared", 0)),
+			int(last_life.get("best_combo", 0)),
+			int(last_life.get("dao_peak", 0)),
+			int(last_life.get("dao_max", 100)),
+		], right.position + Vector2(18, 112), right.size.x - 36.0, UiTokens.TEXT_PRIMARY, 13)
+		var death := _dict_from(last_life.get("death_summary", {}))
+		if not death.is_empty():
+			_draw_wrapped(font, str(death.get("line", death.get("detail", ""))), right.position + Vector2(18, 168), right.size.x - 36.0, UiTokens.TEXT_SECONDARY, 12)
+	var build := _dict("build_record")
+	_draw_text(font, "本局构筑", right.position + Vector2(18, 246), UiTokens.ACCENT_JADE, 13)
+	_draw_wrapped(font, "%s · %s" % [
+		str(build.get("path_name", build.get("path_id", "未知道途"))),
+		str(build.get("weapon_name", build.get("weapon_id", "本命器"))),
+	], right.position + Vector2(18, 276), right.size.x - 36.0, UiTokens.TEXT_PRIMARY, 13)
+	var mods := _array_to_strings(build.get("weapon_mods", []))
+	_draw_wrapped(font, "祭炼：" + (" / ".join(mods) if not mods.is_empty() else "未祭炼"), right.position + Vector2(18, 330), right.size.x - 36.0, UiTokens.TEXT_SECONDARY, 12)
+	var highlight := _dict("highlight")
+	if not highlight.is_empty():
+		_draw_wrapped(font, "高光：" + str(highlight.get("title", "")), right.position + Vector2(18, 382), right.size.x - 36.0, UiTokens.ACCENT_GOLD, 12)
 
 
 func _draw_strategy_page(font: Font, content: Rect2) -> void:
@@ -352,15 +403,77 @@ func _three_columns(content: Rect2) -> Array:
 
 
 func _draw_section_surface(rect: Rect2, accent: Color) -> void:
-	draw_rect(rect, Color(0.018, 0.047, 0.047, 0.42), true)
-	draw_line(rect.position + Vector2(0, 0), rect.position + Vector2(rect.size.x, 0), Color(accent.r, accent.g, accent.b, 0.42), 1.0)
-	draw_line(rect.position + Vector2(0, 0), rect.position + Vector2(0, rect.size.y), Color(accent.r, accent.g, accent.b, 0.16), 1.0)
+	_draw_codex_surface(rect, accent, false)
 
 
 func _draw_detail_surface(rect: Rect2, accent: Color) -> void:
-	draw_rect(rect, Color(0.035, 0.04, 0.032, 0.42), true)
-	draw_line(rect.position + Vector2(0, 0), rect.position + Vector2(rect.size.x, 0), Color(accent.r, accent.g, accent.b, 0.44), 1.0)
-	draw_line(rect.position + Vector2(rect.size.x, 0), rect.position + Vector2(rect.size.x, rect.size.y), Color(accent.r, accent.g, accent.b, 0.16), 1.0)
+	_draw_codex_surface(rect, accent, true)
+
+
+func _draw_ink_panel(rect: Rect2, tint: Color) -> void:
+	if _panel_texture:
+		_draw_ninepatch_texture(_panel_texture, rect, 32.0, tint)
+
+
+func _draw_codex_surface(rect: Rect2, accent: Color, warm: bool) -> void:
+	var base_tint := Color(0.66, 0.96, 0.88, 0.36)
+	if warm:
+		base_tint = Color(0.96, 0.82, 0.54, 0.30)
+	_draw_ink_panel(rect, base_tint)
+	if _section_texture:
+		var texture_tint := Color(0.42 + accent.r * 0.18, 0.48 + accent.g * 0.16, 0.46 + accent.b * 0.18, 0.24)
+		draw_texture_rect(_section_texture, rect.grow(-6.0), false, texture_tint)
+	_draw_divider_band(Rect2(rect.position + Vector2(14, 8), Vector2(rect.size.x - 28.0, 3.0)), Color(accent.r, accent.g, accent.b, 0.62))
+
+
+func _draw_small_codex_card(rect: Rect2, accent: Color) -> void:
+	_draw_ink_panel(rect, Color(0.70 + accent.r * 0.10, 0.88 + accent.g * 0.08, 0.82 + accent.b * 0.08, 0.32))
+	_draw_divider_band(Rect2(rect.position + Vector2(10, 7), Vector2(rect.size.x - 20.0, 2.0)), Color(accent.r, accent.g, accent.b, 0.42))
+
+
+func _draw_codex_tab(rect: Rect2, active: bool, accent: Color, alpha: float = -1.0) -> void:
+	var tint_alpha := alpha if alpha >= 0.0 else (0.92 if active else 0.52)
+	var tint := Color(0.78 + accent.r * 0.10, 0.88 + accent.g * 0.08, 0.84 + accent.b * 0.08, tint_alpha)
+	if _tab_texture:
+		draw_texture_rect(_tab_texture, rect, false, tint)
+	else:
+		_draw_texture_missing_fallback(rect, tint_alpha)
+	var band_alpha := 0.72 if active else 0.28
+	_draw_divider_band(Rect2(rect.position + Vector2(10, rect.size.y - 5.0), Vector2(rect.size.x - 20.0, 3.0)), Color(accent.r, accent.g, accent.b, band_alpha))
+
+
+func _draw_texture_missing_fallback(rect: Rect2, alpha: float) -> void:
+	pass
+
+
+func _draw_divider_band(rect: Rect2, tint: Color) -> void:
+	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return
+	if _divider_texture:
+		draw_texture_rect(_divider_texture, rect, false, tint)
+
+
+func _draw_ninepatch_texture(texture: Texture2D, rect: Rect2, margin: float, tint: Color) -> void:
+	if texture == null or rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return
+	var source_size := texture.get_size()
+	var mx := minf(margin, minf(source_size.x * 0.5, rect.size.x * 0.5))
+	var my := minf(margin, minf(source_size.y * 0.5, rect.size.y * 0.5))
+	var dst_x := [rect.position.x, rect.position.x + mx, rect.end.x - mx]
+	var dst_y := [rect.position.y, rect.position.y + my, rect.end.y - my]
+	var dst_w := [mx, maxf(rect.size.x - mx * 2.0, 0.0), mx]
+	var dst_h := [my, maxf(rect.size.y - my * 2.0, 0.0), my]
+	var src_x := [0.0, mx, source_size.x - mx]
+	var src_y := [0.0, my, source_size.y - my]
+	var src_w := [mx, maxf(source_size.x - mx * 2.0, 0.0), mx]
+	var src_h := [my, maxf(source_size.y - my * 2.0, 0.0), my]
+	for row in range(3):
+		for col in range(3):
+			if dst_w[col] <= 0.0 or dst_h[row] <= 0.0 or src_w[col] <= 0.0 or src_h[row] <= 0.0:
+				continue
+			var dst := Rect2(Vector2(dst_x[col], dst_y[row]), Vector2(dst_w[col], dst_h[row]))
+			var src := Rect2(Vector2(src_x[col], src_y[row]), Vector2(src_w[col], src_h[row]))
+			draw_texture_rect_region(texture, dst, src, tint)
 
 
 func _draw_section_title(font: Font, title: String, subtitle: String, rect: Rect2, accent: Color) -> void:
@@ -388,17 +501,16 @@ func _draw_affix_mandala(font: Font, rect: Rect2) -> void:
 	var radius := minf(rect.size.x, rect.size.y) * 0.30
 	var progress := _dict("dao_progress")
 	var combo := _dict("combo_display")
-	draw_circle(center, radius * 0.92, Color(UiTokens.ACCENT_JADE.r, UiTokens.ACCENT_JADE.g, UiTokens.ACCENT_JADE.b, 0.035))
-	draw_arc(center, radius, 0.0, TAU, 96, Color(UiTokens.ACCENT_GOLD.r, UiTokens.ACCENT_GOLD.g, UiTokens.ACCENT_GOLD.b, 0.82), 2.0)
-	draw_arc(center, radius * 0.68, 0.0, TAU, 96, Color(UiTokens.ACCENT_JADE.r, UiTokens.ACCENT_JADE.g, UiTokens.ACCENT_JADE.b, 0.58), 1.2)
+	_draw_pattern_disc(center, radius * 2.04, UiTokens.ACCENT_GOLD, 0.50, _dao_pattern_texture)
+	_draw_charge_sweep(Rect2(center - Vector2(radius * 0.72, radius * 0.72), Vector2(radius * 1.44, radius * 1.44)), UiTokens.ACCENT_JADE, 0.20)
 	var labels := ["核心", "临时", "封印", "道统", "本命"]
 	var colors := [UiTokens.ACCENT_GOLD, UiTokens.ACCENT_JADE, UiTokens.TEXT_SECONDARY, UiTokens.ELEM_THUNDER, UiTokens.ELEM_CHAOS]
+	var rune_keys := ["fire", "wood", "seal", "thunder", "earth"]
 	for i in range(labels.size()):
 		var ang := -PI * 0.5 + TAU * float(i) / float(labels.size())
 		var pos := center + Vector2(cos(ang), sin(ang)) * radius * 0.84
-		draw_line(center, pos, Color(UiTokens.ACCENT_JADE.r, UiTokens.ACCENT_JADE.g, UiTokens.ACCENT_JADE.b, 0.22), 1.0)
-		draw_circle(pos, 24.0, Color(0.018, 0.04, 0.045, 0.88))
-		draw_arc(pos, 24.0, 0.0, TAU, 42, colors[i], 1.4)
+		_draw_orbit_connector(center, pos, colors[i])
+		_draw_codex_badge(Rect2(pos - Vector2(24, 24), Vector2(48, 48)), colors[i], rune_keys[i])
 		_draw_centered(font, labels[i], pos + Vector2(0, 5), colors[i], 11)
 	_draw_centered(font, _short_text(str(_snapshot.get("build", "构筑")), 12), center + Vector2(0, -8), UiTokens.ACCENT_GOLD, 19)
 	_draw_centered(font, "%s %s" % [str(progress.get("name", "道统")), _progress_fraction(progress)], center + Vector2(0, 22), UiTokens.ELEM_THUNDER, 12)
@@ -409,9 +521,9 @@ func _draw_dao_ring(font: Font, rect: Rect2, progress: Dictionary) -> void:
 	var center := rect.get_center() + Vector2(0, -8)
 	var radius := minf(rect.size.x, rect.size.y) * 0.31
 	var pct := clampf(float(progress.get("progress", 0.0)), 0.0, 1.0)
-	draw_circle(center, radius * 0.96, Color(UiTokens.ELEM_THUNDER.r, UiTokens.ELEM_THUNDER.g, UiTokens.ELEM_THUNDER.b, 0.035))
-	draw_arc(center, radius, -PI * 0.5, -PI * 0.5 + TAU, 96, Color(UiTokens.TEXT_MUTED.r, UiTokens.TEXT_MUTED.g, UiTokens.TEXT_MUTED.b, 0.32), 8.0)
-	draw_arc(center, radius, -PI * 0.5, -PI * 0.5 + TAU * pct, 96, UiTokens.ELEM_THUNDER, 8.0)
+	_draw_pattern_disc(center, radius * 2.05, UiTokens.ELEM_THUNDER, 0.52, _dao_thunder_texture)
+	_draw_progress_bar(Rect2(center + Vector2(-radius * 0.92, radius * 0.82), Vector2(radius * 1.84, 14.0)), pct, UiTokens.ELEM_THUNDER)
+	_draw_charge_sweep(Rect2(center - Vector2(radius * 0.84, radius * 0.84), Vector2(radius * 1.68, radius * 1.68)), UiTokens.ELEM_THUNDER, 0.30 + pct * 0.26)
 	_draw_centered(font, str(progress.get("name", "道统")), center + Vector2(0, -20), UiTokens.ACCENT_GOLD, 24)
 	_draw_centered(font, _progress_fraction(progress), center + Vector2(0, 16), UiTokens.ELEM_THUNDER, 36)
 	var missing := _array_to_strings(progress.get("missing_slots", []))
@@ -424,16 +536,16 @@ func _draw_pet_orbit(font: Font, rect: Rect2, pet: Dictionary) -> void:
 	var acquired := bool(pet.get("acquired", false))
 	var ready := bool(pet.get("ready", false))
 	var accent := UiTokens.ELEM_FIRE if acquired else UiTokens.TEXT_MUTED
-	draw_circle(center, 92.0, Color(accent.r, accent.g, accent.b, 0.06))
-	draw_arc(center, 110.0, 0.0, TAU, 96, Color(accent.r, accent.g, accent.b, 0.42), 1.5)
-	draw_arc(center, 78.0, 0.0, TAU, 96, Color(UiTokens.ACCENT_GOLD.r, UiTokens.ACCENT_GOLD.g, UiTokens.ACCENT_GOLD.b, 0.24), 1.0)
-	var avatar_rect := Rect2(center - Vector2(56, 56), Vector2(112, 112))
+	_draw_pattern_disc(center, 210.0, accent, 0.30 if acquired else 0.18, _dao_pattern_texture)
+	_draw_codex_badge(Rect2(center - Vector2(58, 58), Vector2(116, 116)), accent, "fire")
+	var avatar_rect := Rect2(center - Vector2(48, 48), Vector2(96, 96))
 	if _pet_texture:
 		draw_texture_rect(_pet_texture, avatar_rect, false, Color(1, 1, 1, 0.95 if acquired else 0.42))
+		_badge_texture_hits += 1
 	else:
-		draw_circle(center, 48.0, accent)
+		_draw_codex_badge(Rect2(center - Vector2(42, 42), Vector2(84, 84)), accent, "fire")
 	if ready:
-		draw_arc(center, 124.0, -PI * 0.5, PI * 1.5, 96, UiTokens.ACCENT_GOLD, 3.0)
+		_draw_charge_sweep(Rect2(center - Vector2(66, 66), Vector2(132, 132)), UiTokens.ACCENT_GOLD, 0.56)
 	_draw_centered(font, str(pet.get("name", "待结缘")), center + Vector2(0, 94), accent, 20)
 	_draw_centered(font, "就绪" if ready else str(pet.get("cooldown_text", "自动协同")), center + Vector2(0, 124), UiTokens.ACCENT_GOLD if ready else UiTokens.TEXT_SECONDARY, 13)
 
@@ -441,21 +553,22 @@ func _draw_pet_orbit(font: Font, rect: Rect2, pet: Dictionary) -> void:
 func _draw_artifact_core(font: Font, rect: Rect2, artifact: Dictionary) -> void:
 	var center := rect.get_center() + Vector2(0, -8)
 	var pct := clampf(float(artifact.get("charge_pct", 0.0)), 0.0, 1.0)
-	draw_circle(center, 106.0, Color(UiTokens.ELEM_CHAOS.r, UiTokens.ELEM_CHAOS.g, UiTokens.ELEM_CHAOS.b, 0.06))
-	draw_arc(center, 124.0, -PI * 0.5, -PI * 0.5 + TAU, 96, Color(UiTokens.TEXT_MUTED.r, UiTokens.TEXT_MUTED.g, UiTokens.TEXT_MUTED.b, 0.28), 7.0)
-	draw_arc(center, 124.0, -PI * 0.5, -PI * 0.5 + TAU * pct, 96, UiTokens.ELEM_CHAOS, 7.0)
-	var icon_rect := Rect2(center - Vector2(58, 58), Vector2(116, 116))
+	_draw_pattern_disc(center, 220.0, UiTokens.ELEM_CHAOS, 0.34, _dao_pattern_texture)
+	_draw_progress_bar(Rect2(center + Vector2(-110, 82), Vector2(220, 14)), pct, UiTokens.ELEM_CHAOS)
+	_draw_charge_sweep(Rect2(center - Vector2(68, 68), Vector2(136, 136)), UiTokens.ELEM_CHAOS, 0.28 + pct * 0.30)
+	var icon_rect := Rect2(center - Vector2(48, 48), Vector2(96, 96))
 	if _artifact_texture:
 		draw_texture_rect(_artifact_texture, icon_rect, false)
+		_badge_texture_hits += 1
 	else:
-		draw_circle(center, 46.0, UiTokens.ELEM_CHAOS)
+		_draw_codex_badge(Rect2(center - Vector2(42, 42), Vector2(84, 84)), UiTokens.ELEM_CHAOS, "earth")
 	_draw_centered(font, str(artifact.get("name", "玄玉葫")), center + Vector2(0, 98), UiTokens.ACCENT_GOLD, 20)
 	_draw_centered(font, "道势 %d/%d" % [int(artifact.get("current", 0)), int(artifact.get("maximum", 100))], center + Vector2(0, 128), UiTokens.ELEM_CHAOS, 14)
 	_draw_centered(font, str(artifact.get("state_text", "沉寂")), center + Vector2(0, 154), UiTokens.ACCENT_GOLD if pct >= 1.0 else UiTokens.TEXT_SECONDARY, 13)
 
 
-func _draw_stats_grid(font: Font, rect: Rect2) -> void:
-	var raw = _snapshot.get("stats_items", [])
+func _draw_stats_grid(font: Font, rect: Rect2, key: String = "stats_items") -> void:
+	var raw = _snapshot.get(key, [])
 	var items: Array = raw if raw is Array else []
 	var cell_w := (rect.size.x - 18.0) * 0.5
 	var cell_h := 92.0
@@ -468,8 +581,7 @@ func _draw_stats_grid(font: Font, rect: Rect2) -> void:
 		var col := i % 2
 		var row := i / 2
 		var cell := Rect2(start + Vector2(float(col) * (cell_w + 18.0), float(row) * (cell_h + 16.0)), Vector2(cell_w, cell_h))
-		draw_rect(cell, Color(0.025, 0.06, 0.058, 0.42), true)
-		draw_line(cell.position, cell.position + Vector2(cell.size.x, 0), Color(UiTokens.ACCENT_JADE.r, UiTokens.ACCENT_JADE.g, UiTokens.ACCENT_JADE.b, 0.30), 1.0)
+		_draw_small_codex_card(cell, UiTokens.ACCENT_JADE)
 		_draw_text(font, str(item.get("label", "")), cell.position + Vector2(14, 26), UiTokens.TEXT_SECONDARY, 12)
 		_draw_text(font, str(item.get("value", "")), cell.position + Vector2(14, 62), UiTokens.ACCENT_GOLD, 24)
 
@@ -489,11 +601,9 @@ func _draw_strategy_list(font: Font, rect: Rect2) -> void:
 		if raw_accent is Color:
 			accent = raw_accent
 		var row := Rect2(Vector2(rect.position.x + 12.0, y), Vector2(rect.size.x - 24.0, 60.0))
-		draw_rect(row, Color(0.022, 0.054, 0.052, 0.42), true)
-		draw_line(row.position, row.position + Vector2(row.size.x, 0), Color(accent.r, accent.g, accent.b, 0.36), 1.0)
+		_draw_small_codex_card(row, accent)
 		var dot := row.position + Vector2(24, 30)
-		draw_circle(dot, 10.0, Color(accent.r, accent.g, accent.b, 0.18 if enabled else 0.06))
-		draw_arc(dot, 10.0, 0.0, TAU, 28, accent if enabled else UiTokens.TEXT_MUTED, 1.5)
+		_draw_strategy_status_badge(Rect2(dot - Vector2(14, 14), Vector2(28, 28)), accent, enabled)
 		_draw_text(font, str(item.get("name", "")), row.position + Vector2(48, 25), UiTokens.TEXT_PRIMARY if enabled else UiTokens.TEXT_SECONDARY, 14)
 		_draw_right_text(font, "开" if enabled else "关", row.position + Vector2(row.size.x - 18, 25), accent if enabled else UiTokens.TEXT_MUTED, 13)
 		_draw_text(font, str(item.get("detail", "")), row.position + Vector2(48, 48), UiTokens.TEXT_SECONDARY, 11)
@@ -501,16 +611,69 @@ func _draw_strategy_list(font: Font, rect: Rect2) -> void:
 
 
 func _draw_metric_pill(font: Font, rect: Rect2, value: String, accent: Color) -> void:
-	draw_rect(rect, Color(0.018, 0.044, 0.042, 0.56), true)
-	draw_line(rect.position + Vector2(8, rect.size.y - 2), rect.position + Vector2(rect.size.x - 8, rect.size.y - 2), Color(accent.r, accent.g, accent.b, 0.62), 1.0)
+	_draw_codex_tab(rect, true, accent, 0.66)
 	_draw_centered(font, _short_text(value, 10), rect.get_center() + Vector2(0, 5), accent, 12)
 
 
 func _draw_progress_bar(rect: Rect2, pct: float, accent: Color) -> void:
 	var clamped := clampf(pct, 0.0, 1.0)
-	draw_rect(rect, Color(0, 0, 0, 0.38), true)
-	draw_rect(Rect2(rect.position, Vector2(rect.size.x * clamped, rect.size.y)), Color(accent.r, accent.g, accent.b, 0.82), true)
-	draw_rect(rect, Color(accent.r, accent.g, accent.b, 0.30), false, 1.0)
+	if _resource_track_texture:
+		draw_texture_rect(_resource_track_texture, rect, false, Color(0.80 + accent.r * 0.18, 0.86 + accent.g * 0.10, 0.82 + accent.b * 0.12, 0.58))
+		_progress_texture_hits += 1
+		var fill_rect := Rect2(rect.position, Vector2(rect.size.x * clamped, rect.size.y))
+		if fill_rect.size.x > 1.0:
+			draw_texture_rect(_resource_track_texture, fill_rect, false, Color(1.0 + accent.r * 0.12, 0.94 + accent.g * 0.16, 0.74 + accent.b * 0.16, 0.92))
+			_progress_texture_hits += 1
+		return
+	_draw_divider_band(rect, Color(accent.r, accent.g, accent.b, 0.42))
+
+
+func _draw_pattern_disc(center: Vector2, diameter: float, tint: Color, alpha: float, texture: Texture2D) -> void:
+	if texture == null:
+		return
+	var rect := Rect2(center - Vector2(diameter, diameter) * 0.5, Vector2(diameter, diameter))
+	draw_texture_rect(texture, rect, false, Color(0.72 + tint.r * 0.26, 0.80 + tint.g * 0.20, 0.78 + tint.b * 0.20, alpha))
+	_pattern_texture_hits += 1
+
+
+func _draw_codex_badge(rect: Rect2, tint: Color, rune_key: String = "") -> void:
+	if _status_badge_texture:
+		draw_texture_rect(_status_badge_texture, rect, false, Color(0.86 + tint.r * 0.18, 0.86 + tint.g * 0.12, 0.78 + tint.b * 0.16, 0.86))
+		_badge_texture_hits += 1
+	elif _seal_base_texture:
+		draw_texture_rect(_seal_base_texture, rect, false, Color(0.86 + tint.r * 0.18, 0.86 + tint.g * 0.12, 0.78 + tint.b * 0.16, 0.74))
+		_badge_texture_hits += 1
+	var rune: Texture2D = _rune_textures.get(rune_key, null)
+	if rune:
+		draw_texture_rect(rune, rect.grow(-8.0), false, Color(1, 1, 1, 0.72))
+		_badge_texture_hits += 1
+
+
+func _draw_orbit_connector(from_pos: Vector2, to_pos: Vector2, tint: Color) -> void:
+	if _shortcut_badge_texture == null:
+		return
+	var midpoint := from_pos.lerp(to_pos, 0.5)
+	var length := maxf(from_pos.distance_to(to_pos), 1.0)
+	var rect := Rect2(Vector2(-length * 0.5, -4.0), Vector2(length, 8.0))
+	draw_set_transform(midpoint, (to_pos - from_pos).angle(), Vector2.ONE)
+	draw_texture_rect(_shortcut_badge_texture, rect, false, Color(0.82 + tint.r * 0.16, 0.90 + tint.g * 0.10, 0.84 + tint.b * 0.12, 0.30))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	_badge_texture_hits += 1
+
+
+func _draw_charge_sweep(rect: Rect2, tint: Color, alpha: float) -> void:
+	if _cooldown_sweep_texture == null:
+		return
+	draw_texture_rect(_cooldown_sweep_texture, rect, false, Color(0.90 + tint.r * 0.16, 0.90 + tint.g * 0.12, 0.88 + tint.b * 0.12, alpha))
+	_progress_texture_hits += 1
+
+
+func _draw_strategy_status_badge(rect: Rect2, tint: Color, enabled: bool) -> void:
+	if _shortcut_badge_texture:
+		draw_texture_rect(_shortcut_badge_texture, rect, false, Color(0.92 + tint.r * 0.10, 0.92 + tint.g * 0.08, 0.86 + tint.b * 0.08, 0.72 if enabled else 0.32))
+		_badge_texture_hits += 1
+		return
+	_draw_codex_badge(rect, tint if enabled else UiTokens.TEXT_MUTED, "")
 
 
 func _draw_bullet_lines(font: Font, lines: PackedStringArray, pos: Vector2, max_width: float, color: Color, font_size: int, line_gap: int) -> void:
@@ -553,24 +716,31 @@ func _draw_wrapped(font: Font, value: String, pos: Vector2, max_width: float, co
 		_draw_text(font, line, Vector2(pos.x, y), color, font_size)
 
 
+func get_pattern_texture_hit_count() -> int:
+	return _pattern_texture_hits
+
+
+func get_badge_texture_hit_count() -> int:
+	return _badge_texture_hits
+
+
+func get_progress_texture_hit_count() -> int:
+	return _progress_texture_hits
+
+
 func _dict(key: String) -> Dictionary:
 	var raw = _snapshot.get(key, {})
+	return _dict_from(raw)
+
+
+func _dict_from(raw) -> Dictionary:
 	if raw is Dictionary:
 		return raw
 	return {}
 
 
 func _string_array(key: String) -> PackedStringArray:
-	var raw = _snapshot.get(key, PackedStringArray())
-	var out := PackedStringArray()
-	if typeof(raw) == TYPE_PACKED_STRING_ARRAY:
-		return raw
-	if raw is Array:
-		for item in raw:
-			out.append(str(item))
-	elif not str(raw).is_empty():
-		out.append(str(raw))
-	return out
+	return _array_to_strings(_snapshot.get(key, PackedStringArray()))
 
 
 func _array_to_strings(raw) -> PackedStringArray:

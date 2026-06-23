@@ -1,26 +1,27 @@
-SYSTEM ROLE
-You are creating a tiny production Godot TileSet atlas for a top-down xianxia combat arena. Prioritize readability after downscaling.
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Map runtime rules: exact overhead top-down 2D game ground, no horizon, no walls pretending to be arena borders.
+Playable center 70-75 percent must remain matte, low-noise, low-contrast dark ink-stone.
+All cracks, sigils, fog, veins, ruins, lamps, water highlights, and story detail stay in the outer 20 percent.
+No central magic circle, target ring, door, chest, pillar, tree canopy, tall prop, character, projectile, UI, text, or collidable-looking object baked into the background.
+Tileset source: top row exactly four swatches only: floor, floor_alt, blocker, decoration; lower 75 percent must be plain filler with no extra tile concepts.
+Terrain props: flat low ground details only, centered per cell, no tall rocks, walls, pillars, or trees.
+Runtime tileset rule: source for a Godot TileSet atlas that will be resized to 128x128 and sliced as four 32x32 cells across the top row.
+The top row must contain exactly four separated tile concepts from left to right: 1 floor, 2 floor_alt, 3 obstacle/blocker, 4 decoration.
+Place these as four large square swatches across the upper 25 percent of the 1024x1024 canvas, each swatch occupying one 256x256 top-row slot.
+The remaining lower 75 percent must stay visually simple dark filler and must not introduce extra tile concepts.
+No visible grid lines, labels, text, UI, characters, weapons, projectiles, full room composition, or extra rows of props.
 
-PROJECT CONTEXT
-Game: Samsara Ascension / 轮回仙途.
-Realm/stage: 天劫雷台 / 天劫试场.
-Theme motif: floating tribulation thunder battlefield with storm-lit fractured slate.
-Runtime: output will be resized to 128x128 and sliced as four 32x32 atlas cells across the top row.
-
-STRICT ATLAS LAYOUT
-Create a square source image whose TOP ROW contains exactly four visually separated tile concepts from left to right:
-1. floor: base ground material
-2. floor_alt: alternate ground with subtle variation
-3. obstacle/blocker: compact collidable terrain marker such as a ritual stone, broken slab, thorny root, jade boulder, or thunder slate
-4. decoration: compact non-colliding terrain detail such as spirit grass, qi crack, jade vein, ash glyph fragment, gold dust, or lightning trace
-The rest of the image should be empty, transparent-looking, or visually simple so it does not introduce extra atlas concepts.
-
-ART DIRECTION
-Clean hand-painted HD xianxia game asset, readable at 32px, crisp silhouette, restrained texture, strong material identity matching the realm. No chunky retro pixels.
-Keep the four concepts consistent in scale, palette, lighting direction, and top-down perspective.
-
-STRICT EXCLUSIONS
-No text, labels, UI, characters, enemies, weapons, projectiles, full room composition, large scenery, or extra tile rows with additional concepts.
-
-OUTPUT
-One square PNG source image.
+Asset type: runtime top-row tileset source.
+Stage: 天劫雷台 / tribulation_thunder.
+Theme material: storm-dark wet slate, thin thunder vein, old-gold scorch scar, no arena ring.
+Accent: thin blue-white thunder veins and restrained old-gold scars around the outer ground.
+Style: clean hand-painted HD xianxia map tile asset, top-down with slight material read, crisp silhouettes at 32px, black-jade base, cold jade rim, old-gold linework only where meaningful.
+Tile order contract: cell 1 base floor, cell 2 alternate floor, cell 3 compact blocker mark, cell 4 compact non-colliding decoration.
+Constraints: no western fantasy dungeon tiles, no castle floors, no gothic stonework, no text, no labels, no UI, no characters, no extra tile concepts below the top row.

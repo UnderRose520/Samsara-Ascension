@@ -3,6 +3,7 @@ extends Area2D
 const GameConstants = preload("res://core/constants/game_constants.gd")
 const AssetPaths = preload("res://assets/asset_paths.gd")
 const StatusComponent = preload("res://systems/combat/status_component.gd")
+const VfxLibrary = preload("res://vfx/vfx_library.gd")
 
 @export var speed: float = 300.0
 @export var damage: float = 10.0
@@ -18,6 +19,7 @@ var status_duration := 0.0
 var evolution_layer := 1
 var evolution_branch := "base"
 var synergy_rank := 0
+var vfx_tier := 1
 var _draw_radius := 5.0
 var _draw_color := GameConstants.COLOR_PROJECTILE
 var _elapsed := 0.0
@@ -28,6 +30,7 @@ var _frame_index := 0
 var _frame_elapsed := 0.0
 var _trail_points: Array[Vector2] = []
 var _trail_style := "default"
+var _trail_texture: Texture2D
 
 
 func _ready() -> void:
@@ -54,9 +57,11 @@ func setup(direction: Vector2, dmg: float, owner: CharacterBody2D, speed_overrid
 	evolution_layer = maxi(evolution_layer_override, 1)
 	evolution_branch = evolution_branch_override
 	synergy_rank = maxi(synergy_rank_override, 0)
+	vfx_tier = clampi(maxi(evolution_layer, 1) + floori(float(maxi(synergy_rank, 0)) * 0.5), 1, 3)
 	_trail_style = _resolve_trail_style(source_tag, element_key, status_on_hit)
 	if not status_on_hit.is_empty():
 		_draw_color = _draw_color.lerp(StatusComponent.status_color(status_on_hit), 0.55)
+	_draw_color = VfxLibrary.ink_vfx_color(_draw_color, "cast", element_key, status_on_hit, vfx_tier)
 	if range_override > 0.0 and resolved_speed > 0.0:
 		lifetime = range_override / resolved_speed
 	rotation = velocity.angle()
@@ -71,7 +76,8 @@ func _apply_sprite() -> void:
 	_animation_frames.clear()
 	_frame_index = 0
 	_frame_elapsed = 0.0
-	var path := AssetPaths.projectile_for_color(_draw_color)
+	_trail_texture = AssetPaths.load_texture(AssetPaths.projectile_trail(element_key, status_on_hit))
+	var path := AssetPaths.projectile_for_semantics(element_key, status_on_hit, _draw_color)
 	var tex := AssetPaths.load_texture(path)
 	for frame_path in AssetPaths.animation_frame_paths_for_texture(path, "fly"):
 		var frame := AssetPaths.load_texture(frame_path)
@@ -87,19 +93,12 @@ func _apply_sprite() -> void:
 
 func _physics_process(delta: float) -> void:
 	global_position += velocity * delta
-	if _trail_style != "default" or not status_on_hit.is_empty():
-		for i in _trail_points.size():
-			_trail_points[i] -= velocity * delta
-		_trail_points.push_front(Vector2.ZERO)
-		if _trail_points.size() > _trail_length():
-			_trail_points.pop_back()
 	_elapsed += delta
 	if _elapsed >= lifetime:
 		queue_free()
 		return
 	_advance_sprite(delta)
-	if _trail_style != "default" or not status_on_hit.is_empty() or not _sprite or _sprite.texture == null:
-		queue_redraw()
+	queue_redraw()
 
 
 func _advance_sprite(delta: float) -> void:
@@ -114,29 +113,34 @@ func _advance_sprite(delta: float) -> void:
 
 
 func _draw() -> void:
-	_draw_trail()
+	_draw_trail_texture()
 	if _sprite and _sprite.texture != null:
 		return
-	draw_circle(Vector2.ZERO, _draw_radius, _draw_color)
+	push_error("Projectile missing image2 core texture for element `%s` status `%s`" % [element_key, status_on_hit])
 
 
-func _draw_trail() -> void:
-	if _trail_points.size() < 2:
+func _draw_trail_texture() -> void:
+	if _trail_texture == null:
+		push_error("Projectile missing image2 trail texture for element `%s` status `%s`" % [element_key, status_on_hit])
 		return
-	var local_points: PackedVector2Array = []
-	for p in _trail_points:
-		local_points.append(p)
+	var branch_scale := 1.0
 	match _trail_style:
 		"fire":
-			_draw_fire_trail(local_points)
+			branch_scale = 1.05
 		"sword":
-			_draw_sword_trail(local_points)
+			branch_scale = 0.92
 		"thunder":
-			_draw_thunder_trail(local_points)
+			branch_scale = 1.10
 		"ice":
-			_draw_ice_trail(local_points)
-		_:
-			_draw_default_trail(local_points)
+			branch_scale = 1.05
+	var tail_length := clampf(
+		_draw_radius * (4.4 + float(evolution_layer - 1) * 0.36 + float(synergy_rank) * 0.22) * branch_scale,
+		24.0,
+		58.0
+	)
+	var tail_height := clampf(_draw_radius * (1.56 + float(evolution_layer - 1) * 0.06), 10.0, 22.0)
+	var rect := Rect2(Vector2(-tail_length, -tail_height * 0.5), Vector2(tail_length, tail_height))
+	draw_texture_rect(_trail_texture, rect, false, _trail_modulate())
 
 
 func _on_body_entered(body: Node) -> void:
@@ -167,11 +171,16 @@ func _spawn_hit_feedback() -> void:
 		anchor = "spell_thunder"
 	elif _trail_style == "ice":
 		anchor = "spell_ice"
+	if VfxManager.has_method("spawn_hit_feedback"):
+		VfxManager.spawn_hit_feedback(global_position, element_key, status_on_hit, _hit_color(), vfx_tier)
 	EventBus.feedback_anchor_requested.emit(anchor, {
-		"world_position": global_position,
+		"world_position": Vector2.INF,
 		"color": _hit_color(),
-			"freeze": 0.0 if anchor == "hit_light" else 0.025 + float(evolution_layer - 1) * 0.01,
-			"shake": 0.0 if anchor == "hit_light" else 3.0 + float(evolution_layer - 1) * 1.5 + float(synergy_rank) * 1.2,
+		"element": element_key,
+		"status": status_on_hit,
+		"tier": vfx_tier,
+		"freeze": 0.0 if anchor == "hit_light" else 0.025 + float(evolution_layer - 1) * 0.01,
+		"shake": 0.0 if anchor == "hit_light" else 3.0 + float(evolution_layer - 1) * 1.5 + float(synergy_rank) * 1.2,
 	})
 
 
@@ -189,64 +198,32 @@ func _resolve_trail_style(source: String, element: String, status_name: String) 
 	return "default"
 
 
-func _trail_length() -> int:
+func _trail_modulate() -> Color:
+	var color := _draw_color
 	match _trail_style:
 		"fire":
-			return 10 + evolution_layer * 2 + synergy_rank
+			color = color.lerp(Color(1.0, 0.26, 0.08), 0.18)
 		"sword":
-			return 7 + evolution_layer + synergy_rank
+			color = color.lerp(Color(0.50, 0.88, 1.0), 0.20)
 		"thunder":
-			return 8 + evolution_layer * 2 + synergy_rank * 2
+			color = color.lerp(Color(0.74, 0.56, 1.0), 0.22)
 		"ice":
-			return 9 + evolution_layer * 2 + synergy_rank * 2
-	return 8
+			color = color.lerp(Color(0.44, 0.88, 1.0), 0.20)
+	color.a = clampf(0.22 + float(evolution_layer - 1) * 0.022 + float(synergy_rank) * 0.010, 0.20, 0.32)
+	return color
 
 
-func _draw_default_trail(points: PackedVector2Array) -> void:
-	for i in range(points.size() - 1):
-		var alpha := 0.30 * (1.0 - float(i) / float(points.size()))
-		var width := maxf(1.0, _draw_radius * (0.72 - float(i) * 0.06))
-		draw_line(points[i], points[i + 1], Color(_draw_color.r, _draw_color.g, _draw_color.b, alpha), width, true)
+func get_trail_texture_hit_count() -> int:
+	return 1 if _trail_texture != null else 0
 
 
-func _draw_fire_trail(points: PackedVector2Array) -> void:
-	for i in range(points.size() - 1):
-		var t := 1.0 - float(i) / float(points.size())
-		var branch_boost := 1.25 if evolution_branch in ["fire_burst", "fire_chain"] else 1.0
-		var width := maxf(1.2, _draw_radius * (0.95 - float(i) * 0.055) * (1.0 + 0.12 * float(evolution_layer - 1) + 0.08 * float(synergy_rank)) * branch_boost)
-		draw_line(points[i], points[i + 1], Color(1.0, 0.28 + 0.25 * t, 0.08, (0.44 + 0.08 * float(evolution_layer - 1)) * t), width, true)
-		draw_circle(points[i], maxf(1.0, width * 0.36), Color(1.0, 0.72, 0.18, 0.22 * t))
-		if evolution_branch == "fire_chain" and i % 3 == 0:
-			draw_circle(points[i], maxf(1.0, width * 0.55), Color(1.0, 0.24, 0.06, 0.18 * t))
+func get_trail_texture_path() -> String:
+	return AssetPaths.projectile_trail(element_key, status_on_hit)
 
 
-func _draw_sword_trail(points: PackedVector2Array) -> void:
-	for i in range(points.size() - 1):
-		var t := 1.0 - float(i) / float(points.size())
-		var width := maxf(0.8, _draw_radius * (0.54 - float(i) * 0.035) * (1.0 + 0.12 * float(evolution_layer - 1) + 0.06 * float(synergy_rank)))
-		draw_line(points[i], points[i + 1], Color(0.78, 0.94, 1.0, 0.62 * t), width, true)
-		draw_line(points[i] + Vector2(0, -3), points[i + 1] + Vector2(0, -3), Color(1.0, 1.0, 1.0, 0.28 * t), 1.0, true)
-		if evolution_branch == "sword_array":
-			draw_line(points[i] + Vector2(0, 4), points[i + 1] + Vector2(0, 4), Color(0.52, 0.82, 1.0, 0.26 * t), 1.0, true)
+func get_core_texture_hit_count() -> int:
+	return 1 if _sprite != null and _sprite.texture != null else 0
 
 
-func _draw_thunder_trail(points: PackedVector2Array) -> void:
-	for i in range(points.size() - 1):
-		var t := 1.0 - float(i) / float(points.size())
-		var jitter := Vector2(sin(float(i) * 2.4 + _elapsed * 40.0), cos(float(i) * 1.7 + _elapsed * 35.0)) * (3.0 + float(evolution_layer - 1) + float(synergy_rank))
-		draw_line(points[i] + jitter, points[i + 1] - jitter, Color(0.55, 0.82, 1.0, (0.56 + 0.08 * float(evolution_layer - 1)) * t), 2.2 + float(evolution_layer - 1) * 0.5 + float(synergy_rank) * 0.35, true)
-		draw_line(points[i], points[i + 1], Color(1.0, 1.0, 0.75, 0.32 * t), 1.0, true)
-		if evolution_branch == "thunder_net":
-			draw_line(points[i] + jitter.rotated(1.5708), points[i + 1] - jitter.rotated(1.5708), Color(0.80, 0.95, 1.0, 0.24 * t), 1.0, true)
-
-
-func _draw_ice_trail(points: PackedVector2Array) -> void:
-	for i in range(points.size() - 1):
-		var t := 1.0 - float(i) / float(points.size())
-		draw_line(points[i], points[i + 1], Color(0.48, 0.92, 1.0, (0.38 + 0.08 * float(evolution_layer - 1)) * t), maxf(1.0, _draw_radius * 0.5 * (1.0 + 0.12 * float(evolution_layer - 1) + 0.08 * float(synergy_rank))), true)
-		if i % 2 == 0:
-			var p := points[i]
-			draw_line(p + Vector2(-3, 0), p + Vector2(3, 0), Color(0.82, 1.0, 1.0, 0.32 * t), 1.0)
-			draw_line(p + Vector2(0, -3), p + Vector2(0, 3), Color(0.82, 1.0, 1.0, 0.32 * t), 1.0)
-			if evolution_branch == "ice_domain":
-				draw_circle(p, 3.6 + float(synergy_rank), Color(0.72, 0.96, 1.0, 0.14 * t))
+func get_core_texture_path() -> String:
+	return AssetPaths.projectile_for_semantics(element_key, status_on_hit, _draw_color)

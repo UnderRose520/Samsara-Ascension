@@ -11,15 +11,7 @@ const TERRAIN_LABELS := {
 	"swamp": "沼泽",
 	"fire": "火堆",
 	"rock": "岩石",
-}
-
-const WEATHER_FEATURE_BIAS := {
-	"rain": ["water", "water", "swamp"],
-	"thunder": ["water", "water", "rock"],
-	"fire": ["fire", "fire", "rock"],
-	"wind": ["fire", "rock", "rock"],
-	"snow": ["ice", "water", "rock"],
-	"sand": ["fire", "rock", "rock"],
+	"thunder": "雷痕",
 }
 
 const TERRAIN_COLORS := {
@@ -30,6 +22,7 @@ const TERRAIN_COLORS := {
 	"ice": Color(0.60, 0.92, 1.0, 0.46),
 	"wet": Color(0.20, 0.52, 0.86, 0.40),
 	"dry": Color(0.78, 0.46, 0.22, 0.42),
+	"thunder": Color(0.52, 0.36, 1.0, 0.52),
 }
 
 var _zones: Array = []
@@ -80,7 +73,7 @@ func setup_for_room(weather_id: String, layout: Dictionary, host: Node2D, rng: R
 			var radius := float(slot.get("radius", 36.0))
 			_add_zone(pos, radius, _current_terrain_type, zone_color, false)
 
-	var features := _weather_adjusted_features(layout.get("terrain_features", []), weather_id, rng)
+	var features: Array = layout.get("terrain_features", [])
 	for feature in features:
 		var terrain_type := str(feature.get("type", "water"))
 		var pos: Vector2 = feature.get("position", Vector2.ZERO)
@@ -153,6 +146,7 @@ func _add_zone(local_pos: Vector2, radius: float, terrain_type: String, color: C
 	})
 	var node: Node2D = StaticBody2D.new() if blocks_movement else Area2D.new()
 	node.position = local_pos
+	node.z_index = 2 if blocks_movement else -3
 	if blocks_movement:
 		var body := node as StaticBody2D
 		body.collision_layer = GameConstants.COLLISION_LAYER_OBSTACLE
@@ -168,54 +162,36 @@ func _add_zone(local_pos: Vector2, radius: float, terrain_type: String, color: C
 	circle.radius = radius
 	shape.shape = circle
 	node.add_child(shape)
-	var atlas_visual := _make_runtime_terrain_visual(terrain_type, color, radius)
+	var atlas_visual := _make_runtime_terrain_visual(terrain_type, color, radius, blocks_movement)
 	if atlas_visual:
 		node.add_child(atlas_visual)
 	else:
-		node.add_child(_make_fallback_zone_visual(terrain_type, color, radius))
+		node.add_child(_make_fallback_zone_visual(terrain_type, color, radius, blocks_movement))
 	_terrain_root.add_child(node)
 
 
-func _make_runtime_terrain_visual(terrain_type: String, color: Color, radius: float) -> Node2D:
+func _make_runtime_terrain_visual(terrain_type: String, color: Color, radius: float, blocks_movement: bool) -> Node2D:
 	if _host == null or not _host.has_method("make_terrain_zone_visual"):
 		return null
 	var rng := RunRng.make("terrain_visual_%s_%s_%d" % [terrain_type, str(_zones.size()), int(round(radius))])
-	return _host.make_terrain_zone_visual(terrain_type, color, radius, rng)
+	return _host.make_terrain_zone_visual(terrain_type, color, radius, rng, blocks_movement)
 
 
-func _make_fallback_zone_visual(terrain_type: String, color: Color, radius: float) -> Node2D:
+func _make_fallback_zone_visual(terrain_type: String, color: Color, radius: float, blocks_movement: bool) -> Node2D:
 	var visual := Node2D.new()
 	visual.name = "%sFallbackVisual" % terrain_type.capitalize()
+	visual.z_index = 1 if blocks_movement else -1
 	var poly := Polygon2D.new()
 	var points := PackedVector2Array()
-	var steps := 18
+	var steps := 16
 	for i in range(steps):
 		var angle := TAU * float(i) / float(steps)
-		var wobble := 0.88 + 0.08 * sin(float(i) * 1.9)
+		var wobble := 0.48 + 0.12 * sin(float(i) * 2.7)
 		points.append(Vector2(cos(angle), sin(angle)) * radius * wobble)
 	poly.polygon = points
-	poly.color = color
+	poly.color = Color(color.r, color.g, color.b, minf(color.a, 0.16))
 	visual.add_child(poly)
 	return visual
-
-
-func _weather_adjusted_features(features: Array, weather_id: String, rng: RandomNumberGenerator) -> Array:
-	var adjusted: Array = []
-	var bias: Array = WEATHER_FEATURE_BIAS.get(weather_id, [])
-	for raw in features:
-		var feature: Dictionary = raw.duplicate(true)
-		if not bias.is_empty() and rng.randf() < 0.45:
-			feature["type"] = str(bias[rng.randi_range(0, bias.size() - 1)])
-		adjusted.append(feature)
-	if weather_id in ["rain", "thunder"] and adjusted.size() < 8:
-		for raw in features.slice(0, mini(2, features.size())):
-			var extra: Dictionary = raw.duplicate(true)
-			var pos: Vector2 = extra.get("position", Vector2.ZERO)
-			extra["position"] = pos + Vector2(rng.randf_range(-82.0, 82.0), rng.randf_range(-60.0, 60.0))
-			extra["type"] = "water"
-			extra["radius"] = float(extra.get("radius", 42.0)) * 0.82
-			adjusted.append(extra)
-	return adjusted
 
 
 func _terrain_color(terrain_type: String) -> Color:

@@ -1,0 +1,10 @@
+Run flow contract QA
+====================
+Starting run through real main.tscn and RunSetupPanel
+Choosing opening affix through real AffixChoicePanel card
+Clearing room 0:0 (combat) through RunController
+Clearing room 0:1 (combat) through RunController
+Resolving event room through real EventBus flow
+Forcing run completion through RunController finish contract
+Run flow contract QA passed
+Exit code: 0

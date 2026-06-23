@@ -3,13 +3,16 @@ extends CanvasLayer
 const UiAnimations = preload("res://ui/ui_animations.gd")
 const UiHelpers = preload("res://ui/ui_helpers.gd")
 const UiTokens = preload("res://ui/theme/ui_tokens.gd")
+const AssetPaths = preload("res://assets/asset_paths.gd")
 const TALENT_CARD_SCENE = preload("res://ui/components/talent_card.tscn")
 
 @onready var panel: PanelContainer = $Panel
 @onready var dimmer: ColorRect = $Dimmer
+@onready var backdrop: TextureRect = $Backdrop
 @onready var title_label: Label = $Panel/Margin/VBox/Title
 @onready var before_label: Label = $Panel/Margin/VBox/SlotRow/BeforeLabel
 @onready var after_label: Label = $Panel/Margin/VBox/SlotRow/AfterLabel
+@onready var realm_gate_header: TextureRect = $Panel/Margin/RealmGateHeader
 @onready var cards_box: HBoxContainer = $Panel/Margin/VBox/Cards
 
 var _card_nodes: Array = []
@@ -20,7 +23,12 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	panel.visible = false
 	dimmer.visible = false
+	backdrop.visible = false
+	backdrop.modulate.a = 0.0
+	backdrop.texture = AssetPaths.load_texture(AssetPaths.BREAKTHROUGH_BACKDROP)
+	realm_gate_header.texture = AssetPaths.load_texture(AssetPaths.REALM_GATE_PANEL)
 	UiHelpers.apply_panel_polish(panel)
+	UiHelpers.wrap_with_panel_texture(panel, AssetPaths.BREAKTHROUGH_BG_OVERLAY)
 	UiHelpers.decorate_modal_header($Panel/Margin/VBox, title_label)
 	UiHelpers.add_gold_divider($Panel/Margin/VBox, cards_box)
 	EventBus.breakthrough_requested.connect(_on_breakthrough_requested)
@@ -40,7 +48,10 @@ func _on_breakthrough_requested(offers: Array, context: Dictionary) -> void:
 	_animate_slot_counter(before, after)
 	panel.visible = true
 	dimmer.visible = true
+	backdrop.visible = true
+	realm_gate_header.modulate.a = 0.0
 	UiAnimations.modal_open(panel, dimmer)
+	_animate_realm_gate_open()
 	if not VfxManager.should_reduce_motion():
 		call_deferred("_spawn_breakthrough_vfx")
 	for i in _card_nodes.size():
@@ -78,6 +89,23 @@ func _spawn_breakthrough_vfx() -> void:
 	VfxManager.spawn_world(burst_pos, "dao", UiTokens.ELEM_WOOD)
 
 
+func _animate_realm_gate_open() -> void:
+	backdrop.modulate.a = 0.0
+	realm_gate_header.modulate.a = 0.0
+	realm_gate_header.scale = Vector2(0.98, 0.98)
+	if VfxManager.should_reduce_motion():
+		backdrop.modulate.a = 0.86
+		realm_gate_header.modulate.a = 0.0
+		realm_gate_header.scale = Vector2.ONE
+		return
+	var tw := create_tween()
+	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tw.set_parallel(true)
+	tw.tween_property(backdrop, "modulate:a", 0.86, 0.32)
+	tw.tween_property(realm_gate_header, "modulate:a", 0.0, 0.36).set_delay(0.08)
+	tw.tween_property(realm_gate_header, "scale", Vector2.ONE, 0.36).set_delay(0.08).set_trans(Tween.TRANS_SINE)
+
+
 func _on_talent_selected(talent_id: String) -> void:
 	if _closing:
 		return
@@ -88,6 +116,8 @@ func _on_talent_selected(talent_id: String) -> void:
 	UiAnimations.modal_close(panel, dimmer, func() -> void:
 		panel.visible = false
 		dimmer.visible = false
+		backdrop.visible = false
+		backdrop.modulate.a = 0.0
 		RunContext.complete_breakthrough()
 		EventBus.breakthrough_closed.emit(talent_id)
 	)

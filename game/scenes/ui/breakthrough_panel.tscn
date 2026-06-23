@@ -15,6 +15,17 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.051, 0.02, 0.118, 0.65)
 
+[node name="Backdrop" type="TextureRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0.88)
+expand_mode = 1
+stretch_mode = 6
+
 [node name="Panel" type="PanelContainer" parent="."]
 anchors_preset = 8
 anchor_left = 0.5
@@ -34,6 +45,21 @@ theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 16
+
+[node name="RealmGateHeader" type="TextureRect" parent="Panel/Margin"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -330.0
+offset_top = 28.0
+offset_right = 330.0
+offset_bottom = 72.0
+grow_horizontal = 2
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0)
+expand_mode = 1
+stretch_mode = 6
 
 [node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
 layout_mode = 2

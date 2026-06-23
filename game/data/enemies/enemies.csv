@@ -1,5 +1,7 @@
 enemy_id,display_name,archetype,is_elite,hp_mult,atk_mult,def_mult,speed_mult,weapon_id
 wild_wolf,妖狼,berserker,false,1.0,1.0,0.85,1.0,claw
+crossbow_cultivator,弩修,sniper,false,0.92,1.08,0.86,0.94,cloud_crossbow
+shield_guard,护阵者,elite,true,1.35,0.92,1.55,0.82,xuanwu_shield
 sky_bat,腐翼妖蝠,ranged,false,0.85,0.95,0.75,1.05,poison_spit
 mud_serpent,泥泽游蛇,sniper,false,0.9,1.05,0.9,0.96,mud_bow
 wind_mantis,风刃螳螂,skirmisher,false,0.95,1.1,0.82,1.1,wind_blade

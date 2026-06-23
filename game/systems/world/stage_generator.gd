@@ -37,7 +37,7 @@ static func generate(dao_heart: int = 1, events_seen: Dictionary = {}) -> Array:
 		var event_room := _make_room("event", stage_index, row, room_index)
 		var event_rng := RunRng.stage_room(stage_index, room_index, "event")
 		var event_id := EventSelector.pick_event_id(
-			weather_id,
+			str(event_room.get("weather_id", weather_id)),
 			dao_heart,
 			event_rng,
 			events_seen,
@@ -69,6 +69,7 @@ static func _make_room(
 	var rng := RunRng.stage_room(stage_index, room_index, template_id)
 	var tpl: Dictionary = _room_templates.get(template_id, {})
 	var runtime_stage := _runtime_stage_for(stage_index)
+	var room_weather_id := _pick_room_weather(runtime_stage, stage_row, rng)
 	var enemy_count: int = int(tpl.get("enemy_count", 3))
 	if template_id == "combat":
 		enemy_count = mini(4 + stage_index * 2, GameConstants.MAX_ROOM_ENEMIES)
@@ -85,6 +86,7 @@ static func _make_room(
 		"is_boss": template_id == "boss",
 		"stage_index": stage_index,
 		"room_index": room_index,
+		"weather_id": room_weather_id,
 	}
 	room.merge(_runtime_stage_surface(runtime_stage), true)
 	if template_id == "boss":
@@ -93,7 +95,7 @@ static func _make_room(
 		room["label"] = boss_name
 	if template_id in ["combat", "combat_hard", "boss"]:
 		room["layout_id"] = RoomLayoutGenerator.pick_layout_id(template_id, stage_index, rng)
-		room.merge(_build_room_runtime_map(runtime_stage, stage_index, room_index, template_id, rng), true)
+		room.merge(_build_room_runtime_map(runtime_stage, stage_index, room_index, template_id, room_weather_id, rng), true)
 	return room
 
 
@@ -154,6 +156,7 @@ static func _build_room_runtime_map(
 	stage_index: int,
 	room_index: int,
 	template_id: String,
+	weather_id: String,
 	rng: RandomNumberGenerator,
 ) -> Dictionary:
 	var scale := _room_scale(stage_index, template_id, rng)
@@ -195,8 +198,82 @@ static func _build_room_runtime_map(
 	profile["obstacle_count_bias"] = int(profile.get("obstacle_count_bias", 0)) + rng.randi_range(0, 2)
 	profile["min_spacing_bias"] = float(profile.get("min_spacing_bias", 0.0)) + rng.randf_range(-6.0, 14.0)
 	profile["room_scale"] = [scale.x, scale.y]
+	if runtime_stage.has("terrain_feature_weights"):
+		var base_terrain_weights: Dictionary = runtime_stage.get("terrain_feature_weights", {})
+		var terrain_weights := weather_adjusted_terrain_feature_weights(
+			base_terrain_weights,
+			weather_id
+		)
+		output["base_terrain_feature_weights"] = base_terrain_weights.duplicate(true)
+		profile["terrain_feature_weights"] = terrain_weights
+		output["terrain_feature_weights"] = terrain_weights
+	if runtime_stage.has("terrain_feature_count_bias"):
+		profile["terrain_feature_count_bias"] = int(runtime_stage.get("terrain_feature_count_bias", 0))
+		output["terrain_feature_count_bias"] = int(runtime_stage.get("terrain_feature_count_bias", 0))
 	output["layout_profile"] = profile
 	return output
+
+
+static func weather_adjusted_terrain_feature_weights(base_weights: Dictionary, weather_id: String) -> Dictionary:
+	var weights: Dictionary = base_weights.duplicate(true)
+	match weather_id:
+		"rain":
+			_add_weight(weights, "water", 2)
+			_add_weight(weights, "wet", 1)
+			_add_weight(weights, "swamp", 1)
+		"thunder":
+			_add_weight(weights, "thunder", 3)
+			_add_weight(weights, "water", 1)
+			_add_weight(weights, "rock", 1)
+		"fire":
+			_add_weight(weights, "fire", 3)
+			_add_weight(weights, "dry", 1)
+		"wind":
+			_add_weight(weights, "dry", 1)
+			_add_weight(weights, "rock", 1)
+		"fog":
+			_add_weight(weights, "swamp", 1)
+			_add_weight(weights, "wet", 1)
+		"snow":
+			_add_weight(weights, "ice", 3)
+			_add_weight(weights, "water", 1)
+		"sand":
+			_add_weight(weights, "dry", 2)
+			_add_weight(weights, "rock", 2)
+	return weights
+
+
+static func _add_weight(weights: Dictionary, key: String, amount: int) -> void:
+	if amount <= 0:
+		return
+	weights[key] = int(weights.get(key, 0)) + amount
+
+
+static func _pick_room_weather(runtime_stage: Dictionary, stage_row: Dictionary, rng: RandomNumberGenerator) -> String:
+	var fallback := str(runtime_stage.get("weather_id", stage_row.get("weather_id", "clear")))
+	var pool: Array = runtime_stage.get("weather_pool", [])
+	if pool.is_empty():
+		return fallback
+	var total := 0
+	var candidates: Array = []
+	for entry in pool:
+		if not (entry is Dictionary):
+			continue
+		var weather_id := str(entry.get("id", ""))
+		var weight := int(entry.get("weight", 1))
+		if weather_id.is_empty() or weight <= 0:
+			continue
+		candidates.append({"id": weather_id, "weight": weight})
+		total += weight
+	if candidates.is_empty() or total <= 0:
+		return fallback
+	var roll := rng.randi_range(1, total)
+	var cursor := 0
+	for entry in candidates:
+		cursor += int(entry.get("weight", 1))
+		if roll <= cursor:
+			return str(entry.get("id", fallback))
+	return fallback
 
 
 static func _room_scale(stage_index: int, template_id: String, rng: RandomNumberGenerator) -> Vector2:

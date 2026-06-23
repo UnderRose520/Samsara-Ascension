@@ -1,0 +1,30 @@
+Unified art direction for Samsara Ascension, a 2D dark Chinese xianxia cultivation roguelite.
+Visual language: dark ink wash, black jade base, cold jade rim light, restrained old-gold ritual linework.
+Five-element color is high saturation only on gameplay signal parts: fire orange-red, water cyan-blue, thunder blue-white, wood jade-green, earth old-gold, soul violet.
+No western fantasy, no Diablo-like item render, no gothic castle, no European armor, no photorealism, no beige parchment dominance, no UI text, no letters, no labels, no watermark.
+Cohesion hard rules: every asset must feel from the same dark Chinese ink xianxia roguelite.
+Palette: black jade and deep ink-teal base, cold jade rim light, restrained old-gold ritual linework.
+Five-element saturated color appears only on gameplay signal parts, never as a full-body wash or full-background glow.
+Avoid stickers, emoji, circular avatar badges, inventory loot lighting, purple-only palettes, western fantasy, gothic castle shapes, European armor, Diablo-like item render, anime portrait crop, photorealism, beige parchment dominance, UI text, labels, and watermark.
+Transparent-source rule: render the subject on a perfectly flat solid #FF00FF chroma-key background.
+The background must be one uniform color with no shadows, gradients, texture, reflection, floor plane, or lighting variation.
+Do not use #FF00FF inside the subject. Keep the subject fully inside the canvas with generous padding.
+
+Asset type: runtime full-screen overlay ornament FX atlas for a 1920x1080 top-down 2D cultivation roguelite.
+Grid: exactly 4 columns by 2 rows, one alpha-ready overlay ornament per cell, no visible grid lines or borders.
+Cell order: left to right, top to bottom.
+1. fire Dao awakening corner ornament: diagonal Chinese talisman brush pattern, black jade ink mass, red-orange danger edge, sparse old-gold sparks, open transparent center
+2. thunder Dao awakening corner ornament: diagonal lightning talisman brush pattern, black jade ink mass, blue-white thunder edge, tiny old-gold seal flecks, open transparent center
+3. wood Dao awakening corner ornament: diagonal vine-and-rune talisman brush pattern, black jade ink mass, jade-green life edge, small old-gold seed sparks, open transparent center
+4. water Dao awakening corner ornament: diagonal wave-and-ice talisman brush pattern, black jade ink mass, cyan-blue water edge, thin old-gold seal flecks, open transparent center
+5. five elements Dao awakening corner ornament: diagonal circular five-element talisman fragments, black jade ink mass, five tiny saturated accent sparks, restrained old-gold ring shards, open transparent center
+6. critical moment top edge glow strip: horizontal torn ink wash border, cold jade white inner slash light, old-gold spark dust, feathered transparent lower edge
+7. critical moment side edge glow strip: vertical torn ink wash border, cold jade white inner slash light, old-gold spark dust, feathered transparent inner edge
+8. critical moment corner flare: L-shaped ink slash flare, cold jade white edge, tiny old-gold sparks, transparent center and feathered outer ink
+Visual language: dark Chinese ink-wash xianxia, black jade ink mass, cold jade rim light, restrained old-gold ritual sparks. Saturated elemental color appears only on edge strokes and small particle accents.
+Runtime use: Dao awakening corner ornaments are mirrored and rotated into the four screen corners; they must read as diagonal talisman brush patterns with open transparent centers. Crit edge strips tile/stretch along screen edges; they need feathered transparent inner edges and no hard rectangular slab.
+Shape rules: no full opaque rectangles, no centered icon badges, no circular avatar frames, no text, no readable Chinese characters. Keep each ornament fully inside its cell with generous padding and no cell-edge touching except the intended soft edge strip direction.
+Style: elegant high-saturation particles over deep ink, not western fantasy, not Diablo loot art, not sci-fi HUD, not photoreal.
+Constraints: no characters, no monsters, no weapons as objects, no UI labels, no watermark.
+
+Fallback note: provider request timed out during this session, so this raw atlas was composited from existing project image2 assets (crit slash, slash arc, Dao aura, guard aura, enemy seal/ring, and element icons). Re-run with --force without --composite-fallback when the image provider is healthy to replace it with a native gpt-image-2 atlas.
